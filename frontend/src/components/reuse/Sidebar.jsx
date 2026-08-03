@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import logoImg from '../../assets/logo.png';
 import { 
   Sun, 
   Wind,
@@ -19,13 +20,17 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setShowDropdown(false);
+    localStorage.clear();
     if (onLogout) {
       onLogout();
-    } else {
-      localStorage.clear();
-      navigate('/login');
     }
+    navigate('/login', { replace: true });
   };
 
   const username = currentUser?.username || localStorage.getItem('username') || 'meda User';
@@ -42,8 +47,8 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
       {/* Top Navbar Section (Clean White Theme) */}
       <header className="navbar-container">
         <div className="brand-section">
-          <div className="logo-icon-wrap">
-            <Sun size={20} className="sun-icon" />
+          <div className="logo-icon-wrap" style={{ overflow: 'hidden', padding: '0px', background: 'transparent' }}>
+            <img src={logoImg} alt="meda logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div className="brand-text-wrap">
             <span className="brand-name">meda</span>
@@ -88,7 +93,7 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
                   <p className="dh-email">{currentUser?.email || 'admin@meda.io'}</p>
                 </div>
                 <div className="dropdown-divider"></div>
-                <button onClick={handleLogout} className="dropdown-item danger">
+                <button type="button" onClick={handleLogout} className="dropdown-item danger">
                   <LogOut size={16} /> Log Out
                 </button>
               </div>
@@ -133,7 +138,7 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
           </div>
 
           <div className="sidebar-footer">
-            <button onClick={handleLogout} className="logout-btn">
+            <button type="button" onClick={handleLogout} className="logout-btn">
               <LogOut size={18} />
               <span>Sign Out</span>
             </button>
@@ -178,15 +183,12 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
         }
 
         .logo-icon-wrap {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+          width: 90px;
+          height: 90px;
+          border-radius: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .brand-text-wrap {

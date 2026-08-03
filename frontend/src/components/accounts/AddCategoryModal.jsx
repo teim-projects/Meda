@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, FolderPlus, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
@@ -8,6 +9,16 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -53,20 +64,20 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
     }
   };
 
-  return (
-    <div className="modal-overlay animate-fade-in">
-      <div className="modal-card light-card">
+  return createPortal(
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-card animate-modal-pop">
         <div className="modal-header">
           <div className="modal-title-wrap">
             <div className="modal-icon-badge green">
-              <FolderPlus size={20} />
+              <FolderPlus size={22} />
             </div>
             <div>
               <h3>Add New Category</h3>
               <p>Create staff classification (e.g. Sales Manager)</p>
             </div>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button type="button" className="modal-close-btn" onClick={onClose} title="Close Modal">
             <X size={18} />
           </button>
         </div>
@@ -120,83 +131,118 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
       </div>
 
       <style>{`
+        @keyframes modalOverlayFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes modalPopIn {
+          from { opacity: 0; transform: scale(0.94) translateY(12px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
         .modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(15, 23, 42, 0.6);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 100;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          background: rgba(15, 23, 42, 0.65) !important;
+          backdrop-filter: blur(8px) !important;
+          -webkit-backdrop-filter: blur(8px) !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          z-index: 999999 !important;
           padding: 20px;
+          margin: 0 !important;
+          animation: modalOverlayFade 0.2s ease-out forwards;
         }
 
         .modal-card {
           width: 100%;
-          max-width: 480px;
-          padding: 24px;
+          max-width: 500px;
+          padding: 28px;
           background: #ffffff;
-          border-radius: 18px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+          border-radius: 20px;
+          box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05);
+          animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          position: relative;
         }
 
         .modal-header {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          margin-bottom: 20px;
+          margin-bottom: 22px;
         }
 
         .modal-title-wrap {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
         }
 
         .modal-icon-badge {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
+          width: 46px;
+          height: 46px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
+          shrink: 0;
         }
 
-        .modal-icon-badge.green { background: #dcfce7; color: #10b981; }
+        .modal-icon-badge.green { 
+          background: rgba(16, 185, 129, 0.12); 
+          color: #10b981; 
+          border: 1px solid rgba(16, 185, 129, 0.2);
+        }
 
         .modal-title-wrap h3 {
-          font-size: 1.2rem;
+          font-size: 1.25rem;
           font-weight: 700;
           color: #0f172a;
+          letter-spacing: -0.3px;
+          margin: 0;
         }
 
         .modal-title-wrap p {
-          font-size: 0.78rem;
+          font-size: 0.82rem;
           color: #64748b;
+          margin: 2px 0 0 0;
         }
 
         .modal-close-btn {
           background: #f1f5f9;
-          border: none;
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
           color: #64748b;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+          background: #e2e8f0;
+          color: #0f172a;
         }
 
         .modal-alert {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 10px 12px;
-          border-radius: 8px;
-          font-size: 0.82rem;
-          margin-bottom: 16px;
+          gap: 10px;
+          padding: 12px 14px;
+          border-radius: 10px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          margin-bottom: 18px;
         }
 
         .modal-alert.error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
@@ -205,7 +251,7 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
         .modal-form {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 18px;
         }
 
         .form-group {
@@ -217,21 +263,43 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
         .form-label {
           font-size: 0.82rem;
           font-weight: 600;
-          color: #475569;
+          color: #334155;
         }
 
-        .textarea {
+        .input-field {
+          width: 100%;
+          height: 44px;
+          padding: 0 14px;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          border-radius: 10px;
+          color: #0f172a;
+          font-size: 0.88rem;
+          outline: none;
+          transition: all 0.2s ease;
+          box-sizing: border-box;
+        }
+
+        .input-field.textarea {
+          height: auto;
+          padding: 12px 14px;
           resize: vertical;
+          font-family: inherit;
+        }
+
+        .input-field:focus {
+          border-color: #10b981;
+          box-shadow: 0 0 0 3.5px rgba(16, 185, 129, 0.15);
         }
 
         .modal-footer {
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          gap: 10px;
-          margin-top: 8px;
-          padding-top: 16px;
-          border-top: 1px solid #e2e8f0;
+          gap: 12px;
+          margin-top: 4px;
+          padding-top: 20px;
+          border-top: 1px solid #f1f5f9;
         }
 
         .btn-secondary {
@@ -239,12 +307,44 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
           border: 1px solid #e2e8f0;
           color: #475569;
           font-weight: 600;
-          padding: 9px 16px;
+          padding: 10px 18px;
           border-radius: 10px;
           cursor: pointer;
+          font-size: 0.88rem;
+          transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+          background: #e2e8f0;
+          color: #0f172a;
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border: none;
+          color: #ffffff;
+          font-weight: 600;
+          padding: 10px 22px;
+          border-radius: 10px;
+          cursor: pointer;
+          font-size: 0.88rem;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+          transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 };
 
