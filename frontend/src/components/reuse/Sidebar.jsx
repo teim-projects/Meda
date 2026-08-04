@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/logo.png';
 import { 
@@ -13,12 +13,30 @@ import {
   BarChart3, 
   Settings, 
   ShieldCheck, 
-  Zap 
+  Zap,
+  Plug,
+  Download,
+  History,
+  Database,
+  Activity,
+  Lock
 } from 'lucide-react';
+import { medaApi } from '../../services/medaApi';
 
-const Sidebar = ({ children, currentUser, onLogout }) => {
+const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaConnected }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isMedaConnected, setIsMedaConnected] = useState(propIsMedaConnected || false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (propIsMedaConnected !== undefined) {
+      setIsMedaConnected(propIsMedaConnected);
+    } else {
+      medaApi.getStatus()
+        .then((res) => setIsMedaConnected(res.is_connected))
+        .catch(() => setIsMedaConnected(false));
+    }
+  }, [propIsMedaConnected]);
 
   const handleLogout = (e) => {
     if (e) {
@@ -40,6 +58,14 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
     { name: 'Accounts', path: '/accounts', icon: Users },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
     { name: 'Settings', path: '/settings', icon: Settings },
+  ];
+
+  const medaNavItems = [
+    { name: 'MEDA Login', path: '/meda/login', icon: Plug, requiresAuth: false },
+    { name: 'Fetch Data', path: '/meda/fetch', icon: Download, requiresAuth: true },
+    { name: 'Sync History', path: '/meda/sync-history', icon: History, requiresAuth: true },
+    { name: 'Raw Data', path: '/meda/raw-data', icon: Database, requiresAuth: true },
+    { name: 'API Logs', path: '/meda/api-logs', icon: Activity, requiresAuth: true },
   ];
 
   return (
@@ -106,36 +132,76 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
       <div className="layout-body">
         {/* Left Sidebar Pane (Dark Colored Theme) */}
         <aside className="sidebar-dark-pane">
-          <div className="nav-group">
-            <p className="nav-group-title">MAIN NAVIGATION</p>
-            <ul className="nav-list">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.name}>
-                    <NavLink 
-                      to={item.path} 
-                      className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
-                    >
-                      <Icon size={18} className="link-icon" />
-                      <span>{item.name}</span>
-                    </NavLink>
-                  </li>
-                );
-              })}
-            </ul>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
+            <div className="nav-group">
+              <p className="nav-group-title">MAIN NAVIGATION</p>
+              <ul className="nav-list">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.name}>
+                      <NavLink 
+                        to={item.path} 
+                        className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
+                      >
+                        <Icon size={18} className="link-icon" />
+                        <span>{item.name}</span>
+                      </NavLink>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {/* MEDA Integration Navigation Section */}
+            <div className="nav-group">
+              <p className="nav-group-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 10 }}>
+                <span>MEDA INTEGRATION</span>
+                <span style={{ 
+                  fontSize: '0.6rem', 
+                  padding: '2px 6px', 
+                  borderRadius: 10, 
+                  background: isMedaConnected ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)',
+                  color: isMedaConnected ? '#10b981' : '#f43f5e' 
+                }}>
+                  {isMedaConnected ? 'ONLINE' : 'OFFLINE'}
+                </span>
+              </p>
+              <ul className="nav-list">
+                {medaNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isLocked = item.requiresAuth && !isMedaConnected;
+                  return (
+                    <li key={item.name}>
+                      {isLocked ? (
+                        <div 
+                          className="dark-nav-link disabled"
+                          style={{ opacity: 0.45, cursor: 'not-allowed', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                          title="Please connect MEDA first on MEDA Login page"
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Icon size={18} className="link-icon" />
+                            <span>{item.name}</span>
+                          </div>
+                          <Lock size={14} color="#f43f5e" />
+                        </div>
+                      ) : (
+                        <NavLink 
+                          to={item.path} 
+                          className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
+                        >
+                          <Icon size={18} className="link-icon" />
+                          <span>{item.name}</span>
+                        </NavLink>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
 
-          <div className="sidebar-dark-card">
-            <div className="card-badge">
-              <Zap size={13} /> ACTIVE
-            </div>
-            <h4>meda Backend</h4>
-            <p>Django & MySQL database operational.</p>
-            <button className="card-btn">
-              <ShieldCheck size={14} /> System Healthy
-            </button>
-          </div>
+         
 
           <div className="sidebar-footer">
             <button type="button" onClick={handleLogout} className="logout-btn">
@@ -144,6 +210,7 @@ const Sidebar = ({ children, currentUser, onLogout }) => {
             </button>
           </div>
         </aside>
+
 
         {/* Page Content Pane (White Theme) */}
         <main className="content-white-pane">

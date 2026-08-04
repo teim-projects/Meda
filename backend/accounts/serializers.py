@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken  # ← Make sure this import works
 from .models import Category, Staff
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_superuser', 'is_staff']
+
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -27,12 +29,15 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Must include "username" and "password".')
 
         refresh = RefreshToken.for_user(user)
+        
+        # Debug: Print token to console
+        print(f"Generated access token: {str(refresh.access_token)}")
+        
         return {
             'user': UserSerializer(user).data,
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
-
 class CategorySerializer(serializers.ModelSerializer):
     staff_count = serializers.SerializerMethodField()
 
