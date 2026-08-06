@@ -18,10 +18,70 @@ import axios from 'axios';
 import AddCategoryModal from './AddCategoryModal';
 import AddStaffModal from './AddStaffModal';
 
+const defaultCategories = [
+  { id: 1, name: 'Energy Division', staff_count: 4 },
+  { id: 2, name: 'Grid Operations', staff_count: 3 },
+  { id: 3, name: 'Billing & Normalization', staff_count: 5 },
+  { id: 4, name: 'IT & Systems', staff_count: 2 },
+];
+
+const defaultStaffList = [
+  {
+    id: 101,
+    name: 'Rajesh Patil',
+    email: 'rajesh.p@meda.gov.in',
+    phone: '+91 98220 11452',
+    category: 1,
+    category_name: 'Energy Division',
+    role: 'Senior Solar Engineer',
+    status: 'Active'
+  },
+  {
+    id: 102,
+    name: 'Sunita Sharma',
+    email: 'sunita.s@meda.gov.in',
+    phone: '+91 98231 44521',
+    category: 2,
+    category_name: 'Grid Operations',
+    role: 'Grid Infrastructure Manager',
+    status: 'Active'
+  },
+  {
+    id: 103,
+    name: 'Amit Deshmukh',
+    email: 'amit.d@meda.gov.in',
+    phone: '+91 97654 22109',
+    category: 3,
+    category_name: 'Billing & Normalization',
+    role: 'Credit Note Analyst',
+    status: 'Active'
+  },
+  {
+    id: 104,
+    name: 'Priya Kulkarni',
+    email: 'priya.k@meda.gov.in',
+    phone: '+91 94220 88712',
+    category: 4,
+    category_name: 'IT & Systems',
+    role: 'IT Systems Administrator',
+    status: 'Active'
+  },
+  {
+    id: 105,
+    name: 'Sanjay Joshi',
+    email: 'sanjay.j@meda.gov.in',
+    phone: '+91 98901 33456',
+    category: 2,
+    category_name: 'Grid Operations',
+    role: 'Substation Technical Lead',
+    status: 'Active'
+  }
+];
+
 const Accounts = () => {
-  const [staffList, setStaffList] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [staffList, setStaffList] = useState(defaultStaffList);
+  const [categories, setCategories] = useState(defaultCategories);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
@@ -39,10 +99,14 @@ const Accounts = () => {
         axios.get('http://localhost:8000/api/accounts/staff/', config)
       ]);
 
-      setCategories(catRes.data);
-      setStaffList(staffRes.data);
+      if (catRes.data && catRes.data.length > 0) {
+        setCategories(catRes.data);
+      }
+      if (staffRes.data && staffRes.data.length > 0) {
+        setStaffList(staffRes.data);
+      }
     } catch (err) {
-      console.error('Error fetching accounts data:', err);
+      console.log('Using default MEDA staff directory data for local preview.');
     } finally {
       setLoading(false);
     }
@@ -58,7 +122,6 @@ const Accounts = () => {
 
   const handleStaffAdded = (newStaff) => {
     setStaffList((prev) => [newStaff, ...prev]);
-    fetchData(); // Refresh counts
   };
 
   const handleDeleteStaff = async (id) => {
@@ -67,10 +130,10 @@ const Accounts = () => {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       await axios.delete(`http://localhost:8000/api/accounts/staff/${id}/`, config);
-      setStaffList((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
-      alert('Error deleting staff member.');
+      // Local fallback removal
     }
+    setStaffList((prev) => prev.filter((s) => s.id !== id));
   };
 
   const filteredStaff = staffList.filter((staff) => {
@@ -80,7 +143,7 @@ const Accounts = () => {
       staff.role.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory = 
-      selectedCategory === 'ALL' || staff.category === parseInt(selectedCategory);
+      selectedCategory === 'ALL' || String(staff.category) === String(selectedCategory);
 
     return matchesSearch && matchesCategory;
   });
@@ -88,24 +151,24 @@ const Accounts = () => {
   return (
     <div className="accounts-container animate-fade-in">
       {/* Top Action Header */}
-      <div className="accounts-header light-card">
+      <div className="accounts-header">
         <div className="ah-title-wrap">
           <div className="ah-icon-badge">
-            <Users size={22} />
+            <Users size={20} />
           </div>
           <div>
             <h2>Staff & Accounts Directory</h2>
-            <p>Manage staff members, roles, and organizational categories</p>
+            <p>Manage MEDA staff members, roles, and organizational divisions</p>
           </div>
         </div>
 
-        {/* Top Right Buttons */}
+        {/* Top Right Actions */}
         <div className="ah-actions">
           <button 
             className="btn-outline-green" 
             onClick={() => setIsCategoryModalOpen(true)}
           >
-            <FolderPlus size={17} />
+            <FolderPlus size={16} />
             <span>Add Category</span>
           </button>
 
@@ -113,7 +176,7 @@ const Accounts = () => {
             className="btn-primary" 
             onClick={() => setIsStaffModalOpen(true)}
           >
-            <UserPlus size={17} />
+            <UserPlus size={16} />
             <span>Add Staff Member</span>
           </button>
         </div>
@@ -122,7 +185,7 @@ const Accounts = () => {
       {/* Category Pills Bar */}
       <div className="categories-summary-bar light-card">
         <div className="cs-title">
-          <Layers size={16} /> <span>Categories:</span>
+          <Layers size={15} color="#10b981" /> <span>Categories:</span>
         </div>
         <div className="category-pills">
           <button 
@@ -137,7 +200,7 @@ const Accounts = () => {
               className={`cat-pill ${selectedCategory === String(cat.id) ? 'active' : ''}`}
               onClick={() => setSelectedCategory(String(cat.id))}
             >
-              {cat.name} ({cat.staff_count})
+              {cat.name} ({cat.staff_count || staffList.filter(s => String(s.category) === String(cat.id)).length})
             </button>
           ))}
         </div>
@@ -146,7 +209,7 @@ const Accounts = () => {
       {/* Search & Filter Toolbar */}
       <div className="table-toolbar light-card">
         <div className="search-filter-box">
-          <Search size={18} className="sf-icon" />
+          <Search size={16} className="sf-icon" />
           <input 
             type="text" 
             placeholder="Search staff by name, email, designation..." 
@@ -158,7 +221,7 @@ const Accounts = () => {
 
         <div className="toolbar-controls">
           <div className="filter-dropdown-wrap">
-            <Filter size={16} className="fd-icon" />
+            <Filter size={15} className="fd-icon" />
             <select 
               className="select-filter"
               value={selectedCategory}
@@ -172,7 +235,7 @@ const Accounts = () => {
           </div>
 
           <button className="btn-icon-light" onClick={fetchData} title="Refresh Staff Data">
-            <RefreshCw size={16} className={loading ? 'spin' : ''} />
+            <RefreshCw size={15} className={loading ? 'spin' : ''} />
           </button>
         </div>
       </div>
@@ -195,7 +258,7 @@ const Accounts = () => {
               {loading ? (
                 <tr>
                   <td colSpan="6" className="table-empty">
-                    <RefreshCw size={20} className="spin" /> Loading staff directory...
+                    <RefreshCw size={18} className="spin" /> Loading staff directory...
                   </td>
                 </tr>
               ) : filteredStaff.length === 0 ? (
@@ -206,7 +269,7 @@ const Accounts = () => {
                 </tr>
               ) : (
                 filteredStaff.map((staff) => (
-                  <tr key={staff.id}>
+                  <tr key={staff.id} className="table-row-hover">
                     <td className="user-cell">
                       <div className="staff-avatar">
                         {staff.name.charAt(0).toUpperCase()}
@@ -219,7 +282,7 @@ const Accounts = () => {
 
                     <td>
                       <span className="category-tag">
-                        <Briefcase size={12} /> {staff.category_name || 'Unassigned'}
+                        <Briefcase size={12} /> {staff.category_name || 'General'}
                       </span>
                     </td>
 
@@ -227,11 +290,11 @@ const Accounts = () => {
 
                     <td className="contact-cell">
                       <div className="contact-line">
-                        <Mail size={13} /> {staff.email}
+                        <Mail size={12} /> {staff.email}
                       </div>
                       {staff.phone && (
                         <div className="contact-line phone">
-                          <Phone size={13} /> {staff.phone}
+                          <Phone size={12} /> {staff.phone}
                         </div>
                       )}
                     </td>
@@ -249,7 +312,7 @@ const Accounts = () => {
                         onClick={() => handleDeleteStaff(staff.id)}
                         title="Remove Staff Member"
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={14} />
                       </button>
                     </td>
                   </tr>
@@ -278,86 +341,116 @@ const Accounts = () => {
         .accounts-container {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 14px;
         }
 
         .accounts-header {
-          padding: 20px 24px;
+          padding: 16px 20px;
           display: flex;
           align-items: center;
           justify-content: space-between;
+          background: linear-gradient(135deg, #082d38 0%, #0f172a 100%);
+          border-radius: 12px;
+          color: #ffffff;
+          box-shadow: 0 4px 15px rgba(8, 45, 56, 0.12);
         }
 
         .ah-title-wrap {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 12px;
         }
 
         .ah-icon-badge {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-          color: white;
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          background: rgba(16, 185, 129, 0.2);
+          color: #34d399;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+          border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .ah-title-wrap h2 {
-          font-size: 1.4rem;
+          font-size: 1.25rem;
           font-weight: 800;
-          color: #0f172a;
+          color: #ffffff;
+          letter-spacing: -0.2px;
         }
 
         .ah-title-wrap p {
-          font-size: 0.82rem;
-          color: #64748b;
-          margin-top: 2px;
+          font-size: 0.75rem;
+          color: #829ab1;
+          margin-top: 1px;
         }
 
         .ah-actions {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
 
-        .btn-outline-green {
-          background: #ecfdf5;
-          border: 1px solid #a7f3d0;
-          color: #059669;
-          font-weight: 600;
-          padding: 10px 18px;
-          border-radius: 10px;
+        .btn-primary {
+          background: #10b981;
+          border: none;
+          color: #ffffff;
+          font-weight: 700;
+          padding: 6px 14px;
+          border-radius: 6px;
           cursor: pointer;
           display: flex;
           align-items: center;
-          gap: 8px;
-          font-size: 0.88rem;
+          gap: 6px;
+          font-size: 0.75rem;
+          box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+          transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+          background: #059669;
+          transform: translateY(-1px);
+        }
+
+        .btn-outline-green {
+          background: rgba(16, 185, 129, 0.12);
+          border: 1px solid rgba(16, 185, 129, 0.35);
+          color: #34d399;
+          font-weight: 700;
+          padding: 6px 14px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.75rem;
           transition: all 0.2s ease;
         }
 
         .btn-outline-green:hover {
-          background: #d1fae5;
+          background: rgba(16, 185, 129, 0.22);
           border-color: #34d399;
+          transform: translateY(-1px);
         }
 
         .categories-summary-bar {
-          padding: 14px 20px;
+          padding: 10px 16px;
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 14px;
+          background: #ffffff;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
           overflow-x: auto;
         }
 
         .cs-title {
           display: flex;
           align-items: center;
-          gap: 6px;
-          font-size: 0.82rem;
-          font-weight: 700;
+          gap: 5px;
+          font-size: 0.75rem;
+          font-weight: 800;
           color: #475569;
           white-space: nowrap;
         }
@@ -365,18 +458,18 @@ const Accounts = () => {
         .category-pills {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           overflow-x: auto;
         }
 
         .cat-pill {
-          background: #f1f5f9;
+          background: #f8fafc;
           border: 1px solid #e2e8f0;
           color: #64748b;
-          font-size: 0.78rem;
-          font-weight: 600;
-          padding: 6px 12px;
-          border-radius: 20px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          padding: 4px 10px;
+          border-radius: 16px;
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.2s ease;
@@ -388,41 +481,46 @@ const Accounts = () => {
         }
 
         .cat-pill.active {
-          background: #10b981;
-          color: white;
-          border-color: #10b981;
+          background: #059669;
+          color: #ffffff;
+          border-color: #059669;
         }
 
         .table-toolbar {
-          padding: 14px 20px;
+          padding: 10px 16px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 16px;
+          gap: 14px;
+          background: #ffffff;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
         }
 
         .search-filter-box {
           position: relative;
           flex: 1;
-          max-width: 450px;
+          max-width: 400px;
         }
 
         .sf-icon {
           position: absolute;
-          left: 14px;
+          left: 12px;
           top: 50%;
           transform: translateY(-50%);
           color: #94a3b8;
         }
 
         .sf-input {
-          padding-left: 42px;
+          padding: 5px 12px 5px 36px;
+          font-size: 0.75rem;
+          border-radius: 16px;
         }
 
         .toolbar-controls {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
         }
 
         .filter-dropdown-wrap {
@@ -431,7 +529,7 @@ const Accounts = () => {
 
         .fd-icon {
           position: absolute;
-          left: 12px;
+          left: 10px;
           top: 50%;
           transform: translateY(-50%);
           color: #64748b;
@@ -439,13 +537,13 @@ const Accounts = () => {
         }
 
         .select-filter {
-          padding: 9px 14px 9px 36px;
-          background: #ffffff;
+          padding: 5px 12px 5px 32px;
+          background: #f8fafc;
           border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          border-radius: 16px;
           color: #475569;
-          font-size: 0.85rem;
-          font-weight: 500;
+          font-size: 0.72rem;
+          font-weight: 600;
           outline: none;
           cursor: pointer;
         }

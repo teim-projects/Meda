@@ -111,6 +111,12 @@ export const medaApi = {
     const res = await medaAxios.get('/credit-notes/', { params });
     return res.data;
   },
+
+  // Reparse all raw records without deduplication
+  reparseRawRecords: async (options = {}) => {
+    const res = await medaAxios.post('/reparse/', options);
+    return res.data;
+  },
 };
 
 // Debug helper - call this from console to check token status

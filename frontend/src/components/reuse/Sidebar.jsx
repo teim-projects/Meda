@@ -56,7 +56,7 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Accounts', path: '/accounts', icon: Users },
-    { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+    
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
@@ -476,147 +476,142 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           overflow: hidden;
         }
 
-        /* Sidebar - Dark Colored Theme */
+        /* Layout Body */
+        .layout-body {
+          display: flex;
+          flex: 1;
+          height: calc(100vh - var(--navbar-height));
+          overflow: hidden;
+        }
+
+        /* Layout Body */
+        .layout-body {
+          display: flex;
+          flex: 1;
+          height: calc(100vh - var(--navbar-height));
+          overflow: hidden;
+        }
+
+        /* Sidebar - Deep Ocean Teal Theme (Matching Screenshot) */
         .sidebar-dark-pane {
           width: var(--sidebar-width);
           min-width: var(--sidebar-width);
-          background: #0f172a;
-          border-right: 1px solid #1e293b;
-          padding: 20px 16px;
+          background: #082d38;
+          border-right: 1px solid #114250;
+          padding: 12px 10px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          gap: 20px;
+          gap: 12px;
           height: 100%;
         }
 
-        .nav-group-title {
-          font-size: 0.68rem;
-          font-weight: 700;
+        /* Current Source Dropdown Card */
+        .sidebar-source-box {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          padding: 0 4px 6px 4px;
+          border-bottom: 1px solid #114250;
+        }
+
+        .ssb-label {
+          font-size: 0.6rem;
+          font-weight: 800;
           letter-spacing: 0.8px;
-          color: #64748b;
-          margin-bottom: 12px;
-          padding-left: 10px;
+          color: #648d9f;
+        }
+
+        .ssb-select {
+          background: #114250;
+          border: 1px solid #1c5b6e;
+          border-radius: 8px;
+          padding: 6px 10px;
+          color: #ffffff;
+          font-size: 0.78rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+        }
+
+        .nav-group-title {
+          font-size: 0.6rem;
+          font-weight: 800;
+          letter-spacing: 0.8px;
+          color: #648d9f;
+          margin-bottom: 6px;
+          padding-left: 8px;
         }
 
         .nav-list {
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 3px;
         }
 
         .dark-nav-link {
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 10px 14px;
-          border-radius: 10px;
-          color: #94a3b8;
+          gap: 10px;
+          padding: 7px 10px;
+          border-radius: 8px;
+          color: #829ab1;
           text-decoration: none;
-          font-size: 0.88rem;
-          font-weight: 500;
+          font-size: 0.78rem;
+          font-weight: 600;
           transition: all 0.2s ease;
         }
 
         .dark-nav-link:hover {
           color: #ffffff;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.08);
         }
 
         .dark-nav-link.active {
           color: #ffffff;
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 182, 212, 0.15) 100%);
-          border: 1px solid rgba(16, 185, 129, 0.4);
-          font-weight: 600;
+          background: #114250;
+          border: 1px solid #1c5b6e;
+          font-weight: 700;
         }
 
         .dark-nav-link.active .link-icon {
           color: #10b981;
         }
 
-        .sidebar-dark-card {
-          background: #1e293b;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 14px;
-          padding: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .card-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          align-self: flex-start;
-          font-size: 0.63rem;
-          font-weight: 700;
-          background: rgba(16, 185, 129, 0.2);
-          color: #10b981;
-          padding: 2px 7px;
-          border-radius: 20px;
-        }
-
-        .sidebar-dark-card h4 {
-          font-size: 0.88rem;
-          font-weight: 700;
-          color: #ffffff;
-        }
-
-        .sidebar-dark-card p {
-          font-size: 0.75rem;
-          color: #94a3b8;
-          line-height: 1.3;
-        }
-
-        .card-btn {
-          margin-top: 4px;
-          background: rgba(16, 185, 129, 0.15);
-          border: 1px solid rgba(16, 185, 129, 0.3);
-          color: #10b981;
-          font-size: 0.72rem;
-          font-weight: 600;
-          padding: 6px 10px;
-          border-radius: 8px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-        }
-
         .logout-btn {
           width: 100%;
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px 14px;
-          border-radius: 10px;
-          background: rgba(239, 68, 68, 0.1);
-          border: 1px solid rgba(239, 68, 68, 0.25);
+          gap: 8px;
+          padding: 7px 10px;
+          border-radius: 8px;
+          background: rgba(239, 68, 68, 0.12);
+          border: 1px solid rgba(239, 68, 68, 0.3);
           color: #f87171;
-          font-size: 0.85rem;
+          font-size: 0.78rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
         }
 
         .logout-btn:hover {
-          background: rgba(239, 68, 68, 0.2);
+          background: rgba(239, 68, 68, 0.22);
         }
 
-        /* Content Area - Clean White Theme */
+        /* Content Area - Perfect balanced layout padding */
         .content-white-pane {
           flex: 1;
           background: #f8fafc;
-          padding: 24px 28px;
+          padding: 20px 24px;
           overflow-y: auto;
           height: 100%;
         }
 
         .content-max-wrap {
-          max-width: 1400px;
+          max-width: 1550px;
           margin: 0 auto;
         }
 

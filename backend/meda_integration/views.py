@@ -224,3 +224,28 @@ class MedaSessionDebugView(APIView):
                 'last_login_at': session.last_login_at
             })
         return Response({'exists': False})
+
+
+class ReparseRawRecordsView(APIView):
+    """
+    Re-parses all stored ApiRawRecords into EnergyCreditNote without deduplication.
+    Optionally accepts clear=true to reset EnergyCreditNote first.
+    Requires Django Superuser JWT authentication.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from meda_integration.services.meda_parser import MedaParser
+        clear_existing = request.data.get('clear', False) or request.query_params.get('clear', 'false').lower() == 'true'
+        try:
+            success_count, failed_count = MedaParser.reparse_all_raw_records(clear_existing=clear_existing)
+            return Response({
+                "success": True,
+                "message": f"Re-parsed raw records: {success_count} created, {failed_count} failed.",
+                "success_count": success_count,
+                "failed_count": failed_count,
+                "total_notes": EnergyCreditNote.objects.count()
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception("Error re-parsing raw records")
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

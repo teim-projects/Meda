@@ -9,7 +9,8 @@ from meda_integration.views import (
     ApiRequestLogViewSet,
     ApiRawRecordViewSet,
     EnergyCreditNoteViewSet,
-    MedaSessionDebugView
+    MedaSessionDebugView,
+    ReparseRawRecordsView
 )
 
 router = DefaultRouter()
@@ -23,6 +24,7 @@ urlpatterns = [
     path('auth/disconnect/', DisconnectMedaView.as_view(), name='meda-auth-disconnect'),
     path('auth/status/', MedaStatusView.as_view(), name='meda-auth-status'),
     path('fetch/', FetchDataView.as_view(), name='meda-fetch'),
+    path('reparse/', ReparseRawRecordsView.as_view(), name='meda-reparse'),
     path('auth/debug/', MedaSessionDebugView.as_view(), name='meda-auth-debug'),
     path('', include(router.urls)),
 ]
