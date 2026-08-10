@@ -19,7 +19,8 @@ import {
   History,
   Database,
   Activity,
-  Lock
+  Lock,
+  FileSpreadsheet
 } from 'lucide-react';
 import { medaApi } from '../../services/medaApi';
 
@@ -56,7 +57,8 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Accounts', path: '/accounts', icon: Users },
-    
+    { name: 'Energy Templates', path: '/energy-templates', icon: FileSpreadsheet },
+    { name: 'Show Data', path: '/show-data', icon: Database },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 

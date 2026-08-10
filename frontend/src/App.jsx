@@ -4,6 +4,8 @@ import Sidebar from './components/reuse/Sidebar';
 import Dashboard from './components/reuse/Dashboard';
 import Login from './components/reuse/Login';
 import Accounts from './components/accounts/Accounts';
+import Templates from './components/templates/Templates';
+import ShowData from './components/templates/ShowData';
 
 // MEDA Integration Page Imports
 import MedaLogin from './components/meda/MedaLogin';
@@ -112,6 +114,30 @@ function App() {
             <ProtectedRoute>
               <Sidebar currentUser={currentUser} onLogout={handleLogout} isMedaConnected={isMedaConnected}>
                 <Accounts />
+              </Sidebar>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Protected Energy Templates Route */}
+        <Route 
+          path="/energy-templates" 
+          element={
+            <ProtectedRoute>
+              <Sidebar currentUser={currentUser} onLogout={handleLogout} isMedaConnected={isMedaConnected}>
+                <Templates />
+              </Sidebar>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Protected Energy Show Data Route */}
+        <Route 
+          path="/show-data" 
+          element={
+            <ProtectedRoute>
+              <Sidebar currentUser={currentUser} onLogout={handleLogout} isMedaConnected={isMedaConnected}>
+                <ShowData />
               </Sidebar>
             </ProtectedRoute>
           } 
