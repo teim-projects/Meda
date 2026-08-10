@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
     path('api/meda/', include('meda_integration.urls')),
+    path('api/energy/', include('energy_templates.urls')),
 ]

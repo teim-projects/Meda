@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'meda_integration',
+    'energy_templates',
 ]
 
 MIDDLEWARE = [
