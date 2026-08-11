@@ -1,11 +1,8 @@
 import React, { useState, useRef } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Button,
-  Grid,
   Paper,
   Alert,
   CircularProgress,
@@ -16,7 +13,9 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  Stack
+  Stack,
+  Chip,
+  IconButton
 } from '@mui/material';
 import { 
   FileSpreadsheet, 
@@ -26,36 +25,53 @@ import {
   CheckCircle2, 
   AlertTriangle,
   Info,
-  Layers
+  Layers,
+  Flame,
+  Sprout,
+  Recycle,
+  Droplets,
+  Sun,
+  Zap,
+  Wind,
+  Home,
+  Sparkles,
+  FileCheck,
+  X,
+  Check,
+  DatabaseCheck,
+  Activity
 } from 'lucide-react';
 import { energyApi } from '../../services/energyApi';
 
 const ENERGY_TYPES = [
-  { val: 'biomass', label: 'Biomass', active: true },
-  { val: 'bagasse', label: 'Bagasse', active: true },
-  { val: 'msw', label: 'MSW (Municipal Solid Waste)', active: true },
-  { val: 'shp', label: 'SHP (Small Hydro Power)', active: true },
-  { val: 'solar_grid', label: 'Solar Grid', active: true },
-  { val: 'solar_kusum', label: 'Solar Kusum', active: true },
-  { val: 'wind', label: 'Wind', active: true },
-  { val: 'rooftop_solar', label: 'Rooftop Solar', active: false }, // Listed but inactive/not configured
+  { val: 'biomass', label: 'Biomass', icon: Flame, color: '#10b981', bg: 'rgba(16, 185, 129, 0.08)', desc: 'Organic plant & bio-energy', active: true },
+  { val: 'bagasse', label: 'Bagasse', icon: Sprout, color: '#84cc16', bg: 'rgba(132, 204, 22, 0.08)', desc: 'Sugar mill sugarcane residue', active: true },
+  { val: 'msw', label: 'MSW (Solid Waste)', icon: Recycle, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.08)', desc: 'Municipal solid waste records', active: true },
+  { val: 'shp', label: 'Small Hydro Power', icon: Droplets, color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.08)', desc: 'Small run-of-river hydro energy', active: true },
+  { val: 'solar_grid', label: 'Solar Grid', icon: Sun, color: '#eab308', bg: 'rgba(234, 179, 8, 0.08)', desc: 'Utility scale grid solar systems', active: true },
+  { val: 'solar_kusum', label: 'Solar Kusum', icon: Zap, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.08)', desc: 'PM-KUSUM agricultural solar', active: true },
+  { val: 'wind', label: 'Wind Power', icon: Wind, color: '#6366f1', bg: 'rgba(99, 102, 241, 0.08)', desc: 'Wind turbine energy data', active: true },
+  { val: 'rooftop_solar', label: 'Rooftop Solar', icon: Home, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.08)', desc: 'Distributed solar PV systems', active: false },
 ];
 
 const Templates = () => {
   const [selectedType, setSelectedType] = useState('biomass');
   const [file, setFile] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const fileInputRef = useRef(null);
 
+  const currentTypeObj = ENERGY_TYPES.find(e => e.val === selectedType) || ENERGY_TYPES[0];
+
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleTypeChange = (e) => {
-    setSelectedType(e.target.value);
+  const handleSelectType = (val) => {
+    setSelectedType(val);
     setFile(null);
     setUploadResult(null);
     setErrorMsg(null);
@@ -69,9 +85,49 @@ const Templates = () => {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const droppedFile = e.dataTransfer.files[0];
+      if (droppedFile.name.endsWith('.xlsx') || droppedFile.name.endsWith('.xls')) {
+        setFile(droppedFile);
+        setUploadResult(null);
+        setErrorMsg(null);
+      } else {
+        setSnackbar({
+          open: true,
+          message: 'Invalid file format. Please upload an Excel sheet (.xlsx or .xls).',
+          severity: 'error'
+        });
+      }
+    }
+  };
+
   const triggerFileSelect = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -176,7 +232,7 @@ const Templates = () => {
       const data = await energyApi.uploadExcel(selectedType, file);
       if (data.success) {
         setUploadResult(data);
-        setFile(null); // Clear selected file
+        setFile(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -188,13 +244,12 @@ const Templates = () => {
       }
     } catch (err) {
       console.error(err);
-      const errorMsg = err.response?.data?.error || err.message || 'Excel upload failed.';
+      const errorMsgText = err.response?.data?.error || err.message || 'Excel upload failed.';
       
-      // If there are missing columns or validation details, attach them
       if (err.response?.data?.missing_columns) {
         setErrorMsg(`Missing columns in uploaded sheet: ${err.response.data.missing_columns.join(', ')}`);
       } else {
-        setErrorMsg(errorMsg);
+        setErrorMsg(errorMsgText);
       }
 
       setSnackbar({
@@ -208,259 +263,883 @@ const Templates = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', p: { xs: 2, md: 3 } }}>
+    <Box sx={{ width: '100%', p: { xs: 1, md: 1.5 }, pb: 8 }}>
       
-      {/* Page Header */}
+      {/* 🌟 ULTRA-ATTRACTIVE HERO HEADER */}
       <Paper
         elevation={0}
         sx={{
-          p: 3,
-          mb: 4,
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          p: { xs: 3, md: 3.5 },
+          mb: 3.5,
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #047857 100%)',
           color: '#ffffff',
-          boxShadow: '0 4px 20px rgba(15, 23, 42, 0.08)'
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18)',
+          border: '1px solid rgba(16, 185, 129, 0.3)'
         }}
       >
-        <Typography variant="h5" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <FileSpreadsheet color="#10b981" size={28} /> Renewable Energy Templates
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5 }}>
-          Select a renewable energy type to download empty Excel templates, upload completed files, or export saved database records.
-        </Typography>
+        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} spacing={2.5} width="100%">
+          <Box sx={{ zIndex: 1, flex: 1, pr: { md: 3 } }}>
+            <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.2 }}>
+              <Box 
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  background: 'rgba(16, 185, 129, 0.25)',
+                  border: '1px solid rgba(16, 185, 129, 0.45)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#34d399',
+                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                <FileSpreadsheet size={22} />
+              </Box>
+              <Chip 
+                icon={<Sparkles size={13} style={{ color: '#34d399' }} />}
+                label="MEDA ENERGY ENGINE" 
+                size="small" 
+                sx={{ 
+                  bgcolor: 'rgba(16, 185, 129, 0.2)', 
+                  color: '#34d399 !important', 
+                  border: '1px solid rgba(52, 211, 153, 0.4)',
+                  fontWeight: 800,
+                  fontSize: '0.72rem',
+                  letterSpacing: '0.5px'
+                }} 
+              />
+            </Stack>
+
+            <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px', color: '#ffffff !important', mb: 0.8, fontSize: { xs: '1.4rem', md: '1.85rem' } }}>
+              Renewable Energy Templates
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#e2e8f0 !important', lineHeight: 1.5, fontSize: '0.9rem', opacity: 0.9 }}>
+              Select a renewable energy type to download empty Excel templates, upload completed files, or export saved database records.
+            </Typography>
+          </Box>
+
+          <Stack direction={{ xs: 'row', sm: 'row' }} spacing={1.5} alignItems="center" sx={{ zIndex: 1, ml: { md: 'auto' }, width: { xs: '100%', sm: 'auto' }, justifyContent: 'space-between' }}>
+            {/* Active Modules Pill */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.2,
+                px: { xs: 1.5, sm: 2.2 },
+                py: 1.2,
+                borderRadius: 3,
+                bgcolor: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+                flex: { xs: 1, sm: 'none' },
+                minWidth: 0
+              }}
+            >
+              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(16, 185, 129, 0.25)', color: '#34d399', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <Activity size={18} />
+              </Box>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8 !important', display: 'block', fontWeight: 700, fontSize: '0.62rem', lineHeight: 1, mb: 0.3 }}>
+                  ACTIVE MODULES
+                </Typography>
+                <Typography variant="subtitle2" noWrap sx={{ color: '#ffffff !important', fontWeight: 800, fontSize: { xs: '0.85rem', sm: '0.98rem' }, lineHeight: 1 }}>
+                  7 / 8 Modules
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Format Spec Pill */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.2,
+                px: { xs: 1.5, sm: 2.2 },
+                py: 1.2,
+                borderRadius: 3,
+                bgcolor: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+                flex: { xs: 1, sm: 'none' },
+                minWidth: 0
+              }}
+            >
+              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(56, 189, 248, 0.25)', color: '#38bdf8', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <FileCheck size={18} />
+              </Box>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8 !important', display: 'block', fontWeight: 700, fontSize: '0.62rem', lineHeight: 1, mb: 0.3 }}>
+                  FORMAT SPEC
+                </Typography>
+                <Typography variant="subtitle2" noWrap sx={{ color: '#38bdf8 !important', fontWeight: 800, fontSize: { xs: '0.85rem', sm: '0.98rem' }, lineHeight: 1 }}>
+                  Excel (.XLSX)
+                </Typography>
+              </Box>
+            </Box>
+          </Stack>
+        </Stack>
       </Paper>
 
-      {/* Control Card */}
-      <Card elevation={1} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', mb: 4 }}>
-        <CardContent sx={{ p: 4 }}>
-          
-          <Grid container spacing={4} alignItems="flex-start">
-            
-            {/* Step 1: Select Type */}
-            <Grid item xs={12} md={5}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="subtitle1" fontWeight={700} color="#0f172a" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Layers size={18} color="#10b981" /> 1. Select Energy Type
-                </Typography>
-                
-                <TextField
-                  select
-                  label="Renewable Energy Type"
-                  value={selectedType}
-                  onChange={handleTypeChange}
-                  fullWidth
-                  variant="outlined"
-                  helperText={!isTypeActive() ? "This source is not configured on the backend yet." : ""}
-                  error={!isTypeActive()}
-                >
-                  {ENERGY_TYPES.map((type) => (
-                    <MenuItem key={type.val} value={type.val}>
-                      <Stack direction="row" justifyContent="space-between" width="100%" alignItems="center">
-                        <Typography>{type.label}</Typography>
-                        {!type.active && (
-                          <Typography variant="caption" sx={{ color: '#ef4444', fontWeight: 600 }}>
-                            Not Active
-                          </Typography>
-                        )}
-                      </Stack>
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-            </Grid>
+      {/* 🚀 WORKFLOW STEPPER BANNER */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          px: 3,
+          mb: 3.5,
+          borderRadius: 3,
+          bgcolor: '#ffffff',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+        }}
+      >
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
+            gap: 2,
+            alignItems: 'center'
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: '#f0fdf4', color: '#10b981', flexShrink: 0 }}>
+              <Layers size={18} />
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.68rem' }}>STEP 1</Typography>
+              <Typography variant="subtitle2" fontWeight={800} color="#0f172a" sx={{ fontSize: '0.85rem' }}>Select Energy Source</Typography>
+            </Box>
+          </Stack>
 
-            {/* Divider for larger screens */}
-            <Grid item xs={12} md={7}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
-                  2. Operations
-                </Typography>
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: '#f0fdf4', color: '#10b981', flexShrink: 0 }}>
+              <Download size={18} />
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.68rem' }}>STEP 2</Typography>
+              <Typography variant="subtitle2" fontWeight={800} color="#0f172a" sx={{ fontSize: '0.85rem' }}>Download Template</Typography>
+            </Box>
+          </Stack>
 
-                <Grid container spacing={2}>
-                  
-                  {/* Action 1: Download Template */}
-                  <Grid item xs={12} sm={6}>
-                    <Paper 
-                      variant="outlined" 
-                      sx={{ p: 2.5, textAlign: 'center', borderRadius: 2.5, height: '100%', display: 'flex', flexDirection: 'column', justifyBetween: 'space-between', gap: 2 }}
-                    >
-                      <Box>
-                        <Typography variant="body1" fontWeight={600} color="#334155">
-                          Download Template
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                          Download a blank Excel sheet with correct column headers.
-                        </Typography>
-                      </Box>
-                      <Button
-                        variant="outlined"
-                        startIcon={<Download size={16} />}
-                        disabled={loading || !isTypeActive()}
-                        onClick={handleDownloadTemplate}
-                        fullWidth
-                        sx={{ mt: 'auto', borderRadius: 2, py: 1 }}
-                      >
-                        Download
-                      </Button>
-                    </Paper>
-                  </Grid>
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: '#f5f3ff', color: '#8b5cf6', flexShrink: 0 }}>
+              <Upload size={18} />
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.68rem' }}>STEP 3</Typography>
+              <Typography variant="subtitle2" fontWeight={800} color="#0f172a" sx={{ fontSize: '0.85rem' }}>Upload Completed Sheet</Typography>
+            </Box>
+          </Stack>
 
-                  {/* Action 2: Download Filled Data */}
-                  <Grid item xs={12} sm={6}>
-                    <Paper 
-                      variant="outlined" 
-                      sx={{ p: 2.5, textAlign: 'center', borderRadius: 2.5, height: '100%', display: 'flex', flexDirection: 'column', justifyBetween: 'space-between', gap: 2 }}
-                    >
-                      <Box>
-                        <Typography variant="body1" fontWeight={600} color="#334155">
-                          Download Stored Data
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                          Download an Excel file of all entries saved for this type.
-                        </Typography>
-                      </Box>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<FileDown size={16} />}
-                        disabled={loading || !isTypeActive()}
-                        onClick={handleDownloadData}
-                        fullWidth
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: '#eff6ff', color: '#3b82f6', flexShrink: 0 }}>
+              <FileDown size={18} />
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.68rem' }}>STEP 4</Typography>
+              <Typography variant="subtitle2" fontWeight={800} color="#0f172a" sx={{ fontSize: '0.85rem' }}>Export Stored Data</Typography>
+            </Box>
+          </Stack>
+        </Box>
+      </Paper>
+
+      {/* SECTION 1: Interactive Energy Source Selector */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 2 }}>
+          <Box 
+            sx={{ 
+              width: 30, 
+              height: 30, 
+              borderRadius: '50%', 
+              bgcolor: '#10b981', 
+              color: '#ffffff', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              boxShadow: '0 3px 10px rgba(16, 185, 129, 0.3)'
+            }}
+          >
+            1
+          </Box>
+          <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ fontSize: '1.15rem' }}>
+            Select Energy Source
+          </Typography>
+        </Box>
+
+        {/* 8 Visual Cards Grid (Full Width & Expanded Dimensions - No Truncation) */}
+        <Box 
+          sx={{ 
+            width: '100%',
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
+            gap: 2.5 
+          }}
+        >
+          {ENERGY_TYPES.map((type) => {
+            const IconComp = type.icon;
+            const isSelected = selectedType === type.val;
+
+            return (
+              <Paper
+                key={type.val}
+                elevation={0}
+                onClick={() => handleSelectType(type.val)}
+                sx={{
+                  p: 2.2,
+                  px: 2.5,
+                  borderRadius: 3.5,
+                  border: '2px solid',
+                  borderColor: isSelected ? type.color : type.active ? '#cbd5e1' : '#f1f5f9',
+                  background: isSelected 
+                    ? `linear-gradient(135deg, ${type.bg} 0%, #ffffff 100%)` 
+                    : '#ffffff',
+                  cursor: type.active ? 'pointer' : 'default',
+                  opacity: type.active ? 1 : 0.6,
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  minHeight: 84,
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: isSelected 
+                    ? `0 10px 25px ${type.color}25` 
+                    : '0 3px 10px rgba(0,0,0,0.03)',
+                  '&:hover': {
+                    borderColor: type.active ? type.color : '#94a3b8',
+                    transform: type.active ? 'translateY(-3px)' : 'none',
+                    boxShadow: type.active ? `0 12px 28px ${type.color}28` : 'none'
+                  }
+                }}
+              >
+                {/* Top Accent Line */}
+                {isSelected && (
+                  <Box 
+                    sx={{ 
+                      position: 'absolute', 
+                      top: 0, 
+                      left: 0, 
+                      right: 0, 
+                      height: 4, 
+                      bgcolor: type.color 
+                    }} 
+                  />
+                )}
+
+                <Stack direction="row" alignItems="center" spacing={2} width="100%">
+                  {/* Colorful Vibrant Icon Container */}
+                  <Box
+                    sx={{
+                      width: 46,
+                      height: 46,
+                      borderRadius: 3,
+                      background: isSelected 
+                        ? `linear-gradient(135deg, ${type.color} 0%, ${type.color}cc 100%)` 
+                        : type.bg,
+                      color: isSelected ? '#ffffff' : type.color,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      boxShadow: isSelected ? `0 4px 14px ${type.color}40` : 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <IconComp size={24} />
+                  </Box>
+
+                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 0.3 }}>
+                      <Typography 
+                        variant="subtitle1" 
+                        fontWeight={800} 
                         sx={{ 
-                          mt: 'auto', 
-                          borderRadius: 2, 
-                          py: 1, 
-                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)'
+                          fontSize: '0.94rem', 
+                          color: isSelected ? type.color : '#0f172a',
+                          lineHeight: 1.25
                         }}
                       >
-                        Export Data
-                      </Button>
-                    </Paper>
-                  </Grid>
+                        {type.label}
+                      </Typography>
 
-                  {/* Action 3: Upload Excel Sheet */}
-                  <Grid item xs={12}>
-                    <Paper 
-                      variant="outlined" 
-                      sx={{ p: 3, borderRadius: 2.5, bgcolor: '#f8fafc', borderStyle: 'dashed', borderWidth: 2 }}
-                    >
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
-                        <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-                          <Typography variant="body1" fontWeight={600} color="#334155" sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
-                            <Upload size={16} color="#10b981" /> Upload Completed Sheet
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                            Select the template with filled rows and import it directly into the database.
-                          </Typography>
-                        </Box>
-
-                        <input
-                          type="file"
-                          accept=".xlsx, .xls"
-                          style={{ display: 'none' }}
-                          ref={fileInputRef}
-                          onChange={handleFileChange}
-                          disabled={loading || !isTypeActive()}
+                      {isSelected && (
+                        <Chip
+                          icon={<Check size={11} color="#ffffff" />}
+                          label="ACTIVE"
+                          size="small"
+                          sx={{
+                            bgcolor: type.color,
+                            color: '#ffffff !important',
+                            fontWeight: 800,
+                            fontSize: '0.65rem',
+                            height: 20,
+                            px: 0.5,
+                            flexShrink: 0,
+                            '& .MuiChip-icon': { color: '#ffffff' }
+                          }}
                         />
-
-                        <Stack direction="row" spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' }, mt: { xs: 2, sm: 0 } }}>
-                          <Button
-                            variant="outlined"
-                            color="inherit"
-                            onClick={triggerFileSelect}
-                            disabled={loading || !isTypeActive()}
-                            sx={{ flex: 1, whiteSpace: 'nowrap', borderRadius: 2, px: 2.5 }}
-                          >
-                            {file ? 'Change File' : 'Select Excel'}
-                          </Button>
-
-                          {file && (
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={handleUploadExcel}
-                              disabled={loading}
-                              sx={{ flex: 1, whiteSpace: 'nowrap', borderRadius: 2, px: 2.5 }}
-                            >
-                              {loading ? <CircularProgress size={20} color="inherit" /> : 'Upload'}
-                            </Button>
-                          )}
-                        </Stack>
-                      </Stack>
-
-                      {file && (
-                        <Box sx={{ mt: 2, p: 1, bgcolor: '#ffffff', borderRadius: 1.5, border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Info size={14} color="#64748b" />
-                          <Typography variant="caption" color="#475569" fontWeight={500} noWrap sx={{ maxWidth: '80%' }}>
-                            Selected File: <strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)
-                          </Typography>
-                        </Box>
                       )}
-                    </Paper>
-                  </Grid>
+                    </Stack>
 
-                </Grid>
+                    <Typography 
+                      variant="caption" 
+                      color="#64748b" 
+                      sx={{ display: 'block', fontSize: '0.78rem', fontWeight: 500, lineHeight: 1.3 }}
+                    >
+                      {type.desc}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            );
+          })}
+        </Box>
+      </Box>
+
+      {/* SECTION 2: OPERATIONS DECK (GUARANTEED PERFECT SINGLE ROW GRID) */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 2 }}>
+          <Box 
+            sx={{ 
+              width: 30, 
+              height: 30, 
+              borderRadius: '50%', 
+              bgcolor: '#10b981', 
+              color: '#ffffff', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              boxShadow: '0 3px 10px rgba(16, 185, 129, 0.3)'
+            }}
+          >
+            2
+          </Box>
+          <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ fontSize: '1.15rem' }}>
+            Operations Deck: <span style={{ color: currentTypeObj.color }}>{currentTypeObj.label}</span>
+          </Typography>
+        </Box>
+
+        {/* CSS GRID: EXACT 3 EQUAL COLUMNS SIDE-BY-SIDE (NO EARLY WRAPPING) */}
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+            gap: 3,
+            alignItems: 'stretch'
+          }}
+        >
+          
+          {/* CARD 1: DOWNLOAD TEMPLATE */}
+          <Paper 
+            elevation={0}
+            sx={{ 
+              borderRadius: 4, 
+              border: '1px solid #e2e8f0', 
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              p: 3,
+              bgcolor: '#ffffff',
+              transition: 'all 0.2s ease',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+              '&:hover': {
+                borderColor: '#10b981',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 10px 25px rgba(16, 185, 129, 0.12)'
+              }
+            }}
+          >
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                height: 4, 
+                background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)' 
+              }} 
+            />
+
+            <Box>
+              <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.8 }}>
+                <Box sx={{ p: 1.2, borderRadius: 2.5, bgcolor: '#f0fdf4', color: '#10b981' }}>
+                  <Download size={22} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={800} color="#0f172a" sx={{ fontSize: '0.98rem' }}>
+                    1. Download Template
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.72rem' }}>
+                    Blank Excel Header Specification
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Typography variant="body2" color="#475569" sx={{ mb: 2, lineHeight: 1.5, fontSize: '0.85rem' }}>
+                Download official blank Excel spreadsheet with pre-mapped headers for <strong>{currentTypeObj.label}</strong>.
+              </Typography>
+
+              <Stack spacing={1} sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircle2 size={15} color="#10b981" />
+                  <Typography variant="caption" color="#334155" fontWeight={600} sx={{ fontSize: '0.75rem' }}>Verified column header mapping</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircle2 size={15} color="#10b981" />
+                  <Typography variant="caption" color="#334155" fontWeight={600} sx={{ fontSize: '0.75rem' }}>Pre-configured data validation rules</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircle2 size={15} color="#10b981" />
+                  <Typography variant="caption" color="#334155" fontWeight={600} sx={{ fontSize: '0.75rem' }}>Ready for data entry & batch upload</Typography>
+                </Box>
+              </Stack>
+            </Box>
+
+            <Button
+              variant="outlined"
+              startIcon={<Download size={16} />}
+              disabled={loading || !isTypeActive()}
+              onClick={handleDownloadTemplate}
+              fullWidth
+              sx={{ 
+                borderRadius: 2.5, 
+                py: 1.2, 
+                borderColor: '#cbd5e1', 
+                color: '#0f172a',
+                fontWeight: 800,
+                textTransform: 'none',
+                fontSize: '0.88rem',
+                mt: 'auto',
+                '&:hover': {
+                  borderColor: '#10b981',
+                  bgcolor: 'rgba(16, 185, 129, 0.06)'
+                }
+              }}
+            >
+              Download Blank Excel
+            </Button>
+          </Paper>
+
+          {/* CARD 2: UPLOAD COMPLETED SHEET */}
+          <Paper 
+            elevation={0}
+            sx={{ 
+              borderRadius: 4, 
+              border: '1px solid #e2e8f0', 
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              p: 3,
+              bgcolor: '#ffffff',
+              transition: 'all 0.2s ease',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+              '&:hover': {
+                borderColor: '#8b5cf6',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 10px 25px rgba(139, 92, 246, 0.12)'
+              }
+            }}
+          >
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                height: 4, 
+                background: 'linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%)' 
+              }} 
+            />
+
+            <Box>
+              <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.8 }}>
+                <Box sx={{ p: 1.2, borderRadius: 2.5, bgcolor: '#f5f3ff', color: '#8b5cf6' }}>
+                  <Upload size={22} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={800} color="#0f172a" sx={{ fontSize: '0.98rem' }}>
+                    2. Upload Completed Sheet
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.72rem' }}>
+                    Batch Excel Parser & Database Import
+                  </Typography>
+                </Box>
+              </Stack>
+
+              {/* Drag and Drop Box */}
+              <Box
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={triggerFileSelect}
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  border: '2px dashed',
+                  borderColor: isDragging ? '#10b981' : file ? '#10b981' : '#cbd5e1',
+                  bgcolor: isDragging ? 'rgba(16, 185, 129, 0.08)' : file ? '#f0fdf4' : '#f8fafc',
+                  textAlign: 'center',
+                  cursor: loading || !isTypeActive() ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  mb: 2,
+                  '&:hover': {
+                    borderColor: !isTypeActive() ? '#cbd5e1' : '#10b981',
+                    bgcolor: !isTypeActive() ? '#f8fafc' : '#f0fdf4'
+                  }
+                }}
+              >
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  style={{ display: 'none' }}
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  disabled={loading || !isTypeActive()}
+                />
+
+                {file ? (
+                  <Box sx={{ py: 0.5 }}>
+                    <FileCheck size={28} color="#10b981" style={{ margin: '0 auto 6px auto' }} />
+                    <Typography variant="subtitle2" fontWeight={800} color="#0f172a" noWrap sx={{ maxWidth: '100%', fontSize: '0.85rem' }}>
+                      {file.name}
+                    </Typography>
+                    <Typography variant="caption" color="#64748b" sx={{ display: 'block', mt: 0.5, fontWeight: 700, fontSize: '0.72rem' }}>
+                      {(file.size / 1024).toFixed(1)} KB • Ready to parse
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ py: 0.5 }}>
+                    <Upload size={24} color="#94a3b8" style={{ margin: '0 auto 6px auto' }} />
+                    <Typography variant="body2" fontWeight={800} color="#334155" sx={{ fontSize: '0.82rem' }}>
+                      Drag & Drop Excel sheet here
+                    </Typography>
+                    <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mt: 0.5, fontWeight: 600, fontSize: '0.7rem' }}>
+                      or click to browse (.xlsx / .xls)
+                    </Typography>
+                  </Box>
+                )}
               </Box>
-            </Grid>
+            </Box>
 
-          </Grid>
+            <Stack direction="row" spacing={1.2} sx={{ mt: 'auto' }}>
+              {file ? (
+                <>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={clearSelectedFile}
+                    disabled={loading}
+                    sx={{ borderRadius: 2.5, py: 1.2, px: 2, color: '#64748b', textTransform: 'none', fontWeight: 700, fontSize: '0.85rem' }}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleUploadExcel}
+                    disabled={loading}
+                    fullWidth
+                    sx={{ 
+                      borderRadius: 2.5, 
+                      py: 1.2, 
+                      bgcolor: '#0f172a',
+                      fontWeight: 800,
+                      textTransform: 'none',
+                      fontSize: '0.88rem',
+                      '&:hover': { bgcolor: '#1e293b' }
+                    }}
+                  >
+                    {loading ? <CircularProgress size={20} color="inherit" /> : 'Run Import'}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outlined"
+                  onClick={triggerFileSelect}
+                  disabled={loading || !isTypeActive()}
+                  fullWidth
+                  sx={{ 
+                    borderRadius: 2.5, 
+                    py: 1.2, 
+                    borderColor: '#cbd5e1',
+                    color: '#0f172a',
+                    fontWeight: 800,
+                    textTransform: 'none',
+                    fontSize: '0.88rem'
+                  }}
+                >
+                  Select File
+                </Button>
+              )}
+            </Stack>
+          </Paper>
 
-        </CardContent>
-      </Card>
+          {/* CARD 3: EXPORT STORED DATA */}
+          <Paper 
+            elevation={0}
+            sx={{ 
+              borderRadius: 4, 
+              border: '1px solid #e2e8f0', 
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              p: 3,
+              bgcolor: '#ffffff',
+              transition: 'all 0.2s ease',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+              '&:hover': {
+                borderColor: '#3b82f6',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 10px 25px rgba(59, 130, 246, 0.12)'
+              }
+            }}
+          >
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                height: 4, 
+                background: 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)' 
+              }} 
+            />
+
+            <Box>
+              <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.8 }}>
+                <Box sx={{ p: 1.2, borderRadius: 2.5, bgcolor: '#eff6ff', color: '#3b82f6' }}>
+                  <FileDown size={22} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={800} color="#0f172a" sx={{ fontSize: '0.98rem' }}>
+                    3. Export Stored Data
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.72rem' }}>
+                    Database Records to Excel
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Typography variant="body2" color="#475569" sx={{ mb: 2, lineHeight: 1.5, fontSize: '0.85rem' }}>
+                Export all currently saved database entries for <strong>{currentTypeObj.label}</strong> into an Excel sheet.
+              </Typography>
+
+              <Stack spacing={1} sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircle2 size={15} color="#3b82f6" />
+                  <Typography variant="caption" color="#334155" fontWeight={600} sx={{ fontSize: '0.75rem' }}>Full parsed dataset export</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircle2 size={15} color="#3b82f6" />
+                  <Typography variant="caption" color="#334155" fontWeight={600} sx={{ fontSize: '0.75rem' }}>Includes timestamped records</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircle2 size={15} color="#3b82f6" />
+                  <Typography variant="caption" color="#334155" fontWeight={600} sx={{ fontSize: '0.75rem' }}>Instant 1-click database download</Typography>
+                </Box>
+              </Stack>
+            </Box>
+
+            <Button
+              variant="contained"
+              startIcon={<FileDown size={16} />}
+              disabled={loading || !isTypeActive()}
+              onClick={handleDownloadData}
+              fullWidth
+              sx={{ 
+                borderRadius: 2.5, 
+                py: 1.2, 
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.22)',
+                fontWeight: 800,
+                textTransform: 'none',
+                fontSize: '0.88rem',
+                mt: 'auto',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                }
+              }}
+            >
+              Export Saved Dataset (.xlsx)
+            </Button>
+          </Paper>
+
+        </Box>
+      </Box>
 
       {/* Spinner Loading Overlay */}
       {loading && !file && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress color="primary" />
-        </Box>
+        <Paper elevation={0} sx={{ p: 3, textAlign: 'center', borderRadius: 3, border: '1px solid #e2e8f0', my: 3 }}>
+          <CircularProgress color="success" size={32} />
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, fontWeight: 700 }}>
+            Processing database request...
+          </Typography>
+        </Paper>
       )}
 
-      {/* Validation & Upload Results Panel */}
-      {uploadResult && (
-        <Card elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3, p: 3, mb: 4 }}>
-          <Typography variant="h6" fontWeight={700} sx={{ color: '#0f172a', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CheckCircle2 color="#10b981" size={20} /> Import Result Summary
+      {/* Main Error Box */}
+      {errorMsg && (
+        <Alert 
+          severity="error" 
+          sx={{ borderRadius: 3, mb: 3, border: '1px solid #fecaca' }} 
+          icon={<AlertTriangle color="#ef4444" size={22} />}
+          action={
+            <IconButton size="small" onClick={() => setErrorMsg(null)}>
+              <X size={16} />
+            </IconButton>
+          }
+        >
+          <Typography variant="subtitle2" fontWeight={800}>Import Failed</Typography>
+          <Typography variant="body2" sx={{ mt: 0.5, fontFamily: 'monospace', fontSize: '0.85rem' }}>
+            {errorMsg}
           </Typography>
-          
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={4}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, textAlign: 'center', bgcolor: '#f0fdf4', borderColor: '#bbf7d0' }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>SUCCESSFULLY IMPORTED</Typography>
-                <Typography variant="h4" fontWeight={800} color="#15803d" sx={{ mt: 0.5 }}>{uploadResult.imported_count}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, textAlign: 'center', bgcolor: uploadResult.failed_count > 0 ? '#fef2f2' : '#f8fafc', borderColor: uploadResult.failed_count > 0 ? '#fecaca' : '#cbd5e1' }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>FAILED ROWS</Typography>
-                <Typography variant="h4" fontWeight={800} color={uploadResult.failed_count > 0 ? '#b91c1c' : '#64748b'} sx={{ mt: 0.5 }}>{uploadResult.failed_count}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, textAlign: 'center', bgcolor: '#f8fafc' }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>TOTAL PROCESSED</Typography>
-                <Typography variant="h4" fontWeight={800} color="#334155" sx={{ mt: 0.5 }}>{uploadResult.imported_count + uploadResult.failed_count}</Typography>
-              </Paper>
-            </Grid>
-          </Grid>
+        </Alert>
+      )}
 
-          {/* Row-by-Row Failures detailed review */}
-          {uploadResult.failed_count > 0 && (
+      {/* 📊 UPLOAD RESULTS PANEL */}
+      {uploadResult && (
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            border: '1px solid #e2e8f0', 
+            borderRadius: 4, 
+            p: { xs: 2.5, md: 3.5 }, 
+            mb: 4,
+            bgcolor: '#ffffff',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.03)'
+          }}
+        >
+          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2.5 }}>
+            <Typography variant="h6" fontWeight={800} sx={{ color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+              <DatabaseCheck color="#10b981" size={24} /> Batch Import Summary Report
+            </Typography>
+            <Chip 
+              label={`Parsed Source: ${selectedType}`} 
+              size="small" 
+              sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 800 }} 
+            />
+          </Stack>
+          
+          <Box 
+            sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, 
+              gap: 2, 
+              mb: 2.5 
+            }}
+          >
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 2.2, 
+                borderRadius: 3, 
+                textAlign: 'center', 
+                bgcolor: '#f0fdf4', 
+                border: '1px solid #bbf7d0' 
+              }}
+            >
+              <Typography variant="caption" color="#166534" fontWeight={800} sx={{ letterSpacing: '0.6px', fontSize: '0.7rem' }}>
+                SUCCESSFULLY IMPORTED
+              </Typography>
+              <Typography variant="h3" fontWeight={800} color="#15803d" sx={{ mt: 0.5, fontSize: '2rem' }}>
+                {uploadResult.imported_count}
+              </Typography>
+              <Typography variant="caption" color="#15803d" fontWeight={600} sx={{ fontSize: '0.72rem' }}>Rows added to database</Typography>
+            </Paper>
+
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 2.2, 
+                borderRadius: 3, 
+                textAlign: 'center', 
+                bgcolor: uploadResult.failed_count > 0 ? '#fef2f2' : '#f8fafc', 
+                border: '1px solid',
+                borderColor: uploadResult.failed_count > 0 ? '#fecaca' : '#cbd5e1' 
+              }}
+            >
+              <Typography variant="caption" color={uploadResult.failed_count > 0 ? '#991b1b' : '#64748b'} fontWeight={800} sx={{ letterSpacing: '0.6px', fontSize: '0.7rem' }}>
+                FAILED ROWS
+              </Typography>
+              <Typography variant="h3" fontWeight={800} color={uploadResult.failed_count > 0 ? '#b91c1c' : '#64748b'} sx={{ mt: 0.5, fontSize: '2rem' }}>
+                {uploadResult.failed_count}
+              </Typography>
+              <Typography variant="caption" color={uploadResult.failed_count > 0 ? '#b91c1c' : '#64748b'} fontWeight={600} sx={{ fontSize: '0.72rem' }}>
+                Rows skipped due to errors
+              </Typography>
+            </Paper>
+
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 2.2, 
+                borderRadius: 3, 
+                textAlign: 'center', 
+                bgcolor: '#f8fafc', 
+                border: '1px solid #e2e8f0' 
+              }}
+            >
+              <Typography variant="caption" color="#475569" fontWeight={800} sx={{ letterSpacing: '0.6px', fontSize: '0.7rem' }}>
+                TOTAL PROCESSED
+              </Typography>
+              <Typography variant="h3" fontWeight={800} color="#0f172a" sx={{ mt: 0.5, fontSize: '2rem' }}>
+                {uploadResult.imported_count + uploadResult.failed_count}
+              </Typography>
+              <Typography variant="caption" color="#64748b" fontWeight={600} sx={{ fontSize: '0.72rem' }}>Total sheet rows evaluated</Typography>
+            </Paper>
+          </Box>
+
+          {/* Detailed Row-by-Row Failures Breakdown */}
+          {uploadResult.failed_count > 0 && uploadResult.failed_rows && uploadResult.failed_rows.length > 0 && (
             <Box sx={{ mt: 3 }}>
-              <Typography variant="body2" fontWeight={700} color="#b91c1c" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5 }}>
+              <Typography variant="subtitle2" fontWeight={800} color="#b91c1c" sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1.2 }}>
                 <AlertTriangle size={16} /> Parsing Errors Breakdown
               </Typography>
-              <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                <List disablePadding sx={{ maxHeight: 250, overflowY: 'auto' }}>
+              
+              <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid #fecaca' }}>
+                <List disablePadding sx={{ maxHeight: 300, overflowY: 'auto' }}>
                   {uploadResult.failed_rows.map((rowObj, index) => (
-                    <React.Fragment key={`err-row-${rowObj.row_number}`}>
-                      {index > 0 && <Divider />}
-                      <ListItem sx={{ py: 1.5, px: 2 }}>
+                    <React.Fragment key={`err-row-${rowObj.row_number}-${index}`}>
+                      {index > 0 && <Divider sx={{ borderColor: '#fee2e2' }} />}
+                      <ListItem sx={{ py: 1.5, px: 2.5, bgcolor: index % 2 === 0 ? '#ffffff' : '#fafafa' }}>
                         <ListItemText 
-                          primary={<Typography variant="body2" fontWeight={600} color="#334155">Row #{rowObj.row_number} - Error Description</Typography>}
+                          primary={
+                            <Stack direction="row" alignItems="center" spacing={1.2}>
+                              <Chip 
+                                label={`Row #${rowObj.row_number}`} 
+                                size="small" 
+                                sx={{ bgcolor: '#fef2f2', color: '#b91c1c', fontWeight: 800, borderRadius: 1.5 }} 
+                              />
+                              <Typography variant="body2" fontWeight={700} color="#334155" sx={{ fontSize: '0.85rem' }}>
+                                Header or Data Type Validation Error
+                              </Typography>
+                            </Stack>
+                          }
                           secondary={
-                            <Box sx={{ mt: 0.5 }}>
-                              <Typography variant="caption" color="#ef4444" sx={{ display: 'block', fontFamily: 'monospace', bgcolor: '#fef2f2', p: 1, borderRadius: 1 }}>
+                            <Box sx={{ mt: 0.8 }}>
+                              <Typography 
+                                variant="caption" 
+                                color="#dc2626" 
+                                sx={{ 
+                                  display: 'block', 
+                                  fontFamily: 'monospace', 
+                                  bgcolor: '#fef2f2', 
+                                  p: 1.2, 
+                                  borderRadius: 2,
+                                  border: '1px solid #fecaca'
+                                }}
+                              >
                                 {rowObj.error}
                               </Typography>
                             </Box>
@@ -473,25 +1152,22 @@ const Templates = () => {
               </Paper>
             </Box>
           )}
-        </Card>
-      )}
-
-      {/* Main Error Box */}
-      {errorMsg && (
-        <Alert severity="error" sx={{ borderRadius: 3, mb: 4 }} icon={<AlertTriangle />}>
-          <Typography variant="subtitle2" fontWeight={700}>Import Failed</Typography>
-          <Typography variant="caption" sx={{ mt: 0.5, display: 'block' }}>{errorMsg}</Typography>
-        </Alert>
+        </Paper>
       )}
 
       {/* Snackbar Alert Notifications */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={5000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', borderRadius: 2 }} elevation={6}>
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%', borderRadius: 2.5, boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }} 
+          elevation={6}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

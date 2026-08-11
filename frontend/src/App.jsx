@@ -6,6 +6,7 @@ import Login from './components/reuse/Login';
 import Accounts from './components/accounts/Accounts';
 import Templates from './components/templates/Templates';
 import ShowData from './components/templates/ShowData';
+import Settings from './components/settings/Settings';
 
 // MEDA Integration Page Imports
 import MedaLogin from './components/meda/MedaLogin';
@@ -161,7 +162,7 @@ function App() {
           element={
             <ProtectedRoute>
               <Sidebar currentUser={currentUser} onLogout={handleLogout} isMedaConnected={isMedaConnected}>
-                <Dashboard currentUser={currentUser} />
+                <Settings currentUser={currentUser} />
               </Sidebar>
             </ProtectedRoute>
           } 

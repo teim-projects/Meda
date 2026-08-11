@@ -20,12 +20,15 @@ import {
   Database,
   Activity,
   Lock,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Menu,
+  X
 } from 'lucide-react';
 import { medaApi } from '../../services/medaApi';
 
 const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaConnected }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [isMedaConnected, setIsMedaConnected] = useState(propIsMedaConnected || false);
   const navigate = useNavigate();
 
@@ -45,6 +48,7 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
       e.stopPropagation();
     }
     setShowDropdown(false);
+    setMobileOpen(false);
     localStorage.clear();
     if (onLogout) {
       onLogout();
@@ -72,9 +76,18 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
 
   return (
     <div className="app-shell">
-      {/* Top Navbar Section (Clean White Theme) */}
+      {/* Top Navbar Section (Clean Responsive Header) */}
       <header className="navbar-container">
         <div className="brand-section">
+          {/* Mobile Menu Toggle Button */}
+          <button 
+            className="mobile-toggle-btn"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle Navigation"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+
           <div className="logo-icon-wrap" style={{ overflow: 'hidden', padding: '0px', background: 'transparent' }}>
             <img src={logoImg} alt="meda logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
@@ -132,8 +145,8 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
 
       {/* Main App Layout */}
       <div className="layout-body">
-        {/* Left Sidebar Pane (Dark Colored Theme) */}
-        <aside className="sidebar-dark-pane">
+        {/* Left Sidebar Pane (Desktop) */}
+        <aside className="sidebar-dark-pane desktop-sidebar">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
             <div className="nav-group">
               <p className="nav-group-title">MAIN NAVIGATION</p>
@@ -155,47 +168,51 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
               </ul>
             </div>
 
-            {/* MEDA Integration Navigation Section */}
             <div className="nav-group">
-              <p className="nav-group-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 10 }}>
-                <span>MEDA INTEGRATION</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 8 }}>
+                <p className="nav-group-title" style={{ marginBottom: 0 }}>MEDA INTEGRATION</p>
                 <span style={{ 
                   fontSize: '0.6rem', 
-                  padding: '2px 6px', 
-                  borderRadius: 10, 
-                  background: isMedaConnected ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)',
-                  color: isMedaConnected ? '#10b981' : '#f43f5e' 
+                  fontWeight: 700, 
+                  color: isMedaConnected ? '#10b981' : '#ef4444', 
+                  background: isMedaConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                  padding: '2px 6px',
+                  borderRadius: '4px'
                 }}>
                   {isMedaConnected ? 'ONLINE' : 'OFFLINE'}
                 </span>
-              </p>
-              <ul className="nav-list">
+              </div>
+
+              <ul className="nav-list" style={{ marginTop: 8 }}>
                 {medaNavItems.map((item) => {
                   const Icon = item.icon;
-                  const isLocked = item.requiresAuth && !isMedaConnected;
-                  return (
-                    <li key={item.name}>
-                      {isLocked ? (
+                  const isDisabled = item.requiresAuth && !isMedaConnected;
+
+                  if (isDisabled) {
+                    return (
+                      <li key={item.name}>
                         <div 
                           className="dark-nav-link disabled"
-                          style={{ opacity: 0.45, cursor: 'not-allowed', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                          title="Please connect MEDA first on MEDA Login page"
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <Icon size={18} className="link-icon" />
-                            <span>{item.name}</span>
-                          </div>
-                          <Lock size={14} color="#f43f5e" />
-                        </div>
-                      ) : (
-                        <NavLink 
-                          to={item.path} 
-                          className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
+                          title="Requires active MEDA login"
+                          style={{ opacity: 0.5, cursor: 'not-allowed' }}
                         >
                           <Icon size={18} className="link-icon" />
                           <span>{item.name}</span>
-                        </NavLink>
-                      )}
+                          <Lock size={12} style={{ marginLeft: 'auto', color: '#64748b' }} />
+                        </div>
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li key={item.name}>
+                      <NavLink 
+                        to={item.path} 
+                        className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
+                      >
+                        <Icon size={18} className="link-icon" />
+                        <span>{item.name}</span>
+                      </NavLink>
                     </li>
                   );
                 })}
@@ -203,36 +220,130 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
             </div>
           </div>
 
-         
-
-          <div className="sidebar-footer">
-            <button type="button" onClick={handleLogout} className="logout-btn">
-              <LogOut size={18} />
+          <div style={{ paddingTop: 12, borderTop: '1px solid #114250' }}>
+            <button onClick={handleLogout} className="logout-btn">
+              <LogOut size={16} />
               <span>Sign Out</span>
             </button>
           </div>
         </aside>
 
+        {/* Mobile Navigation Backdrop Overlay */}
+        {mobileOpen && (
+          <div 
+            className="mobile-backdrop" 
+            onClick={() => setMobileOpen(false)} 
+          />
+        )}
 
-        {/* Page Content Pane (White Theme) */}
-        <main className="content-white-pane">
-          <div className="content-max-wrap">
-            {children}
+        {/* Mobile Slide-Out Drawer Pane */}
+        <aside className={`sidebar-dark-pane mobile-drawer ${mobileOpen ? 'open' : ''}`}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
+            <div className="nav-group">
+              <p className="nav-group-title">MAIN NAVIGATION</p>
+              <ul className="nav-list">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.name}>
+                      <NavLink 
+                        to={item.path} 
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
+                      >
+                        <Icon size={18} className="link-icon" />
+                        <span>{item.name}</span>
+                      </NavLink>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <div className="nav-group">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 8 }}>
+                <p className="nav-group-title" style={{ marginBottom: 0 }}>MEDA INTEGRATION</p>
+                <span style={{ 
+                  fontSize: '0.6rem', 
+                  fontWeight: 700, 
+                  color: isMedaConnected ? '#10b981' : '#ef4444', 
+                  background: isMedaConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                  padding: '2px 6px',
+                  borderRadius: '4px'
+                }}>
+                  {isMedaConnected ? 'ONLINE' : 'OFFLINE'}
+                </span>
+              </div>
+
+              <ul className="nav-list" style={{ marginTop: 8 }}>
+                {medaNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isDisabled = item.requiresAuth && !isMedaConnected;
+
+                  if (isDisabled) {
+                    return (
+                      <li key={item.name}>
+                        <div 
+                          className="dark-nav-link disabled"
+                          style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                        >
+                          <Icon size={18} className="link-icon" />
+                          <span>{item.name}</span>
+                          <Lock size={12} style={{ marginLeft: 'auto', color: '#64748b' }} />
+                        </div>
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li key={item.name}>
+                      <NavLink 
+                        to={item.path} 
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
+                      >
+                        <Icon size={18} className="link-icon" />
+                        <span>{item.name}</span>
+                      </NavLink>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
+
+          <div style={{ paddingTop: 12, borderTop: '1px solid #114250' }}>
+            <button onClick={handleLogout} className="logout-btn">
+              <LogOut size={16} />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Page Main Content Container */}
+        <main className="content-white-pane">
+          {children}
         </main>
       </div>
 
+      {/* Styled JSX for Responsive Layout & Shell */}
       <style>{`
-        .app-shell {
-          height: 100vh;
-          width: 100vw;
-          display: flex;
-          flex-direction: column;
-          background: #f8fafc;
-          overflow: hidden;
+        :root {
+          --navbar-height: 60px;
+          --sidebar-width: 240px;
         }
 
-        /* Top Navbar - Clean White Theme */
+        .app-shell {
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          width: 100vw;
+          overflow: hidden;
+          background: #f8fafc;
+          font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Top Navbar */
         .navbar-container {
           height: var(--navbar-height);
           background: #ffffff;
@@ -240,9 +351,8 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 24px;
+          padding: 0 16px;
           z-index: 50;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .brand-section {
@@ -251,10 +361,23 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           gap: 12px;
         }
 
+        .mobile-toggle-btn {
+          display: none;
+          background: transparent;
+          border: none;
+          color: #0f172a;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 6px;
+        }
+
+        .mobile-toggle-btn:hover {
+          background: #f1f5f9;
+        }
+
         .logo-icon-wrap {
-          width: 90px;
-          height: 90px;
-          border-radius: 16px;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -267,47 +390,42 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
         }
 
         .brand-name {
-          font-size: 1.5rem;
+          font-size: 1.15rem;
           font-weight: 800;
+          color: #0f172a;
           letter-spacing: -0.5px;
-          background: linear-gradient(135deg, #0f172a 0%, #10b981 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          text-transform: lowercase;
         }
 
         .brand-badge {
           font-size: 0.65rem;
-          font-weight: 700;
-          padding: 2px 7px;
-          border-radius: 20px;
-          background: rgba(16, 185, 129, 0.1);
-          color: #10b981;
-          border: 1px solid rgba(16, 185, 129, 0.25);
+          font-weight: 800;
+          background: #10b981;
+          color: #ffffff;
+          padding: 2px 6px;
+          border-radius: 4px;
         }
 
         .search-box {
           position: relative;
-          width: 380px;
-          max-width: 40%;
+          width: 320px;
+          display: flex;
+          align-items: center;
         }
 
         .search-icon {
           position: absolute;
-          left: 14px;
-          top: 50%;
-          transform: translateY(-50%);
+          left: 12px;
           color: #94a3b8;
         }
 
         .search-input {
           width: 100%;
-          padding: 9px 14px 9px 42px;
+          padding: 7px 12px 7px 38px;
           background: #f1f5f9;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          border: 1px solid transparent;
+          border-radius: 20px;
+          font-size: 0.82rem;
           color: #0f172a;
-          font-size: 0.88rem;
           outline: none;
           transition: all 0.2s ease;
         }
@@ -321,38 +439,21 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
         .nav-controls {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 12px;
         }
 
         .nav-icon-btn {
+          position: relative;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
           background: #f8fafc;
           border: 1px solid #e2e8f0;
           color: #64748b;
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          position: relative;
-          transition: all 0.2s ease;
-        }
-
-        .nav-icon-btn:hover {
-          color: #0f172a;
-          border-color: #cbd5e1;
-          background: #ffffff;
-        }
-
-        .notification-dot {
-          position: absolute;
-          top: 7px;
-          right: 7px;
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #f43f5e;
         }
 
         .user-profile-rel {
@@ -360,32 +461,27 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
         }
 
         .user-profile-btn {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          padding: 5px 10px 5px 5px;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
+          padding: 4px 8px;
+          border-radius: 20px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
           cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .user-profile-btn:hover {
-          border-color: #cbd5e1;
         }
 
         .avatar-circle {
-          width: 30px;
-          height: 30px;
-          border-radius: 8px;
-          background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-          color: white;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: #10b981;
+          color: #ffffff;
           font-weight: 700;
+          font-size: 0.8rem;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.85rem;
         }
 
         .user-info-text {
@@ -395,23 +491,14 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
         }
 
         .user-name {
-          font-size: 0.82rem;
-          font-weight: 600;
+          font-size: 0.8rem;
+          font-weight: 700;
           color: #0f172a;
         }
 
         .user-role {
-          font-size: 0.68rem;
+          font-size: 0.65rem;
           color: #64748b;
-        }
-
-        .chevron {
-          color: #94a3b8;
-          transition: transform 0.2s ease;
-        }
-
-        .chevron.open {
-          transform: rotate(180deg);
         }
 
         .user-dropdown-menu {
@@ -432,7 +519,7 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
         }
 
         .dh-name {
-          font-weight: 600;
+          font-weight: 700;
           font-size: 0.85rem;
           color: #0f172a;
         }
@@ -476,66 +563,21 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           flex: 1;
           height: calc(100vh - var(--navbar-height));
           overflow: hidden;
+          position: relative;
         }
 
-        /* Layout Body */
-        .layout-body {
-          display: flex;
-          flex: 1;
-          height: calc(100vh - var(--navbar-height));
-          overflow: hidden;
-        }
-
-        /* Layout Body */
-        .layout-body {
-          display: flex;
-          flex: 1;
-          height: calc(100vh - var(--navbar-height));
-          overflow: hidden;
-        }
-
-        /* Sidebar - Deep Ocean Teal Theme (Matching Screenshot) */
+        /* Desktop Sidebar Pane */
         .sidebar-dark-pane {
           width: var(--sidebar-width);
           min-width: var(--sidebar-width);
           background: #082d38;
           border-right: 1px solid #114250;
-          padding: 12px 10px;
+          padding: 16px 12px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
           gap: 12px;
           height: 100%;
-        }
-
-        /* Current Source Dropdown Card */
-        .sidebar-source-box {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          padding: 0 4px 6px 4px;
-          border-bottom: 1px solid #114250;
-        }
-
-        .ssb-label {
-          font-size: 0.6rem;
-          font-weight: 800;
-          letter-spacing: 0.8px;
-          color: #648d9f;
-        }
-
-        .ssb-select {
-          background: #114250;
-          border: 1px solid #1c5b6e;
-          border-radius: 8px;
-          padding: 6px 10px;
-          color: #ffffff;
-          font-size: 0.78rem;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          cursor: pointer;
         }
 
         .nav-group-title {
@@ -551,18 +593,18 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: 3px;
+          gap: 4px;
         }
 
         .dark-nav-link {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 7px 10px;
+          padding: 8px 12px;
           border-radius: 8px;
           color: #829ab1;
           text-decoration: none;
-          font-size: 0.78rem;
+          font-size: 0.8rem;
           font-weight: 600;
           transition: all 0.2s ease;
         }
@@ -588,12 +630,12 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 7px 10px;
+          padding: 8px 12px;
           border-radius: 8px;
           background: rgba(239, 68, 68, 0.12);
           border: 1px solid rgba(239, 68, 68, 0.3);
           color: #f87171;
-          font-size: 0.78rem;
+          font-size: 0.8rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -603,23 +645,75 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           background: rgba(239, 68, 68, 0.22);
         }
 
-        /* Content Area - Perfect balanced layout padding */
+        /* Content Pane */
         .content-white-pane {
           flex: 1;
           background: #f8fafc;
-          padding: 20px 24px;
+          padding: 16px;
           overflow-y: auto;
           height: 100%;
+          width: 100%;
         }
 
-        .content-max-wrap {
-          max-width: 1550px;
-          margin: 0 auto;
+        /* Mobile Backdrop & Drawer */
+        .mobile-backdrop {
+          display: none;
+          position: fixed;
+          top: var(--navbar-height);
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(15, 23, 42, 0.6);
+          backdrop-filter: blur(4px);
+          z-index: 90;
         }
 
+        .mobile-drawer {
+          display: none;
+          position: fixed;
+          top: var(--navbar-height);
+          left: 0;
+          bottom: 0;
+          z-index: 95;
+          transform: translateX(-100%);
+          transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .mobile-drawer.open {
+          transform: translateX(0);
+        }
+
+        /* Responsive Breakpoints */
         @media (max-width: 900px) {
-          .sidebar-dark-pane {
+          .desktop-sidebar {
+            display: none !important;
+          }
+
+          .mobile-toggle-btn {
+            display: flex;
+          }
+
+          .mobile-backdrop {
+            display: block;
+          }
+
+          .mobile-drawer {
+            display: flex;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .search-box {
             display: none;
+          }
+
+          .user-info-text {
+            display: none;
+          }
+
+          .content-white-pane {
+            padding: 10px;
           }
         }
       `}</style>

@@ -12,11 +12,13 @@ import {
   XCircle,
   Briefcase,
   Layers,
-  Trash2
+  Trash2,
+  Edit
 } from 'lucide-react';
 import axios from 'axios';
 import AddCategoryModal from './AddCategoryModal';
 import AddStaffModal from './AddStaffModal';
+import EditStaffModal from './EditStaffModal';
 
 const defaultCategories = [
   { id: 1, name: 'Energy Division', staff_count: 4 },
@@ -87,6 +89,8 @@ const Accounts = () => {
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+  const [isEditStaffModalOpen, setIsEditStaffModalOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -122,6 +126,17 @@ const Accounts = () => {
 
   const handleStaffAdded = (newStaff) => {
     setStaffList((prev) => [newStaff, ...prev]);
+  };
+
+  const handleEditClick = (staff) => {
+    setEditingStaff(staff);
+    setIsEditStaffModalOpen(true);
+  };
+
+  const handleStaffUpdated = (updatedStaff) => {
+    setStaffList((prev) =>
+      prev.map((s) => (s.id === updatedStaff.id ? { ...s, ...updatedStaff } : s))
+    );
   };
 
   const handleDeleteStaff = async (id) => {
@@ -307,13 +322,23 @@ const Accounts = () => {
                     </td>
 
                     <td className="text-right">
-                      <button 
-                        className="btn-action danger" 
-                        onClick={() => handleDeleteStaff(staff.id)}
-                        title="Remove Staff Member"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="action-buttons-cell">
+                        <button 
+                          className="btn-action edit" 
+                          onClick={() => handleEditClick(staff)}
+                          title="Edit Staff Details"
+                        >
+                          <Edit size={14} />
+                        </button>
+
+                        <button 
+                          className="btn-action danger" 
+                          onClick={() => handleDeleteStaff(staff.id)}
+                          title="Remove Staff Member"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -334,6 +359,14 @@ const Accounts = () => {
         isOpen={isStaffModalOpen}
         onClose={() => setIsStaffModalOpen(false)}
         onStaffAdded={handleStaffAdded}
+        categories={categories}
+      />
+
+      <EditStaffModal
+        isOpen={isEditStaffModalOpen}
+        onClose={() => setIsEditStaffModalOpen(false)}
+        onStaffUpdated={handleStaffUpdated}
+        staff={editingStaff}
         categories={categories}
       />
 
@@ -681,6 +714,33 @@ const Accounts = () => {
 
         .text-right { text-align: right; }
 
+        .action-buttons-cell {
+          display: inline-flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 6px;
+        }
+
+        .btn-action.edit {
+          background: #dbeafe;
+          border: 1px solid #bfdbfe;
+          color: #2563eb;
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .btn-action.edit:hover {
+          background: #bfdbfe;
+          color: #1d4ed8;
+          transform: translateY(-1px);
+        }
+
         .btn-action.danger {
           background: #fef2f2;
           border: 1px solid #fecaca;
@@ -698,6 +758,7 @@ const Accounts = () => {
         .btn-action.danger:hover {
           background: #fee2e2;
           color: #dc2626;
+          transform: translateY(-1px);
         }
 
         .table-empty {
@@ -706,13 +767,65 @@ const Accounts = () => {
           color: #64748b;
         }
 
-        .spin {
-          animation: spin 1s linear infinite;
-        }
-
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        /* Mobile View Alignments & Responsive Controls */
+        @media (max-width: 680px) {
+          .accounts-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+
+          .ah-actions {
+            width: 100%;
+            display: flex;
+            gap: 8px;
+          }
+
+          .ah-actions button {
+            flex: 1;
+            justify-content: center;
+            padding: 8px 10px;
+            font-size: 0.78rem;
+          }
+
+          .categories-summary-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+          }
+
+          .category-pills {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            flex-wrap: nowrap;
+          }
+
+          .cat-pill {
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+
+          .table-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+          }
+
+          .search-filter-box {
+            max-width: 100%;
+            width: 100%;
+          }
+
+          .toolbar-controls {
+            width: 100%;
+            justify-content: space-between;
+          }
         }
       `}</style>
     </div>

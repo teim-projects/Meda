@@ -1279,20 +1279,51 @@ const Dashboard = ({ currentUser }) => {
           border-radius: 10px;
         }
 
-        .table-actions-cell {
-          display: flex;
-          gap: 4px;
-        }
-
-        .icon-act-btn {
-          background: transparent;
-          border: none;
-          color: #94a3b8;
-          cursor: pointer;
-          transition: color 0.2s ease;
-        }
-
         .icon-act-btn:hover { color: #0f172a; }
+
+        /* Mobile View Alignments & Responsive Controls */
+        @media (max-width: 768px) {
+          .dashboard-header-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+
+          .dh-actions {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+          }
+
+          .filters-row {
+            flex-wrap: wrap;
+            gap: 8px;
+          }
+
+          .filter-dropdown-select {
+            flex: 1 1 calc(50% - 6px);
+            min-width: 130px;
+          }
+
+          .filter-dropdown-select select {
+            width: 100%;
+          }
+
+          .btn-apply-filter, .btn-reset-link {
+            flex: 1 1 auto;
+            justify-content: center;
+          }
+
+          .kpi-eight-cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+          }
+
+          .charts-three-row {
+            grid-template-columns: 1fr;
+          }
+        }
       `}</style>
     </div>
   );
