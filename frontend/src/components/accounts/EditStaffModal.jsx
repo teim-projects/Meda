@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Edit, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../services/apiConfig';
 
 const EditStaffModal = ({ isOpen, onClose, onStaffUpdated, staff, categories = [] }) => {
   const [name, setName] = useState('');
@@ -65,7 +66,7 @@ const EditStaffModal = ({ isOpen, onClose, onStaffUpdated, staff, categories = [
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
-      const response = await axios.put(`http://localhost:8000/api/accounts/staff/${staff.id}/`, updatedData, config);
+      const response = await axios.put(`${API_BASE_URL}/api/accounts/staff/${staff.id}/`, updatedData, config);
       
       setSuccess('Staff member updated successfully!');
       setTimeout(() => {

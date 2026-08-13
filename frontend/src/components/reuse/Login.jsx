@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../../services/apiConfig";
 
 import heroLogo from "../../assets/logo.png";
 import bgVideo from "../../assets/bg_video.mp4";
@@ -298,7 +299,7 @@ function LoginCard({ active, onLoginSuccess }) {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/api/accounts/login/", {
+      const response = await axios.post(`${API_BASE_URL}/api/accounts/login/`, {
         username,
         password
       });
@@ -339,7 +340,7 @@ function LoginCard({ active, onLoginSuccess }) {
 
         setError(errorMsg);
       } else {
-        setError("Cannot connect to backend server. Please verify Django backend is running at http://localhost:8000");
+        setError(`Cannot connect to backend server. Please verify Django backend is running at ${API_BASE_URL}`);
       }
     } finally {
       setLoading(false);

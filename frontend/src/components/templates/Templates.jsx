@@ -1112,7 +1112,7 @@ const Templates = () => {
                   {uploadResult.failed_rows.map((rowObj, index) => (
                     <React.Fragment key={`err-row-${rowObj.row_number}-${index}`}>
                       {index > 0 && <Divider sx={{ borderColor: '#fee2e2' }} />}
-                      <ListItem sx={{ py: 1.5, px: 2.5, bgcolor: index % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                      <ListItem sx={{ py: 1.5, px: 2.5, bgcolor: '#ffffff' }}>
                         <ListItemText 
                           primary={
                             <Stack direction="row" alignItems="center" spacing={1.2}>

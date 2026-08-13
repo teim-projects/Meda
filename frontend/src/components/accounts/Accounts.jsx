@@ -16,6 +16,7 @@ import {
   Edit
 } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../services/apiConfig';
 import AddCategoryModal from './AddCategoryModal';
 import AddStaffModal from './AddStaffModal';
 import EditStaffModal from './EditStaffModal';
@@ -99,8 +100,8 @@ const Accounts = () => {
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
       const [catRes, staffRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/accounts/categories/', config),
-        axios.get('http://localhost:8000/api/accounts/staff/', config)
+        axios.get(`${API_BASE_URL}/api/accounts/categories/`, config),
+        axios.get(`${API_BASE_URL}/api/accounts/staff/`, config)
       ]);
 
       if (catRes.data && catRes.data.length > 0) {
@@ -144,7 +145,7 @@ const Accounts = () => {
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:8000/api/accounts/staff/${id}/`, config);
+      await axios.delete(`${API_BASE_URL}/api/accounts/staff/${id}/`, config);
     } catch (err) {
       // Local fallback removal
     }

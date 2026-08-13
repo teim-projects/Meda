@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, UserPlus, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../services/apiConfig';
 
 const AddStaffModal = ({ isOpen, onClose, onStaffAdded, categories = [] }) => {
   const [name, setName] = useState('');
@@ -49,7 +50,7 @@ const AddStaffModal = ({ isOpen, onClose, onStaffAdded, categories = [] }) => {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
-      const response = await axios.post('http://localhost:8000/api/accounts/staff/', {
+      const response = await axios.post(`${API_BASE_URL}/api/accounts/staff/`, {
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { medaApi } from '../../services/medaApi';
+import { API_BASE_URL } from '../../services/apiConfig';
 
 const Dashboard = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ const Dashboard = ({ currentUser }) => {
   const checkBackendStatus = async () => {
     setLoadingDb(true);
     try {
-      await axios.get('http://localhost:8000/api/accounts/login/');
+      await axios.get(`${API_BASE_URL}/api/accounts/login/`);
       setDbStatus('Connected (meda_db Active)');
     } catch (err) {
       if (err.response && err.response.status === 405) {

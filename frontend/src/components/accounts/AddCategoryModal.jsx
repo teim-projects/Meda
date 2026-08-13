@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FolderPlus, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../services/apiConfig';
 
 const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
   const [name, setName] = useState('');
@@ -38,7 +39,7 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
-      const response = await axios.post('http://localhost:8000/api/accounts/categories/', {
+      const response = await axios.post(`${API_BASE_URL}/api/accounts/categories/`, {
         name: name.trim(),
         description: description.trim()
       }, config);
