@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { API_BASE_URL } from './apiConfig';
 
 // Dedicated Authenticated Axios Instance for MEDA Integration
 const medaAxios = axios.create({
-  baseURL: 'http://localhost:8000/api/meda',
+  baseURL: `${API_BASE_URL}/api/meda`,
   headers: {
     'Content-Type': 'application/json',
   },

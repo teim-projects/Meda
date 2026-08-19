@@ -219,17 +219,15 @@ const MedaRawData = () => {
             px: 2.8,
             borderRadius: 3.5, 
             border: '1.5px solid #e2e8f0', 
-            background: 'linear-gradient(135deg, #eff6ff 0%, #ffffff 100%)',
-            boxShadow: '0 4px 15px rgba(37, 99, 235, 0.05)',
+            bgcolor: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
             transition: 'all 0.25s ease',
-            position: 'relative',
             overflow: 'hidden',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(37, 99, 235, 0.12)', borderColor: '#93c5fd' }
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(37, 99, 235, 0.08)', borderColor: '#93c5fd' }
           }}
         >
-          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, bgcolor: '#2563eb' }} />
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)', flexShrink: 0 }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, bgcolor: '#eff6ff', border: '1px solid #dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Database size={22} />
             </Box>
             <Box sx={{ minWidth: 0 }}>
@@ -251,17 +249,15 @@ const MedaRawData = () => {
             px: 2.8,
             borderRadius: 3.5, 
             border: '1.5px solid #e2e8f0', 
-            background: 'linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%)',
-            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.05)',
+            bgcolor: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
             transition: 'all 0.25s ease',
-            position: 'relative',
             overflow: 'hidden',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(16, 185, 129, 0.12)', borderColor: '#6ee7b7' }
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(16, 185, 129, 0.08)', borderColor: '#6ee7b7' }
           }}
         >
-          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, bgcolor: '#10b981' }} />
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)', flexShrink: 0 }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, bgcolor: '#ecfdf5', border: '1px solid #d1fae5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <CheckCircle2 size={22} />
             </Box>
             <Box sx={{ minWidth: 0 }}>
@@ -283,17 +279,15 @@ const MedaRawData = () => {
             px: 2.8,
             borderRadius: 3.5, 
             border: '1.5px solid #e2e8f0', 
-            background: 'linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%)',
-            boxShadow: '0 4px 15px rgba(2, 132, 199, 0.05)',
+            bgcolor: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
             transition: 'all 0.25s ease',
-            position: 'relative',
             overflow: 'hidden',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(2, 132, 199, 0.12)', borderColor: '#7dd3fc' }
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(2, 132, 199, 0.08)', borderColor: '#7dd3fc' }
           }}
         >
-          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, bgcolor: '#0284c7' }} />
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)', flexShrink: 0 }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, bgcolor: '#e0f2fe', border: '1px solid #bae6fd', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <FileText size={22} />
             </Box>
             <Box sx={{ minWidth: 0 }}>
@@ -315,17 +309,15 @@ const MedaRawData = () => {
             px: 2.8,
             borderRadius: 3.5, 
             border: '1.5px solid #e2e8f0', 
-            background: 'linear-gradient(135deg, #faf5ff 0%, #ffffff 100%)',
-            boxShadow: '0 4px 15px rgba(124, 58, 237, 0.05)',
+            bgcolor: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
             transition: 'all 0.25s ease',
-            position: 'relative',
             overflow: 'hidden',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(124, 58, 237, 0.12)', borderColor: '#c084fc' }
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 25px rgba(124, 58, 237, 0.08)', borderColor: '#c084fc' }
           }}
         >
-          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, bgcolor: '#7c3aed' }} />
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)', flexShrink: 0 }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 2.8, bgcolor: '#faf5ff', border: '1px solid #e9d5ff', color: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <ShieldCheck size={22} />
             </Box>
             <Box sx={{ minWidth: 0 }}>
@@ -354,13 +346,18 @@ const MedaRawData = () => {
         <TableContainer sx={{ maxWidth: '100%', overflowX: 'auto' }}>
           <Table sx={{ minWidth: 800 }}>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#0f172a' }}>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 800, fontSize: '0.78rem' }}>Record ID</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 800, fontSize: '0.78rem' }}>Month Parameter</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 800, fontSize: '0.78rem' }}>Fetched Timestamp</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 800, fontSize: '0.78rem' }}>Records Count</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 800, fontSize: '0.78rem' }}>Status</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 800, fontSize: '0.78rem' }} align="center">Actions</TableCell>
+              <TableRow 
+                sx={{ 
+                  background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+                  borderBottom: '2px solid #cbd5e1'
+                }}
+              >
+                <TableCell sx={{ color: '#1e293b', fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.6px', py: 1.8 }}>Record ID</TableCell>
+                <TableCell sx={{ color: '#1e293b', fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.6px', py: 1.8 }}>Month Parameter</TableCell>
+                <TableCell sx={{ color: '#1e293b', fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.6px', py: 1.8 }}>Fetched Timestamp</TableCell>
+                <TableCell sx={{ color: '#1e293b', fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.6px', py: 1.8 }}>Records Count</TableCell>
+                <TableCell sx={{ color: '#1e293b', fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.6px', py: 1.8 }}>Status</TableCell>
+                <TableCell sx={{ color: '#1e293b', fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.6px', py: 1.8 }} align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -394,7 +391,7 @@ const MedaRawData = () => {
                   <TableRow 
                     key={rec.id} 
                     sx={{ 
-                      bgcolor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
+                      bgcolor: '#ffffff',
                       '&:hover': { bgcolor: 'rgba(16, 185, 129, 0.05)' }
                     }}
                   >

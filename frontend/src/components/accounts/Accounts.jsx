@@ -16,78 +16,22 @@ import {
   Edit
 } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../services/apiConfig';
 import AddCategoryModal from './AddCategoryModal';
+import EditCategoryModal from './EditCategoryModal';
 import AddStaffModal from './AddStaffModal';
 import EditStaffModal from './EditStaffModal';
 
-const defaultCategories = [
-  { id: 1, name: 'Energy Division', staff_count: 4 },
-  { id: 2, name: 'Grid Operations', staff_count: 3 },
-  { id: 3, name: 'Billing & Normalization', staff_count: 5 },
-  { id: 4, name: 'IT & Systems', staff_count: 2 },
-];
-
-const defaultStaffList = [
-  {
-    id: 101,
-    name: 'Rajesh Patil',
-    email: 'rajesh.p@meda.gov.in',
-    phone: '+91 98220 11452',
-    category: 1,
-    category_name: 'Energy Division',
-    role: 'Senior Solar Engineer',
-    status: 'Active'
-  },
-  {
-    id: 102,
-    name: 'Sunita Sharma',
-    email: 'sunita.s@meda.gov.in',
-    phone: '+91 98231 44521',
-    category: 2,
-    category_name: 'Grid Operations',
-    role: 'Grid Infrastructure Manager',
-    status: 'Active'
-  },
-  {
-    id: 103,
-    name: 'Amit Deshmukh',
-    email: 'amit.d@meda.gov.in',
-    phone: '+91 97654 22109',
-    category: 3,
-    category_name: 'Billing & Normalization',
-    role: 'Credit Note Analyst',
-    status: 'Active'
-  },
-  {
-    id: 104,
-    name: 'Priya Kulkarni',
-    email: 'priya.k@meda.gov.in',
-    phone: '+91 94220 88712',
-    category: 4,
-    category_name: 'IT & Systems',
-    role: 'IT Systems Administrator',
-    status: 'Active'
-  },
-  {
-    id: 105,
-    name: 'Sanjay Joshi',
-    email: 'sanjay.j@meda.gov.in',
-    phone: '+91 98901 33456',
-    category: 2,
-    category_name: 'Grid Operations',
-    role: 'Substation Technical Lead',
-    status: 'Active'
-  }
-];
-
 const Accounts = () => {
-  const [staffList, setStaffList] = useState(defaultStaffList);
-  const [categories, setCategories] = useState(defaultCategories);
+  const [staffList, setStaffList] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [isEditStaffModalOpen, setIsEditStaffModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
@@ -99,18 +43,18 @@ const Accounts = () => {
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
       const [catRes, staffRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/accounts/categories/', config),
-        axios.get('http://localhost:8000/api/accounts/staff/', config)
+        axios.get(`${API_BASE_URL}/api/accounts/categories/`, config),
+        axios.get(`${API_BASE_URL}/api/accounts/staff/`, config)
       ]);
 
-      if (catRes.data && catRes.data.length > 0) {
+      if (Array.isArray(catRes.data)) {
         setCategories(catRes.data);
       }
-      if (staffRes.data && staffRes.data.length > 0) {
+      if (Array.isArray(staffRes.data)) {
         setStaffList(staffRes.data);
       }
     } catch (err) {
-      console.log('Using default MEDA staff directory data for local preview.');
+      console.error('Error fetching dynamic staff directory data from API:', err);
     } finally {
       setLoading(false);
     }
@@ -122,10 +66,45 @@ const Accounts = () => {
 
   const handleCategoryAdded = (newCategory) => {
     setCategories((prev) => [...prev, newCategory]);
+    fetchData();
+  };
+
+  const handleEditCategoryClick = (cat, e) => {
+    if (e) e.stopPropagation();
+    setEditingCategory(cat);
+    setIsEditCategoryModalOpen(true);
+  };
+
+  const handleCategoryUpdated = (updatedCat) => {
+    setCategories((prev) =>
+      prev.map((c) => (c.id === updatedCat.id ? { ...c, ...updatedCat } : c))
+    );
+    fetchData();
+  };
+
+  const handleDeleteCategory = async (catId, catName, e) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to delete category "${catName}"? Staff members in this category will become unassigned.`)) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      await axios.delete(`${API_BASE_URL}/api/accounts/categories/${catId}/`, config);
+      
+      setCategories((prev) => prev.filter((c) => c.id !== catId));
+      if (selectedCategory === String(catId)) {
+        setSelectedCategory('ALL');
+      }
+      fetchData();
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      alert('Failed to delete category from database.');
+    }
   };
 
   const handleStaffAdded = (newStaff) => {
     setStaffList((prev) => [newStaff, ...prev]);
+    fetchData();
   };
 
   const handleEditClick = (staff) => {
@@ -137,6 +116,7 @@ const Accounts = () => {
     setStaffList((prev) =>
       prev.map((s) => (s.id === updatedStaff.id ? { ...s, ...updatedStaff } : s))
     );
+    fetchData();
   };
 
   const handleDeleteStaff = async (id) => {
@@ -144,21 +124,34 @@ const Accounts = () => {
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:8000/api/accounts/staff/${id}/`, config);
+      await axios.delete(`${API_BASE_URL}/api/accounts/staff/${id}/`, config);
     } catch (err) {
-      // Local fallback removal
+      console.error('Error deleting staff member:', err);
     }
     setStaffList((prev) => prev.filter((s) => s.id !== id));
+    fetchData();
+  };
+
+  const getCategoryStaffCount = (catId, catName) => {
+    return staffList.filter((staff) => {
+      if (!staff) return false;
+      const sCatId = typeof staff.category === 'object' ? staff.category?.id : staff.category;
+      return String(sCatId) === String(catId) || staff.category_name === catName;
+    }).length;
   };
 
   const filteredStaff = staffList.filter((staff) => {
     const matchesSearch = 
-      staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.role.toLowerCase().includes(searchQuery.toLowerCase());
+      staff.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      staff.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      staff.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      staff.category_name?.toLowerCase().includes(searchQuery.toLowerCase());
 
+    const sCatId = typeof staff.category === 'object' ? staff.category?.id : staff.category;
     const matchesCategory = 
-      selectedCategory === 'ALL' || String(staff.category) === String(selectedCategory);
+      selectedCategory === 'ALL' || 
+      String(sCatId) === String(selectedCategory) ||
+      staff.category_name === categories.find(c => String(c.id) === String(selectedCategory))?.name;
 
     return matchesSearch && matchesCategory;
   });
@@ -197,10 +190,10 @@ const Accounts = () => {
         </div>
       </div>
 
-      {/* Category Pills Bar */}
+      {/* Category Summary & Filter Bar */}
       <div className="categories-summary-bar light-card">
         <div className="cs-title">
-          <Layers size={15} color="#10b981" /> <span>Categories:</span>
+          <Layers size={15} color="#10b981" /> <span>Categories ({categories.length}):</span>
         </div>
         <div className="category-pills">
           <button 
@@ -210,13 +203,34 @@ const Accounts = () => {
             All Staff ({staffList.length})
           </button>
           {categories.map((cat) => (
-            <button 
+            <div 
               key={cat.id} 
-              className={`cat-pill ${selectedCategory === String(cat.id) ? 'active' : ''}`}
-              onClick={() => setSelectedCategory(String(cat.id))}
+              className={`cat-pill-item ${selectedCategory === String(cat.id) ? 'active' : ''}`}
             >
-              {cat.name} ({cat.staff_count || staffList.filter(s => String(s.category) === String(cat.id)).length})
-            </button>
+              <button 
+                className="cat-pill-btn"
+                onClick={() => setSelectedCategory(String(cat.id))}
+              >
+                <span>{cat.name}</span>
+                <span className="cat-count">({getCategoryStaffCount(cat.id, cat.name)})</span>
+              </button>
+              <div className="cat-pill-actions">
+                <button 
+                  className="cat-act-icon edit" 
+                  onClick={(e) => handleEditCategoryClick(cat, e)}
+                  title={`Edit category "${cat.name}"`}
+                >
+                  <Edit size={12} />
+                </button>
+                <button 
+                  className="cat-act-icon delete" 
+                  onClick={(e) => handleDeleteCategory(cat.id, cat.name, e)}
+                  title={`Delete category "${cat.name}"`}
+                >
+                  <Trash2 size={11} />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -355,6 +369,13 @@ const Accounts = () => {
         onCategoryAdded={handleCategoryAdded}
       />
 
+      <EditCategoryModal
+        isOpen={isEditCategoryModalOpen}
+        onClose={() => setIsEditCategoryModalOpen(false)}
+        onCategoryUpdated={handleCategoryUpdated}
+        category={editingCategory}
+      />
+
       <AddStaffModal 
         isOpen={isStaffModalOpen}
         onClose={() => setIsStaffModalOpen(false)}
@@ -376,6 +397,98 @@ const Accounts = () => {
           flex-direction: column;
           gap: 14px;
         }
+
+        .cat-pill-item {
+          display: inline-flex;
+          align-items: center;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 2px 6px 2px 10px;
+          gap: 4px;
+          transition: all 0.2s ease;
+        }
+
+        .cat-pill-item:hover {
+          border-color: #cbd5e1;
+          background: #f1f5f9;
+        }
+
+        .cat-pill-item.active {
+          background: #059669;
+          border-color: #059669;
+          color: #ffffff;
+        }
+
+        .cat-pill-btn {
+          background: transparent;
+          border: none;
+          color: inherit;
+          font-size: 0.72rem;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 0;
+          white-space: nowrap;
+        }
+
+        .cat-pill-item.active .cat-pill-btn {
+          color: #ffffff;
+        }
+
+        .cat-count {
+          opacity: 0.85;
+          font-size: 0.68rem;
+        }
+
+        .cat-pill-actions {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          margin-left: 2px;
+        }
+
+        .cat-act-icon {
+          background: transparent;
+          border: none;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #64748b;
+          transition: all 0.15s ease;
+          padding: 0;
+        }
+
+        .cat-pill-item.active .cat-act-icon {
+          color: rgba(255, 255, 255, 0.85);
+        }
+
+        .cat-act-icon.edit:hover {
+          background: rgba(59, 130, 246, 0.15);
+          color: #2563eb;
+        }
+
+        .cat-pill-item.active .cat-act-icon.edit:hover {
+          background: rgba(255, 255, 255, 0.25);
+          color: #ffffff;
+        }
+
+        .cat-act-icon.delete:hover {
+          background: rgba(239, 68, 68, 0.15);
+          color: #dc2626;
+        }
+
+        .cat-pill-item.active .cat-act-icon.delete:hover {
+          background: rgba(239, 68, 68, 0.4);
+          color: #ffffff;
+        }
+
 
         .accounts-header {
           padding: 16px 20px;

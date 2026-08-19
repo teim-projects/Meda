@@ -530,10 +530,13 @@ const ShowData = () => {
                   <TableCell 
                     sx={{ 
                       fontWeight: 800, 
-                      bgcolor: '#0f172a !important', 
-                      color: '#ffffff !important', 
+                      bgcolor: '#f1f5f9 !important', 
+                      color: '#1e293b !important', 
                       py: 1.6, 
-                      fontSize: '0.78rem',
+                      fontSize: '0.72rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.6px',
+                      borderBottom: '2px solid #cbd5e1 !important',
                       width: 50
                     }}
                   >
@@ -544,12 +547,15 @@ const ShowData = () => {
                       key={header} 
                       sx={{ 
                         fontWeight: 800, 
-                        bgcolor: '#0f172a !important', 
-                        color: '#ffffff !important', 
+                        bgcolor: '#f1f5f9 !important', 
+                        color: '#1e293b !important', 
                         py: 1.6, 
                         whiteSpace: 'nowrap',
-                        fontSize: '0.78rem',
-                        borderRight: '1px solid rgba(255,255,255,0.08)'
+                        fontSize: '0.72rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.6px',
+                        borderBottom: '2px solid #cbd5e1 !important',
+                        borderRight: '1px solid #e2e8f0'
                       }}
                     >
                       {header}
@@ -605,7 +611,7 @@ const ShowData = () => {
                       key={row.id || index} 
                       hover
                       sx={{ 
-                        bgcolor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
+                        bgcolor: '#ffffff',
                         transition: 'background-color 0.15s ease',
                         '&:hover': {
                           bgcolor: 'rgba(16, 185, 129, 0.05) !important'

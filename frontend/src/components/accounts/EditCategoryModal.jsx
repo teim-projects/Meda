@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, FolderPlus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Edit, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../services/apiConfig';
 
-const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
+const EditCategoryModal = ({ isOpen, onClose, onCategoryUpdated, category }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    if (category) {
+      setName(category.name || '');
+      setDescription(category.description || '');
+      setError('');
+      setSuccess('');
+    }
+  }, [category, isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -21,7 +30,7 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !category) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,23 +48,21 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
-      const response = await axios.post(`${API_BASE_URL}/api/accounts/categories/`, {
+      const response = await axios.put(`${API_BASE_URL}/api/accounts/categories/${category.id}/`, {
         name: name.trim(),
         description: description.trim()
       }, config);
 
-      setSuccess('Category created successfully!');
+      setSuccess('Category updated successfully!');
       setTimeout(() => {
-        setName('');
-        setDescription('');
         setSuccess('');
-        if (onCategoryAdded) onCategoryAdded(response.data);
+        if (onCategoryUpdated) onCategoryUpdated(response.data);
         onClose();
-      }, 800);
+      }, 600);
 
     } catch (err) {
       if (err.response && err.response.data) {
-        const errorMsg = err.response.data.name?.[0] || err.response.data.detail || 'Error creating category.';
+        const errorMsg = err.response.data.name?.[0] || err.response.data.detail || 'Error updating category.';
         setError(errorMsg);
       } else {
         setError('Cannot connect to backend API.');
@@ -70,12 +77,12 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
       <div className="modal-card animate-modal-pop">
         <div className="modal-header">
           <div className="modal-title-wrap">
-            <div className="modal-icon-badge green">
-              <FolderPlus size={22} />
+            <div className="modal-icon-badge blue">
+              <Edit size={22} />
             </div>
             <div>
-              <h3>Add New Category</h3>
-              <p>Create staff classification (e.g. Sales Manager)</p>
+              <h3>Edit Category</h3>
+              <p>Update division or category details</p>
             </div>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} title="Close Modal">
@@ -101,7 +108,7 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
             <input 
               type="text" 
               className="input-field" 
-              placeholder="e.g. Sales Manager, Grid Analyst"
+              placeholder="e.g. Solar Energy, Grid Operations"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -125,7 +132,7 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
               Cancel
             </button>
             <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? 'Creating...' : 'Save Category'}
+              {loading ? 'Saving...' : 'Update Category'}
             </button>
           </div>
         </form>
@@ -193,13 +200,13 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          shrink: 0;
+          flex-shrink: 0;
         }
 
-        .modal-icon-badge.green { 
-          background: rgba(16, 185, 129, 0.12); 
-          color: #10b981; 
-          border: 1px solid rgba(16, 185, 129, 0.2);
+        .modal-icon-badge.blue { 
+          background: rgba(59, 130, 246, 0.12); 
+          color: #3b82f6; 
+          border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .modal-title-wrap h3 {
@@ -289,8 +296,8 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
         }
 
         .input-field:focus {
-          border-color: #10b981;
-          box-shadow: 0 0 0 3.5px rgba(16, 185, 129, 0.15);
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.15);
         }
 
         .modal-footer {
@@ -321,7 +328,7 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           border: none;
           color: #ffffff;
           font-weight: 600;
@@ -329,12 +336,12 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
           border-radius: 10px;
           cursor: pointer;
           font-size: 0.88rem;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
           transition: all 0.2s ease;
         }
 
         .btn-primary:hover {
-          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+          box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
           transform: translateY(-1px);
         }
 
@@ -349,4 +356,4 @@ const AddCategoryModal = ({ isOpen, onClose, onCategoryAdded }) => {
   );
 };
 
-export default AddCategoryModal;
+export default EditCategoryModal;

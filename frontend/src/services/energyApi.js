@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from './apiConfig';
 
 const energyAxios = axios.create({
-  baseURL: 'http://localhost:8000/api/energy',
+  baseURL: `${API_BASE_URL}/api/energy`,
 });
 
 // Helper function to get token from storage
