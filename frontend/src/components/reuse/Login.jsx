@@ -378,7 +378,7 @@ function LoginCard({ active, onLoginSuccess }) {
             )}
 
             <form onSubmit={handleLogin} className="preserve-3d relative mt-5 space-y-3.5" style={{ transform: "translateZ(24px)" }}>
-              <Field label="Operator e-mail" value={username} onChange={setUsername} type="text" placeholder="you@nexagrid.energy" accent={active.accent}
+              <Field label="Operator e-mail or username" value={username} onChange={setUsername} type="text" placeholder="admin@meda.gov.in or username" accent={active.accent}
                 icon={<><rect x="2.5" y="4.5" width="19" height="15" rx="3" /><path d="m3.5 7 8.5 6 8.5-6" /></>} />
               <div>
                 <Field label="Passkey" value={password} onChange={setPassword} type={showPw ? "text" : "password"} placeholder="••••••••••" accent={active.accent}

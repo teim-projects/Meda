@@ -40,3 +40,4 @@ class StaffDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+

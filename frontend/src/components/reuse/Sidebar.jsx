@@ -88,8 +88,8 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          <div className="logo-icon-wrap" style={{ overflow: 'hidden', padding: '0px', background: 'transparent' }}>
-            <img src={logoImg} alt="meda logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          <div className="logo-icon-wrap">
+            <img src={logoImg} alt="meda logo" className="logo-img-scaled" />
           </div>
           <div className="brand-text-wrap">
             <span className="brand-name">meda</span>
@@ -329,7 +329,7 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
       {/* Styled JSX for Responsive Layout & Shell */}
       <style>{`
         :root {
-          --navbar-height: 60px;
+          --navbar-height: 72px;
           --sidebar-width: 240px;
         }
 
@@ -351,14 +351,15 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 16px;
+          padding: 0 24px;
+          box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
           z-index: 50;
         }
 
         .brand-section {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
         }
 
         .mobile-toggle-btn {
@@ -376,33 +377,57 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
         }
 
         .logo-icon-wrap {
-          width: 32px;
-          height: 32px;
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.12) 100%);
+          border: 1px solid rgba(16, 185, 129, 0.25);
           display: flex;
           align-items: center;
           justify-content: center;
+          overflow: hidden;
+          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .logo-icon-wrap:hover {
+          transform: translateY(-1px) scale(1.03);
+          box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
+        }
+
+        .logo-img-scaled {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          transform: scale(2.2);
+          transition: transform 0.3s ease;
         }
 
         .brand-text-wrap {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
         }
 
         .brand-name {
-          font-size: 1.15rem;
-          font-weight: 800;
-          color: #0f172a;
-          letter-spacing: -0.5px;
+          font-size: 1.5rem;
+          font-weight: 900;
+          background: linear-gradient(135deg, #0f172a 0%, #059669 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          letter-spacing: -0.6px;
         }
 
         .brand-badge {
-          font-size: 0.65rem;
+          font-size: 0.75rem;
           font-weight: 800;
-          background: #10b981;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: #ffffff;
-          padding: 2px 6px;
-          border-radius: 4px;
+          padding: 4px 10px;
+          border-radius: 8px;
+          box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
+          letter-spacing: 0.5px;
         }
 
         .search-box {

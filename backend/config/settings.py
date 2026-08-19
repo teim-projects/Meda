@@ -71,6 +71,16 @@ INSTALLED_APPS = [
 
 
 # ============================================================
+# AUTHENTICATION BACKENDS
+# ============================================================
+
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
+# ============================================================
 # MIDDLEWARE
 # ============================================================
 
@@ -131,43 +141,48 @@ TEMPLATES = [
 # DATABASE
 # ============================================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': config(
-            'DB_ENGINE',
-            default='django.db.backends.mysql'
-        ),
+db_engine = config('DB_ENGINE', default='django.db.backends.mysql')
+db_password = config('DB_PASSWORD', default='')
 
-        'NAME': config(
-            'DB_NAME',
-            default='meda_db'
-        ),
+use_sqlite = False
+if db_engine == 'django.db.backends.sqlite3' or db_password == 'your_mysql_password':
+    use_sqlite = True
+else:
+    try:
+        import MySQLdb
+        conn = MySQLdb.connect(
+            host=config('DB_HOST', default='127.0.0.1'),
+            user=config('DB_USER', default='root'),
+            passwd=db_password,
+            port=int(config('DB_PORT', default=3306)),
+            connect_timeout=2
+        )
+        conn.close()
+    except Exception:
+        use_sqlite = True
 
-        'USER': config(
-            'DB_USER',
-            default='root'
-        ),
-
-        'PASSWORD': config(
-            'DB_PASSWORD',
-            default=''
-        ),
-
-        'HOST': config(
-            'DB_HOST',
-            default='127.0.0.1'
-        ),
-
-        'PORT': config(
-            'DB_PORT',
-            default='3306'
-        ),
-
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+if use_sqlite:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': db_engine,
+            'NAME': config('DB_NAME', default='meda_db'),
+            'USER': config('DB_USER', default='root'),
+            'PASSWORD': db_password,
+            'HOST': config('DB_HOST', default='127.0.0.1'),
+            'PORT': config('DB_PORT', default='3306'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
+
 
 
 # ============================================================
