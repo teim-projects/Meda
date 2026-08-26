@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 80" width="160" height="80">
+  <g transform="translate(10, 5)">
+    <!-- Tricolor Ribbon for 75 -->
+    <path d="M 15,25 Q 35,5 55,20 T 95,20" fill="none" stroke="#FF9933" stroke-width="7" stroke-linecap="round"/>
+    <path d="M 15,32 Q 35,12 55,27 T 95,27" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+    <path d="M 15,39 Q 35,19 55,34 T 95,34" fill="none" stroke="#128807" stroke-width="7" stroke-linecap="round"/>
+    <!-- Chakra Blue Dot -->
+    <circle cx="55" cy="27" r="4" fill="#000080"/>
+    <!-- 75 Stylized Text -->
+    <text x="70" y="38" font-family="Arial, sans-serif" font-weight="900" font-size="28" fill="#128807">75</text>
+    <!-- Devanagari Text below -->
+    <text x="5" y="60" font-family="'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif" font-weight="700" font-size="10" fill="#E65100">स्वातंत्र्याचा अमृत महोत्सव</text>
+  </g>
+</svg>

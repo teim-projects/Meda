@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/logo.png';
-import { 
-  Sun, 
+import {
+  Sun,
   Wind,
-  Search, 
-  Bell, 
-  LogOut, 
-  ChevronDown, 
-  LayoutDashboard, 
+  Search,
+  Bell,
+  LogOut,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
   Users,
-  BarChart3, 
-  Settings, 
-  ShieldCheck, 
+  BarChart3,
+  Settings,
+  ShieldCheck,
   Zap,
   Plug,
   Download,
@@ -29,6 +31,7 @@ import { medaApi } from '../../services/medaApi';
 const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaConnected }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem('sidebar_collapsed') === 'true');
   const [isMedaConnected, setIsMedaConnected] = useState(propIsMedaConnected || false);
   const navigate = useNavigate();
 
@@ -41,6 +44,12 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
         .catch(() => setIsMedaConnected(false));
     }
   }, [propIsMedaConnected]);
+
+  const toggleSidebar = () => {
+    const nextState = !isCollapsed;
+    setIsCollapsed(nextState);
+    localStorage.setItem('sidebar_collapsed', String(nextState));
+  };
 
   const handleLogout = (e) => {
     if (e) {
@@ -80,12 +89,23 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
       <header className="navbar-container">
         <div className="brand-section">
           {/* Mobile Menu Toggle Button */}
-          <button 
+          <button
             className="mobile-toggle-btn"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle Navigation"
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+
+          {/* Desktop Sidebar Collapse Toggle Button */}
+          <button
+            type="button"
+            className="desktop-sidebar-toggle-btn"
+            onClick={toggleSidebar}
+            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            aria-label="Toggle Sidebar Collapse"
+          >
+            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
 
           <div className="logo-icon-wrap">
@@ -99,10 +119,10 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
 
         <div className="search-box">
           <Search size={18} className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Search meda platform..." 
-            className="search-input" 
+          <input
+            type="text"
+            placeholder="Search meda platform..."
+            className="search-input"
           />
         </div>
 
@@ -113,8 +133,8 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           </button>
 
           <div className="user-profile-rel">
-            <button 
-              className="user-profile-btn" 
+            <button
+              className="user-profile-btn"
               onClick={() => setShowDropdown(!showDropdown)}
             >
               <div className="avatar-circle">
@@ -146,21 +166,22 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
       {/* Main App Layout */}
       <div className="layout-body">
         {/* Left Sidebar Pane (Desktop) */}
-        <aside className="sidebar-dark-pane desktop-sidebar">
+        <aside className={`sidebar-dark-pane desktop-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
             <div className="nav-group">
-              <p className="nav-group-title">MAIN NAVIGATION</p>
+              {!isCollapsed && <p className="nav-group-title">MAIN NAVIGATION</p>}
               <ul className="nav-list">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   return (
                     <li key={item.name}>
-                      <NavLink 
-                        to={item.path} 
+                      <NavLink
+                        to={item.path}
+                        title={isCollapsed ? item.name : undefined}
                         className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
                       >
                         <Icon size={18} className="link-icon" />
-                        <span>{item.name}</span>
+                        {!isCollapsed && <span>{item.name}</span>}
                       </NavLink>
                     </li>
                   );
@@ -169,17 +190,17 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
             </div>
 
             <div className="nav-group">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 8 }}>
-                <p className="nav-group-title" style={{ marginBottom: 0 }}>MEDA INTEGRATION</p>
-                <span style={{ 
-                  fontSize: '0.6rem', 
-                  fontWeight: 700, 
-                  color: isMedaConnected ? '#10b981' : '#ef4444', 
+              <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: isCollapsed ? 'center' : 'space-between', paddingRight: isCollapsed ? 0 : 8 }}>
+                {!isCollapsed && <p className="nav-group-title" style={{ marginBottom: 0 }}>MEDA INTEGRATION</p>}
+                <span style={{
+                  fontSize: isCollapsed ? '0.55rem' : '0.6rem',
+                  fontWeight: 700,
+                  color: isMedaConnected ? '#10b981' : '#ef4444',
                   background: isMedaConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                  padding: '2px 6px',
+                  padding: isCollapsed ? '2px 4px' : '2px 6px',
                   borderRadius: '4px'
                 }}>
-                  {isMedaConnected ? 'ONLINE' : 'OFFLINE'}
+                  {isCollapsed ? '•' : (isMedaConnected ? 'ONLINE' : 'OFFLINE')}
                 </span>
               </div>
 
@@ -191,14 +212,14 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
                   if (isDisabled) {
                     return (
                       <li key={item.name}>
-                        <div 
+                        <div
                           className="dark-nav-link disabled"
-                          title="Requires active MEDA login"
+                          title={isCollapsed ? `${item.name} (Requires active MEDA login)` : 'Requires active MEDA login'}
                           style={{ opacity: 0.5, cursor: 'not-allowed' }}
                         >
                           <Icon size={18} className="link-icon" />
-                          <span>{item.name}</span>
-                          <Lock size={12} style={{ marginLeft: 'auto', color: '#64748b' }} />
+                          {!isCollapsed && <span>{item.name}</span>}
+                          {!isCollapsed && <Lock size={12} style={{ marginLeft: 'auto', color: '#64748b' }} />}
                         </div>
                       </li>
                     );
@@ -206,12 +227,13 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
 
                   return (
                     <li key={item.name}>
-                      <NavLink 
-                        to={item.path} 
+                      <NavLink
+                        to={item.path}
+                        title={isCollapsed ? item.name : undefined}
                         className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
                       >
                         <Icon size={18} className="link-icon" />
-                        <span>{item.name}</span>
+                        {!isCollapsed && <span>{item.name}</span>}
                       </NavLink>
                     </li>
                   );
@@ -221,18 +243,18 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           </div>
 
           <div style={{ paddingTop: 12, borderTop: '1px solid #114250' }}>
-            <button onClick={handleLogout} className="logout-btn">
+            <button onClick={handleLogout} className="logout-btn" title={isCollapsed ? 'Sign Out' : undefined}>
               <LogOut size={16} />
-              <span>Sign Out</span>
+              {!isCollapsed && <span>Sign Out</span>}
             </button>
           </div>
         </aside>
 
         {/* Mobile Navigation Backdrop Overlay */}
         {mobileOpen && (
-          <div 
-            className="mobile-backdrop" 
-            onClick={() => setMobileOpen(false)} 
+          <div
+            className="mobile-backdrop"
+            onClick={() => setMobileOpen(false)}
           />
         )}
 
@@ -246,8 +268,8 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
                   const Icon = item.icon;
                   return (
                     <li key={item.name}>
-                      <NavLink 
-                        to={item.path} 
+                      <NavLink
+                        to={item.path}
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
                       >
@@ -263,10 +285,10 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
             <div className="nav-group">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 8 }}>
                 <p className="nav-group-title" style={{ marginBottom: 0 }}>MEDA INTEGRATION</p>
-                <span style={{ 
-                  fontSize: '0.6rem', 
-                  fontWeight: 700, 
-                  color: isMedaConnected ? '#10b981' : '#ef4444', 
+                <span style={{
+                  fontSize: '0.6rem',
+                  fontWeight: 700,
+                  color: isMedaConnected ? '#10b981' : '#ef4444',
                   background: isMedaConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
                   padding: '2px 6px',
                   borderRadius: '4px'
@@ -283,7 +305,7 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
                   if (isDisabled) {
                     return (
                       <li key={item.name}>
-                        <div 
+                        <div
                           className="dark-nav-link disabled"
                           style={{ opacity: 0.5, cursor: 'not-allowed' }}
                         >
@@ -297,8 +319,8 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
 
                   return (
                     <li key={item.name}>
-                      <NavLink 
-                        to={item.path} 
+                      <NavLink
+                        to={item.path}
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive }) => `dark-nav-link ${isActive ? 'active' : ''}`}
                       >
@@ -603,6 +625,34 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           justify-content: space-between;
           gap: 12px;
           height: 100%;
+          transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .desktop-sidebar.collapsed {
+          width: var(--sidebar-collapsed-width);
+          min-width: var(--sidebar-collapsed-width);
+          padding: 16px 6px;
+          align-items: center;
+        }
+
+        .desktop-sidebar.collapsed .dark-nav-link {
+          justify-content: center;
+          padding: 10px 0;
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+        }
+
+        .desktop-sidebar.collapsed .logout-btn {
+          justify-content: center;
+          padding: 10px 0;
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+        }
+
+        .desktop-sidebar.collapsed .nav-list {
+          align-items: center;
         }
 
         .nav-group-title {
@@ -678,6 +728,7 @@ const Sidebar = ({ children, currentUser, onLogout, isMedaConnected: propIsMedaC
           overflow-y: auto;
           height: 100%;
           width: 100%;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         /* Mobile Backdrop & Drawer */

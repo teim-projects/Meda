@@ -4,6 +4,9 @@ import axios from "axios";
 import { API_BASE_URL } from "../../services/apiConfig";
 
 import heroLogo from "../../assets/logo.png";
+import amritLogo from "../../assets/75.jpg";
+import sealLogo from "../../assets/MH.png";
+import ashokaLogo from "../../assets/emb.png";
 import bgVideo from "../../assets/bg_video.mp4";
 
 /* =====================================================================
@@ -126,34 +129,66 @@ function VideoBackground() {
 }
 
 /* ---------------------------------------------------------------
-   CHROME
+   CHROME: Official Top Navbar Header
 ----------------------------------------------------------------*/
 const fmt = (n, d = 0) => n.toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d });
 
 function BrandBar() {
-  const now = useClock();
   return (
-    <header className="relative z-30 flex items-center justify-between px-5 py-4 sm:px-8">
-      <div className="flex items-center gap-2.5">
-        <img src={heroLogo} alt="meda" className="h-[140px] w-[140px] rounded-2xl object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.5)]" />
-      </div>
-      <div className="flex items-center gap-2 sm:gap-4">
-        <span className="hidden items-center gap-1.5 text-[11.5px] font-bold text-white/90 drop-shadow-md md:flex">
-          <span className="live-dot h-1.5 w-1.5 rounded-full bg-emerald-400" /> 9 sources · all nominal
-        </span>
-        <span className="mono rounded-lg border border-white/30 bg-slate-900/60 px-3 py-1.5 text-[11.5px] font-semibold tracking-wider text-white tabular-nums shadow-lg backdrop-blur-md">
-          {now.toLocaleTimeString("en-GB")} IST
-        </span>
+    <header className="relative z-30 w-full bg-white shadow-md border-t-4 border-[#362029]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between px-3 py-2 sm:px-6 md:px-8">
+        
+        {/* Left Section: MEDA Emblem & Amrit Mahotsav Logo */}
+        <div className="flex items-center gap-3 sm:gap-5">
+          <img
+            src={heroLogo}
+            alt="MEDA Mahaurja Logo"
+            className="h-10 w-auto sm:h-12 md:h-14 object-contain"
+          />
+          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
+          <img
+            src={amritLogo}
+            alt="75 Swatantryacha Amrit Mahotsav"
+            className="h-9 w-auto sm:h-11 md:h-13 object-contain"
+          />
+        </div>
+
+        {/* Center Section: Official Marathi Title */}
+        <div className="my-1 flex flex-col items-center text-center px-2">
+          <h1 className="text-[17px] font-bold tracking-tight text-[#1b2559] sm:text-[22px] md:text-[25px] leading-tight">
+            महाराष्ट्र ऊर्जा विकास अभिकरण (महाऊर्जा)
+          </h1>
+          <p className="mt-0.5 text-[12px] font-semibold text-[#3b4874] sm:text-[14px] md:text-[15px] leading-tight">
+            (महाराष्ट्र शासन संस्था)
+          </p>
+        </div>
+
+        {/* Right Section: Maharashtra Rajyamudra & Satyameva Jayate Emblem */}
+        <div className="flex items-center gap-3 sm:gap-5">
+          <img
+            src={sealLogo}
+            alt="Maharashtra Rajyamudra Golden Seal"
+            className="h-10 w-auto sm:h-12 md:h-13 object-contain"
+          />
+          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
+          <img
+            src={ashokaLogo}
+            alt="National Emblem of India Satyameva Jayate"
+            className="h-10 w-auto sm:h-12 md:h-14 object-contain"
+          />
+        </div>
+
       </div>
     </header>
   );
 }
 
 function Ticker({ active }) {
+  const now = useClock();
   const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
   return (
-    <div className="relative z-30 w-full overflow-hidden border-t border-white/20 bg-slate-900/65 py-2.5 backdrop-blur-lg">
-      <div className="ticker-track">
+    <div className="relative z-30 flex w-full items-center justify-between border-t border-white/20 bg-slate-900/65 py-2.5 px-4 backdrop-blur-lg">
+      <div className="ticker-track flex-1 overflow-hidden">
         {items.map((t, i) => (
           <span key={i} className="flex shrink-0 items-center gap-2 px-6 text-[11.5px] font-semibold whitespace-nowrap text-white/90">
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: active.accent, boxShadow: `0 0 8px ${active.accent}90`, transition: "all .8s" }} />
@@ -161,6 +196,9 @@ function Ticker({ active }) {
           </span>
         ))}
       </div>
+      <span className="mono shrink-0 ml-4 rounded-lg border border-white/30 bg-slate-900/80 px-3 py-1 text-[11px] font-semibold tracking-wider text-white tabular-nums shadow-lg backdrop-blur-md">
+        {now.toLocaleTimeString("en-GB")} IST
+      </span>
     </div>
   );
 }
@@ -168,61 +206,61 @@ function Ticker({ active }) {
 /* ---------------------------------------------------------------
    LEFT HUD
 ----------------------------------------------------------------*/
-function LiveHud({ active }) {
-  const [co2, setCo2] = useState(12_400_000);
-  const [rel, setRel] = useState(99.8);
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setCo2((c) => c + Math.floor(Math.random() * 900 + 150));
-      setRel((r) => Math.min(99.9, Math.max(99.6, r + (Math.random() - 0.5) * 0.12)));
-    }, 1400);
-    return () => window.clearInterval(id);
-  }, []);
+const MINT_CARD_GRADIENT = "linear-gradient(135deg, #eef7f0 0%, #d5ebd9 50%, #bfe2c5 100%)";
 
-  const tiles = [
-    { label: "Solar Installed", val: "4.8 GW", color: "#d97706", bg: "rgba(245,158,11,0.18)",
-      icon: <svg viewBox="0 0 24 24" {...S}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg> },
-    { label: "Wind Power", val: "5.2 GW", color: "#0891b2", bg: "rgba(6,182,212,0.18)",
-      icon: <svg viewBox="0 0 24 24" {...S}><path d="M12.8 19.6A2 2 0 1 0 14 16H2" /><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" /><path d="M9.8 4.4A2 2 0 1 1 11 8H2" /></svg> },
-    { label: "Tons CO₂ Saved", val: `${fmt(co2 / 1_000_000, 1)}M`, color: "#059669", bg: "rgba(16,185,129,0.18)",
-      icon: <svg viewBox="0 0 24 24" {...S}><path d="M4 20c0-8 6-14 16-14 0 9-5.4 14-11 14-2.6 0-5-1.6-5-1.6Z" /><path d="M8 20C9.5 15 13 12 17 10" /></svg> },
-    { label: "Grid Reliability", val: `${rel.toFixed(1)}%`, color: "#7c3aed", bg: "rgba(139,92,246,0.18)",
-      icon: <svg viewBox="0 0 24 24" {...S}><path d="M15 7h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-1" /><path d="M5 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h1" /><path d="m11 7-3 5h4l-3 5" /><path d="M22 11v2" /></svg> },
-  ];
+const ENERGY_CAPACITY_BLOCKS = [
+  { id: "solar", val: "20,477.42", unit: "MW", title: "Solar Power Projects" },
+  { id: "wind", val: "6,371.81", unit: "MW", title: "Wind Power Projects" },
+  { id: "bagasse", val: "2,732.80", unit: "MW", title: "Bagasse Based Co-gen Power" },
+  { id: "small-hydro", val: "374.08", unit: "MW", title: "Small Hydro Power Projects" },
+  { id: "large-hydro", val: "3061", unit: "MW", title: "Large Hydro Power Projects" },
+  { id: "biomass", val: "215.00", unit: "MW", title: "Biomass Based Power Projects" },
+  { id: "solid-waste", val: "59.79", unit: "MW", title: "Municipal Solid Waste Projects" },
+];
 
+function EnergyCard({ block, index }) {
   return (
-    <div className="relative z-20 w-full max-w-[560px]">
-      <div className="pop-in" style={{ animationDelay: "0.08s" }}>
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-slate-900/60 px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-white shadow-md backdrop-blur-md" style={{ borderColor: `${active.accent}70`, transition: "all .8s" }}>
-          <span className="live-dot h-1.5 w-1.5 rounded-full" style={{ background: active.accent }} />
-          {active.hi} · live national grid
-        </span>
+    <div
+      className="pop-in group relative flex h-[96px] w-full flex-col justify-between overflow-hidden rounded-xl border-2 border-white/90 bg-white p-0.5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      style={{ animationDelay: `${0.1 + index * 0.04}s` }}
+    >
+      <div
+        className="flex h-full w-full flex-col justify-between rounded-lg p-3 transition-all duration-300"
+        style={{ background: MINT_CARD_GRADIENT }}
+      >
+        <div className="flex items-baseline gap-1.5">
+          <span className="mono text-[19px] font-extrabold tracking-tight text-slate-900 tabular-nums sm:text-[21px]">
+            {block.val}
+          </span>
+          <span className="text-[13px] font-bold text-slate-900 sm:text-[14px]">
+            {block.unit}
+          </span>
+        </div>
 
-        <h2 className="mt-5 text-[40px] leading-[1.04] font-bold tracking-tight text-white sm:text-[54px] drop-shadow-lg">
-          Nine clean sources.
-          <br />
-          <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(90deg, ${active.accent}, ${active.accent2})`, transition: "all .8s" }}>One living grid.</span>
-        </h2>
-        <p className="mt-4 max-w-[470px] text-[15px] leading-relaxed font-medium text-slate-200 drop-shadow-md">
-          Solar, wind, hybrid, biomass, waste-to-energy, green hydrogen, BESS, pumped storage and EV charging — streaming together in the scene behind you.
-        </p>
+        <h3 className="text-[12px] font-normal leading-snug text-slate-800 line-clamp-2 sm:text-[12.5px]">
+          {block.title}
+        </h3>
+      </div>
+    </div>
+  );
+}
+
+function LiveHud({ active }) {
+  return (
+    <div className="relative z-20 w-full max-w-[860px]">
+      <div className="pop-in" style={{ animationDelay: "0.08s" }}>
+        <h1 className="text-[22px] font-bold tracking-tight text-white leading-snug drop-shadow-md sm:text-[26px] lg:text-[28px]">
+          Maharashtra Renewable Energy Projects
+          <span className="mt-1 block text-[15px] font-semibold text-emerald-400 drop-shadow-sm sm:text-[18px] lg:text-[20px]">
+            – Commissioning Status Dashboard
+          </span>
+        </h1>
       </div>
 
-      <div className="mt-7 grid max-w-[460px] grid-cols-2 gap-3">
-        {tiles.map((t, i) => (
-          <div
-            key={t.label}
-            className="pop-in group flex items-center gap-3 rounded-xl border border-white/80 bg-white/85 px-4 py-3.5 shadow-xl backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-2xl"
-            style={{ animationDelay: `${0.15 + i * 0.08}s` }}
-          >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" style={{ background: t.bg, color: t.color }}>
-              <span className="h-5 w-5">{t.icon}</span>
-            </span>
-            <span className="min-w-0">
-              <span className="mono block text-[17px] leading-tight font-bold text-slate-900 tabular-nums">{t.val}</span>
-              <span className="block text-[11px] font-medium text-slate-600">{t.label}</span>
-            </span>
-          </div>
+      {/* Uniform grid of all 7 energy capacity blocks */}
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {ENERGY_CAPACITY_BLOCKS.map((block, i) => (
+          <EnergyCard key={block.id} block={block} index={i} />
         ))}
       </div>
     </div>
@@ -417,7 +455,7 @@ function LoginCard({ active, onLoginSuccess }) {
                   </span>
                 ) : (
                   <span className="relative flex items-center gap-2">
-                    Enter control room
+                    Login
                     <svg viewBox="0 0 24 24" className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h13M12 5.5 18.5 12 12 18.5" /></svg>
                   </span>
                 )}
@@ -471,18 +509,14 @@ export default function Login({ onLoginSuccess }) {
           <BrandBar />
         </div>
 
-        <main className="relative z-20 mx-auto flex w-full max-w-[1380px] flex-1 flex-col items-center justify-center gap-10 px-5 py-6 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:px-10">
-          <div className={`w-full max-w-[560px] lg:w-auto fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "200ms" }}>
+        <main className="relative z-20 mx-auto flex w-full max-w-[1540px] flex-1 flex-col items-center justify-center gap-8 px-4 py-6 xl:flex-row xl:items-end xl:justify-between xl:gap-12 xl:px-8 xl:pb-10">
+          <div className={`w-full max-w-[880px] xl:w-auto flex-1 fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "200ms" }}>
             <LiveHud active={active} />
           </div>
-          <div className={`flex w-full justify-center lg:w-auto lg:justify-end fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "400ms" }}>
+          <div className={`flex w-full justify-center xl:w-auto xl:justify-end shrink-0 fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "400ms" }}>
             <LoginCard active={active} onLoginSuccess={onLoginSuccess} />
           </div>
         </main>
-
-        <div className={`fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "600ms" }}>
-          <Ticker active={active} />
-        </div>
       </div>
     </div>
   );
