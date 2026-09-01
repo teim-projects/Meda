@@ -112,3 +112,78 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+/* ========================================================= */
+/* GLOBAL PRINT REPORT SYSTEM STYLES                         */
+/* ========================================================= */
+@media print {
+  /* Page Setup & Margins */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 12mm 15mm;
+  }
+
+  /* Force exact background colors and graphics printing */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Hide navigation chrome, sidebars, mobile elements, actions, search inputs */
+  .navbar-container,
+  .sidebar-dark-pane,
+  .desktop-sidebar,
+  .mobile-drawer,
+  .mobile-backdrop,
+  .mobile-toggle-btn,
+  .desktop-sidebar-toggle-btn,
+  .dth-right-actions,
+  .btn-export-outlined,
+  .btn-refresh-filled,
+  .tab-scroll-btn,
+  .btn-reset-filters,
+  .action-btn-cell,
+  .col-actions,
+  .pagination-wrap,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Expand main page containers to flow continuously across printed pages */
+  html, body, #root, .app-shell, .layout-body, .content-white-pane, .meda-dashboard-wrap {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    position: static !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* High contrast text for physical paper print */
+  body {
+    color: #0f172a !important;
+    background: #ffffff !important;
+  }
+
+  /* Clean page breaks */
+  .light-card,
+  .kpi-card,
+  .chart-card,
+  .master-table-card,
+  .navo-title-card,
+  .navo-total-capacity-card,
+  .category-active-notice,
+  tr,
+  figure {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+}

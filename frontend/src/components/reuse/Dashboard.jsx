@@ -40,6 +40,7 @@ import {
 import axios from 'axios';
 import { medaApi } from '../../services/medaApi';
 import { API_BASE_URL } from '../../services/apiConfig';
+import logoImg from '../../assets/logo.png';
 
 const Dashboard = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -524,8 +525,63 @@ const Dashboard = ({ currentUser }) => {
 
   const currentSelectedDistrictObj = MAHARASHTRA_WIND_DISTRICTS.find(d => d.id === selectedWindDistrict) || MAHARASHTRA_WIND_DISTRICTS[0];
 
+  const handleExportReport = () => {
+    const originalTitle = document.title;
+    const categoryName = currentCategory?.label || 'Overview';
+    const dateStr = new Date().toISOString().split('T')[0];
+    document.title = `MEDA_Executive_Report_${categoryName.replace(/\s+/g, '_')}_${dateStr}`;
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+  };
+
   return (
     <div className="meda-dashboard-wrap animate-fade-in">
+      {/* PRINT-ONLY OFFICIAL REPORT HEADER */}
+      <div className="print-report-header">
+        <div className="prh-top">
+          <div className="prh-brand">
+            <img src={logoImg} alt="MEDA Logo" className="prh-logo" />
+            <div>
+              <h1 className="prh-org-title">MAHARASHTRA ENERGY DEVELOPMENT AGENCY</h1>
+              <p className="prh-org-sub">A Government of Maharashtra Undertaking • Energy Department</p>
+            </div>
+          </div>
+          <div className="prh-meta">
+            <div className="prh-meta-badge">OFFICIAL EXECUTIVE REPORT</div>
+            <p className="prh-meta-item"><strong>Generated On:</strong> {new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+            <p className="prh-meta-item"><strong>Exported By:</strong> {username}</p>
+          </div>
+        </div>
+
+        <div className="prh-divider"></div>
+
+        <div className="prh-report-info">
+          <div className="prh-info-box">
+            <span className="prh-info-label">REPORT MODULE</span>
+            <span className="prh-info-value">{currentCategory.label} Dashboard</span>
+          </div>
+          <div className="prh-info-box">
+            <span className="prh-info-label">TOTAL CAPACITY</span>
+            <span className="prh-info-value">{currentCategory.capacity}</span>
+          </div>
+          <div className="prh-info-box">
+            <span className="prh-info-label">TOTAL PROJECTS</span>
+            <span className="prh-info-value">{currentCategory.count}</span>
+          </div>
+          <div className="prh-info-box">
+            <span className="prh-info-label">APPLIED FILTERS</span>
+            <span className="prh-info-value">
+              {energySourceFilter !== 'All' ? `Source: ${energySourceFilter} ` : ''}
+              {zoneFilter !== 'All' ? `Zone: ${zoneFilter} ` : ''}
+              {agreementTypeFilter !== 'All' ? `Agreement: ${agreementTypeFilter} ` : ''}
+              {energySourceFilter === 'All' && zoneFilter === 'All' && agreementTypeFilter === 'All' ? 'All Sources & Regions' : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* 1. TOP HEADER OVERVIEW BAR */}
       <div className="dashboard-top-header">
         <div className="dth-left">
@@ -534,7 +590,7 @@ const Dashboard = ({ currentUser }) => {
         </div>
 
         <div className="dth-right-actions">
-          <button className="btn-export-outlined" onClick={() => window.print()}>
+          <button className="btn-export-outlined" onClick={handleExportReport} title="Export printable report">
             <Download size={14} />
             <span>Export</span>
           </button>
@@ -613,772 +669,1328 @@ const Dashboard = ({ currentUser }) => {
 
       {/* CONDITIONAL DASHBOARD VIEWS BASED ON ACTIVE TAB */}
       {activeTab === 'summary' ? (
-        /* SUMMARY VIEW */
-        <div className="category-view-container animate-fade-in space-y-6">
-          {/* Executive Hero Highlight Card */}
-          <div className="executive-hero-card">
-            <div className="ehc-badge-pill">
-              <span className="ehc-dot" />
-              TOTAL INSTALLED CAPACITY
-            </div>
-            <div className="pink-card-val">
-              33,283.925 <span className="pink-card-unit">MW</span>
-            </div>
-            <div className="pink-card-lbl">Total Commissioned Capacity Across All Renewable Energy Projects</div>
+        /* SUMMARY VIEW (Matching Image 1 Reference Dashboard UI & Colors) */
+        <div className="category-view-container animate-fade-in space-y-5">
+          {/* Main Title Banner Matching Image 1 */}
+          <div className="navo-title-card">
+            <h2 className="navo-title-text">
+              Maharashtra Renewable Energy Projects – Commissioning Status Dashboard
+            </h2>
+          </div>
+
+          {/* Total Installed Capacity Banner Matching Image 1 */}
+          <div className="navo-total-capacity-card">
+            <span className="navo-tc-label">TOTAL INSTALLED CAPACITY : </span>
+            <span className="navo-tc-val">33283.925 MW</span>
           </div>
 
           {/* Top Row (3 Cards) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Card 1: Solar Power Projects */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-rose-500" />
-              <div>
-                <div className="ddc-title">Solar Power Projects</div>
-                <div className="ddc-val">20,477.42 <span className="ddc-unit">MW</span></div>
-              </div>
-              <div className="card-bottom-action gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('solar-grid-conn')}
-                  className="card-redirect-btn"
-                  title="Navigate to Grid Connected"
-                >
-                  Grid Connected ➔
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('solar-offgrid-sum')}
-                  className="card-redirect-btn"
-                  title="Navigate to Off Grid"
-                >
-                  Off Grid ➔
-                </button>
-              </div>
-            </div>
-
-            {/* Card 2: Wind Power Projects */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-emerald-500" />
-              <div>
-                <div className="ddc-title">Wind Power Projects</div>
-                <div className="ddc-val">6,371.81 <span className="ddc-unit">MW</span></div>
-              </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('wind')}
-                  className="card-redirect-btn"
-                  title="Navigate to Wind"
-                >
-                  Wind ➔
-                </button>
+            {/* Card 1: Solar / Grid Connected / Off Grid (Pink/Magenta Gradient) */}
+            <div className="navo-gradient-card card-pink-magenta">
+              <div className="navo-card-inner">
+                <div>
+                  <div className="navo-card-mw">20,477.42 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-footer">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('solar-grid-conn')}
+                      className="navo-link-btn"
+                      title="Navigate to Grid Connected"
+                    >
+                      Grid Connected ➔
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('solar-offgrid-sum')}
+                      className="navo-link-btn"
+                      title="Navigate to Off Grid"
+                    >
+                      Off Grid ➔
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Card 3: Bagasse Based Co-gen Power */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-amber-500" />
-              <div>
-                <div className="ddc-title">Bagasse Based Co-gen Power</div>
-                <div className="ddc-val">2,732.80 <span className="ddc-unit">MW</span></div>
+            {/* Card 2: Wind Power Project (Green Gradient) */}
+            <div className="navo-gradient-card card-green">
+              <div className="navo-card-inner">
+                <div>
+                  <div className="navo-card-mw">6,371.81 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-footer">
+                  <span className="navo-card-label">Wind Power Project</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('wind')}
+                    className="navo-link-btn"
+                    title="Navigate to Wind"
+                  >
+                    Wind ➔
+                  </button>
+                </div>
               </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('bagasse')}
-                  className="card-redirect-btn"
-                  title="Navigate to Bagasse"
-                >
-                  Bagasse ➔
-                </button>
+            </div>
+
+            {/* Card 3: Bagasse Power Project (Peach/Orange Gradient) */}
+            <div className="navo-gradient-card card-peach-orange">
+              <div className="navo-card-inner">
+                <div>
+                  <div className="navo-card-mw">2,732.80 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-footer">
+                  <span className="navo-card-label">Bagasse Power Project</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('bagasse')}
+                    className="navo-link-btn"
+                    title="Navigate to Bagasse"
+                  >
+                    Bagasse ➔
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Bottom Row (4 Cards Grid) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Card 4: Small Hydro */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-cyan-500" />
-              <div>
-                <div className="ddc-title">Small Hydro Power Projects</div>
-                <div className="ddc-val">374.08 <span className="ddc-unit">MW</span></div>
-              </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('small-hydro')}
-                  className="card-redirect-btn"
-                  title="Navigate to Small Hydro Projects"
-                >
-                  Small Hydro Projects ➔
-                </button>
-              </div>
-            </div>
-
-            {/* Card 5: Large Hydro */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-blue-500" />
-              <div>
-                <div className="ddc-title">Large Hydro Power Projects</div>
-                <div className="ddc-val">3061 <span className="ddc-unit">MW</span></div>
+            {/* Card 4: Small Hydro Projects (Cyan/Blue Gradient) */}
+            <div className="navo-gradient-card card-cyan-blue">
+              <div className="navo-card-inner">
+                <div>
+                  <div className="navo-card-mw">374.08 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-footer">
+                  <span className="navo-card-label">Small Hydro Projects</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('small-hydro')}
+                    className="navo-link-btn"
+                    title="Navigate to Small Hydro Projects"
+                  >
+                    Small Hydro ➔
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Card 6: Biomass */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-yellow-500" />
-              <div>
-                <div className="ddc-title">Biomass Based Power Projects</div>
-                <div className="ddc-val">215.00 <span className="ddc-unit">MW</span></div>
-              </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('biomass')}
-                  className="card-redirect-btn"
-                  title="Navigate to Biomass"
-                >
-                  Biomass ➔
-                </button>
+            {/* Card 5: Municipal Solid Waste (Lavender/Purple Gradient) */}
+            <div className="navo-gradient-card card-lavender-purple">
+              <div className="navo-card-inner">
+                <div>
+                  <div className="navo-card-mw">59.79 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-footer">
+                  <span className="navo-card-label">Municipal Solid Waste</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('municipal-waste')}
+                    className="navo-link-btn"
+                    title="Navigate to Municipal Solid Waste"
+                  >
+                    MSW ➔
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Card 7: Municipal Solid Waste */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-purple-500" />
-              <div>
-                <div className="ddc-title">Municipal Solid Waste Power Projects</div>
-                <div className="ddc-val">59.79 <span className="ddc-unit">MW</span></div>
+            {/* Card 6: Biomass Power Project (Gold/Yellow Gradient) */}
+            <div className="navo-gradient-card card-gold-yellow">
+              <div className="navo-card-inner">
+                <div>
+                  <div className="navo-card-mw">215.00 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-footer">
+                  <span className="navo-card-label">Biomass Power Project</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('biomass')}
+                    className="navo-link-btn"
+                    title="Navigate to Biomass"
+                  >
+                    Biomass ➔
+                  </button>
+                </div>
               </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('municipal-waste')}
-                  className="card-redirect-btn"
-                  title="Navigate to Municipal Solid Waste"
-                >
-                  Municipal Solid Waste ➔
-                </button>
+            </div>
+
+            {/* Card 7: Large Hydro Power Projects (Deep Teal/Cyan Gradient) */}
+            <div className="navo-gradient-card card-teal-ocean">
+              <div className="navo-card-inner">
+                <div>
+                  <div className="navo-card-mw">3061 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-footer">
+                  <span className="navo-card-label">Large Hydro Power Projects</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      ) : activeTab === 'solar-grid-conn' ? (
-        /* 1. GRID CONNECTED SOLAR PROJECTS VIEW */
-        <div className="category-view-container animate-fade-in space-y-6">
-          {/* Executive Hero Highlight Card */}
-          <div className="executive-hero-card">
-            <div className="ehc-badge-pill">
-              <span className="ehc-dot" />
-              COMMISSIONED GRID CAPACITY
-            </div>
-            <div className="pink-card-val">
-              20,477.42 <span className="pink-card-unit">MW</span>
-            </div>
-            <div className="pink-card-lbl">Total Grid Connected Solar Projects</div>
+      ) : activeTab === 'solar-grid-conn-summary' ? (
+        /* 1. GRID CONNECTED SOLAR PROJECTS VIEW (Matching Image 2 Reference UI & Colors) */
+        <div className="category-view-container animate-fade-in space-y-5">
+          {/* Main Title Banner Matching Image 2 */}
+          <div className="navo-title-card">
+            <h2 className="navo-title-text">
+              Commissioned Grid Connected Solar Projects
+            </h2>
           </div>
 
-          {/* 8 Data Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            {/* Card 1 */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-emerald-500" />
-              <div>
-                <div className="ddc-title">Total Open Access</div>
-                <div className="ddc-val">6,589.22 <span className="ddc-unit">MW</span></div>
+          {/* Top Hero Highlight Card (Pink/Magenta Gradient) */}
+          <div className="max-w-[480px] mx-auto">
+            <div className="navo-gradient-card card-pink-magenta text-center">
+              <div className="navo-card-inner items-center text-center justify-center space-y-1">
+                <div className="navo-card-mw text-3xl">
+                  20,477.42 <span className="navo-card-unit">MW</span>
+                </div>
+                <div className="text-sm font-bold text-slate-900">
+                  Total Grid Connected Solar Projects
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 8 Data Cards Grid (3 Columns Layout Matching Image 2) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Card 1: Solar Projects Under RE Policy */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">6,589.22 <span className="navo-card-unit">MW</span></div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('solar-grid')}
+                    className="navo-tag-link"
+                    title="Navigate to Solar Grid"
+                  >
+                    Solar Grid
+                  </button>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Projects Under RE Policy
+                </div>
               </div>
             </div>
 
-            {/* Card 2 with Bottom Link KUSUM A & C */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-amber-500" />
-              <div>
-                <div className="ddc-title">Total Kusum</div>
-                <div className="ddc-val">114.00 <span className="ddc-unit">MW</span></div>
-              </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('kusum-ac')}
-                  className="card-redirect-btn"
-                  title="Navigate to Kusum A & C Dashboard"
-                >
-                  KUSUM A & C ➔
-                </button>
-              </div>
-            </div>
-
-            {/* Card 3 with Bottom Link MSKVY 2.0 */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-blue-500" />
-              <div>
-                <div className="ddc-title">MSKVY Solar Power Projects</div>
-                <div className="ddc-val">5,253.60 <span className="ddc-unit">MW</span></div>
-              </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('mskvy')}
-                  className="card-redirect-btn"
-                  title="Navigate to MSKVY 2.0 Dashboard"
-                >
-                  MSKVY 2.0 ➔
-                </button>
+            {/* Card 2: Solar Project Under Kusum Scheme */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">114.00 <span className="navo-card-unit">MW</span></div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('kusum-ac')}
+                    className="navo-tag-link"
+                    title="Navigate to KUSUM Dashboard"
+                  >
+                    KUSUM
+                  </button>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Project Under Kusum Scheme
+                </div>
               </div>
             </div>
 
-            {/* Card 4 */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-teal-500" />
-              <div>
-                <div className="ddc-title">Rooftop Scheme</div>
-                <div className="ddc-val">8,000.04 <span className="ddc-unit">MW</span></div>
+            {/* Card 3: Solar Project Under MSKVY */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">5,697.35 <span className="navo-card-unit">MW</span></div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('mskvy')}
+                    className="navo-tag-link"
+                    title="Navigate to MSKVY Dashboard"
+                  >
+                    MSKVY
+                  </button>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Project Under MSKVY
+                </div>
               </div>
             </div>
 
-            {/* Card 5 with Bottom Link Government Building Solar */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-indigo-500" />
-              <div>
-                <div className="ddc-title">Government Building</div>
-                <div className="ddc-val">61.00 <span className="ddc-unit">MW</span></div>
-              </div>
-              <div className="card-bottom-action">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('govt-building-solar')}
-                  className="card-redirect-btn"
-                  title="Navigate to Government Building Solar"
-                >
-                  Govt Building Solar ➔
-                </button>
-              </div>
-            </div>
-
-            {/* Card 6 */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-slate-400" />
-              <div>
-                <div className="ddc-title">Sum of LIS</div>
-                <div className="ddc-val">0 <span className="ddc-unit">MW</span></div>
+            {/* Card 4: Solar Project under Rooftop Scheme */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">8,000.04 <span className="navo-card-unit">MW</span></div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('solar-rooftop')}
+                    className="navo-tag-link"
+                    title="Navigate to Rooftop Dashboard"
+                  >
+                    Rooftop
+                  </button>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Project under Rooftop Scheme
+                </div>
               </div>
             </div>
 
-            {/* Card 7 */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-slate-400" />
-              <div>
-                <div className="ddc-title">Sum of Textile</div>
-                <div className="ddc-val">0 <span className="ddc-unit">MW</span></div>
+            {/* Card 5: Solar Projects On Govt Building */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">61.00 <span className="navo-card-unit">MW</span></div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('govt-building-solar')}
+                    className="navo-tag-link"
+                    title="Navigate to Govt Building Solar"
+                  >
+                    Govt. Building Solar
+                  </button>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Projects On Govt Building
+                </div>
               </div>
             </div>
 
-            {/* Card 8 */}
-            <div className="dashboard-data-card">
-              <div className="ddc-accent-bar bg-cyan-500" />
-              <div>
-                <div className="ddc-title">Amrut Scheme</div>
-                <div className="ddc-val">15.81 <span className="ddc-unit">MW</span></div>
+            {/* Card 6: Solar Project Under Amrut Scheme */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">15.81 <span className="navo-card-unit">MW</span></div>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Project Under Amrut Scheme
+                </div>
+              </div>
+            </div>
+
+            {/* Card 7: Solar Project - Lift Irrigation System */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">0</div>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Project - Lift Irrigation System
+                </div>
+              </div>
+            </div>
+
+            {/* Card 8: Solar Project Under Textile Scheme */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">0</div>
+                </div>
+                <div className="navo-card-label mt-4">
+                  Solar Project Under Textile Scheme
+                </div>
               </div>
             </div>
           </div>
         </div>
       ) : activeTab === 'solar-offgrid-sum' ? (
-        /* OFF GRID SOLAR PROJECTS VIEW (Exact Screenshot Match - No Graphs) */
+        /* OFF GRID SOLAR PROJECTS VIEW (Matching Image 3 Reference UI & Colors) */
         <div className="category-view-container animate-fade-in space-y-6">
-          {/* Executive Hero Highlight Card */}
-          <div className="executive-hero-card">
-            <div className="ehc-badge-pill">
-              <span className="ehc-dot" />
-              TOTAL SOLAR PUMP CAPACITY
-            </div>
-            <div className="pink-card-val">
-              1,003,077
-            </div>
-            <div className="pink-card-lbl">Total Solar Pump</div>
+          {/* Main Title Banner Matching Image 3 */}
+          <div className="navo-title-card">
+            <h2 className="navo-title-text">
+              Off Grid Solar Projects
+            </h2>
           </div>
 
-          {/* Top Two Sections (MEDA & MSEDCL MTSKP) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Top Hero Highlight Card (Pink/Magenta Gradient) */}
+          <div className="max-w-[420px] mx-auto my-4">
+            <div className="navo-gradient-card card-pink-magenta text-center">
+              <div className="navo-card-inner items-center text-center justify-center space-y-1 py-3">
+                <div className="navo-card-mw text-3xl">
+                  1003077
+                </div>
+                <div className="text-sm font-bold text-slate-900">
+                  Total No. Of Solar Pump Installed
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Two Main Sections: MEDA (Left) & MSEDCL PM KUSUM B (Right) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 my-4">
             {/* Left Section: MEDA */}
-            <div className="space-y-3">
-              <div className="dashboard-data-card">
-                <div className="ddc-accent-bar bg-amber-500" />
-                <div>
-                  <div className="ddc-title">Total No. Of Pumps Installed by MEDA</div>
-                  <div className="ddc-val">265,083</div>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span className="font-semibold">PM KUSUM Component - B</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('pm-kusum')}
-                    className="card-redirect-btn"
-                    title="Navigate to PM Kusum Scheme"
-                  >
-                    PM Kusum Scheme ➔
-                  </button>
+            <div className="flex flex-col gap-5">
+              <div className="navo-gradient-card card-warm-gold">
+                <div className="navo-card-inner">
+                  <div className="flex items-start justify-between">
+                    <div className="navo-card-mw">265083</div>
+                    <span className="font-extrabold text-xs text-slate-900">MEDA</span>
+                  </div>
+                  <div className="navo-card-label mt-2">
+                    PM KUSUM Component - B
+                  </div>
                 </div>
               </div>
 
               {/* 3 HP Sub-cards */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="dashboard-data-card text-center justify-center">
-                  <div className="ddc-accent-bar bg-amber-400" />
-                  <div className="ddc-val text-lg">149,461</div>
-                  <div className="text-xs font-bold text-slate-500 mt-2">3 HP</div>
+                <div className="navo-subcard text-center p-2.5">
+                  <div className="font-extrabold text-lg text-slate-900 leading-tight">149461</div>
+                  <div className="text-xs font-extrabold text-slate-800 mt-1">3 HP</div>
                 </div>
-                <div className="dashboard-data-card text-center justify-center">
-                  <div className="ddc-accent-bar bg-amber-400" />
-                  <div className="ddc-val text-lg">88,989</div>
-                  <div className="text-xs font-bold text-slate-500 mt-2">5 HP</div>
+                <div className="navo-subcard text-center p-2.5">
+                  <div className="font-extrabold text-lg text-slate-900 leading-tight">88989</div>
+                  <div className="text-xs font-extrabold text-slate-800 mt-1">5 HP</div>
                 </div>
-                <div className="dashboard-data-card text-center justify-center">
-                  <div className="ddc-accent-bar bg-amber-400" />
-                  <div className="ddc-val text-lg">26,633</div>
-                  <div className="text-xs font-bold text-slate-500 mt-2">7.5 HP</div>
+                <div className="navo-subcard text-center p-2.5">
+                  <div className="font-extrabold text-lg text-slate-900 leading-tight">26633</div>
+                  <div className="text-xs font-extrabold text-slate-800 mt-1">7.5 HP</div>
                 </div>
               </div>
             </div>
 
-            {/* Right Section: MSEDCL MTSKP */}
-            <div className="space-y-3">
-              <div className="dashboard-data-card">
-                <div className="ddc-accent-bar bg-blue-500" />
-                <div>
-                  <div className="ddc-title">MSEDCL - Magel Tyala Saur Krushi Pump Yojana</div>
-                  <div className="ddc-val">512,303</div>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span className="font-semibold">MTSKP</span>
+            {/* Right Section: MSEDCL PM KUSUM B */}
+            <div className="flex flex-col gap-5">
+              <div className="navo-gradient-card card-warm-gold">
+                <div className="navo-card-inner">
+                  <div className="flex items-start justify-between">
+                    <div className="navo-card-mw">225691</div>
+                    <span className="font-extrabold text-xs text-slate-900">MSEDCL</span>
+                  </div>
+                  <div className="navo-card-label mt-2">
+                    PM KUSUM Component B
+                  </div>
                 </div>
               </div>
 
               {/* 3 HP Sub-cards */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="dashboard-data-card text-center justify-center">
-                  <div className="ddc-accent-bar bg-blue-400" />
-                  <div className="ddc-val text-lg">206,530</div>
-                  <div className="text-xs font-bold text-slate-500 mt-2">3 HP</div>
+                <div className="navo-subcard text-center p-2.5">
+                  <div className="font-extrabold text-lg text-slate-900 leading-tight">122376</div>
+                  <div className="text-xs font-extrabold text-slate-800 mt-1">3 HP</div>
                 </div>
-                <div className="dashboard-data-card text-center justify-center">
-                  <div className="ddc-accent-bar bg-blue-400" />
-                  <div className="ddc-val text-lg">241,732</div>
-                  <div className="text-xs font-bold text-slate-500 mt-2">5 HP</div>
+                <div className="navo-subcard text-center p-2.5">
+                  <div className="font-extrabold text-lg text-slate-900 leading-tight">80671</div>
+                  <div className="text-xs font-extrabold text-slate-800 mt-1">5 HP</div>
                 </div>
-                <div className="dashboard-data-card text-center justify-center">
-                  <div className="ddc-accent-bar bg-blue-400" />
-                  <div className="ddc-val text-lg">64,041</div>
-                  <div className="text-xs font-bold text-slate-500 mt-2">7.5 HP</div>
+                <div className="navo-subcard text-center p-2.5">
+                  <div className="font-extrabold text-lg text-slate-900 leading-tight">22644</div>
+                  <div className="text-xs font-extrabold text-slate-800 mt-1">7.5 HP</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Centered Section: Total No. Of Projects Installed By MSEDCL */}
-          <div className="max-w-[700px] mx-auto space-y-3 pt-2">
-            <div className="dashboard-data-card text-center">
-              <div className="ddc-accent-bar bg-emerald-500" />
-              <div>
-                <div className="ddc-title">Total No. Of Projects Installed By MSEDCL</div>
-                <div className="ddc-val">225,691</div>
-                <div className="text-xs font-semibold text-slate-500 mt-1">PM KUSUM Component B</div>
+          {/* Bottom Centered Section: MSEDCL Magel Tyala Saur Krushi Pump Yojana */}
+          <div className="max-w-[620px] mx-auto flex flex-col gap-5 pt-4">
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner">
+                <div className="flex items-start justify-between">
+                  <div className="navo-card-mw">512303</div>
+                  <span className="font-extrabold text-xs text-slate-900">MSEDCL</span>
+                </div>
+                <div className="navo-card-label mt-2">
+                  Magel Tyala Saur Krushi Pump Yojana
+                </div>
               </div>
             </div>
 
             {/* 3 HP Sub-cards */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="dashboard-data-card text-center">
-                <div className="ddc-accent-bar bg-emerald-400" />
-                <div className="ddc-val text-lg">122,376</div>
-                <div className="text-xs font-bold text-slate-500 mt-1">3 HP</div>
+              <div className="navo-subcard text-center p-2.5">
+                <div className="font-extrabold text-lg text-slate-900 leading-tight">206530</div>
+                <div className="text-xs font-extrabold text-slate-800 mt-1">3 HP</div>
               </div>
-              <div className="dashboard-data-card text-center">
-                <div className="ddc-accent-bar bg-emerald-400" />
-                <div className="ddc-val text-lg">80,671</div>
-                <div className="text-xs font-bold text-slate-500 mt-1">5 HP</div>
+              <div className="navo-subcard text-center p-2.5">
+                <div className="font-extrabold text-lg text-slate-900 leading-tight">241732</div>
+                <div className="text-xs font-extrabold text-slate-800 mt-1">5 HP</div>
               </div>
-              <div className="dashboard-data-card text-center">
-                <div className="ddc-accent-bar bg-emerald-400" />
-                <div className="ddc-val text-lg">22,644</div>
-                <div className="text-xs font-bold text-slate-500 mt-1">7.5 HP</div>
+              <div className="navo-subcard text-center p-2.5">
+                <div className="font-extrabold text-lg text-slate-900 leading-tight">64041</div>
+                <div className="text-xs font-extrabold text-slate-800 mt-1">7.5 HP</div>
               </div>
             </div>
           </div>
         </div>
       ) : activeTab === 'kusum-ac' ? (
-        /* KUSUM SOLAR POWER PROJECTS VIEW (Exact Screenshot Match) */
+        /* KUSUM SOLAR POWER PROJECTS VIEW (Clear & High-Resolution Scaling) */
         <div className="category-view-container animate-fade-in space-y-6">
+          {/* Main Title Banner */}
+          <div className="navo-title-card flex items-center justify-center gap-3 py-3 rounded-2xl bg-white border border-slate-300 shadow-sm">
+            <svg className="w-8 h-8 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="12" rx="1.5" fill="#0f172a" stroke="#0f172a" strokeWidth="1" />
+              <line x1="9" y1="4" x2="9" y2="16" stroke="#ffffff" strokeWidth="1.2" />
+              <line x1="15" y1="4" x2="15" y2="16" stroke="#ffffff" strokeWidth="1.2" />
+              <line x1="3" y1="10" x2="21" y2="10" stroke="#ffffff" strokeWidth="1.2" />
+              <path d="M12 16L12 21M8 21L16 21" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <h2 className="navo-title-text text-xl font-extrabold tracking-tight text-slate-900">
+              Kusum Solar Power Projects
+            </h2>
+          </div>
+
           {/* Top 4 Dark Navy KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white shadow-md">
-              <div className="text-3xl font-black tracking-tight text-white">11.00</div>
-              <div className="text-xs font-extrabold uppercase text-slate-300 tracking-wider mt-1">KUSUM A (MW)</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+              <div className="text-3xl font-extrabold tracking-tight text-white">11.00</div>
+              <div className="text-sm font-bold text-slate-200 mt-1">KUSUM A (MW)</div>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white shadow-md">
-              <div className="text-3xl font-black tracking-tight text-white">6</div>
-              <div className="text-xs font-extrabold uppercase text-slate-300 tracking-wider mt-1">Total No Of Project</div>
+            <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+              <div className="text-3xl font-extrabold tracking-tight text-white">6</div>
+              <div className="text-sm font-bold text-slate-200 mt-1">Total No Of Project</div>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white shadow-md">
-              <div className="text-3xl font-black tracking-tight text-white">103.00</div>
-              <div className="text-xs font-extrabold uppercase text-slate-300 tracking-wider mt-1">KUSUM C (MW)</div>
+            <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+              <div className="text-3xl font-extrabold tracking-tight text-white">103.00</div>
+              <div className="text-sm font-bold text-slate-200 mt-1">KUSUM C (MW)</div>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white shadow-md">
-              <div className="text-3xl font-black tracking-tight text-white">25</div>
-              <div className="text-xs font-extrabold uppercase text-slate-300 tracking-wider mt-1">Total No. Of Project</div>
+            <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+              <div className="text-3xl font-extrabold tracking-tight text-white">25</div>
+              <div className="text-sm font-bold text-slate-200 mt-1">Total No. Of Project</div>
             </div>
           </div>
 
-          {/* Two Donut Charts Grid */}
+          {/* Two Chart Containers Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Chart 1: KUSUM A */}
-            <div className="chart-box-card light-card p-5 border border-slate-200 rounded-2xl shadow-sm bg-white">
-              <h3 className="chart-box-title text-sm font-bold text-slate-700 mb-4">District wise Installed by MW</h3>
+            {/* Chart 1: Solar Capacity Installed (MW) over years Line Chart */}
+            <div className="chart-box-card bg-white p-6 border border-slate-200 rounded-2xl shadow-md space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-extrabold text-slate-900">Solar Capacity Installed (MW) over years</h3>
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
+                  <span>0</span>
+                  <span>=</span>
+                  <span>...</span>
+                </div>
+              </div>
               
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="relative w-[270px] h-[210px] flex items-center justify-center">
-                  <svg viewBox="0 0 270 210" className="w-full h-full">
-                    {/* Donut Slices */}
-                    <g transform="rotate(-90 135 105)">
-                      <circle cx="135" cy="105" r="46" fill="none" stroke="#3b82f6" strokeWidth="22" strokeDasharray="105 289" strokeDashoffset="0" />
-                      <circle cx="135" cy="105" r="46" fill="none" stroke="#1e3a8a" strokeWidth="22" strokeDasharray="52.5 289" strokeDashoffset="-105" />
-                      <circle cx="135" cy="105" r="46" fill="none" stroke="#ea580c" strokeWidth="22" strokeDasharray="52.5 289" strokeDashoffset="-157.5" />
-                      <circle cx="135" cy="105" r="46" fill="none" stroke="#6b21a8" strokeWidth="22" strokeDasharray="52.5 289" strokeDashoffset="-210" />
-                      <circle cx="135" cy="105" r="46" fill="none" stroke="#d946ef" strokeWidth="22" strokeDasharray="26.3 289" strokeDashoffset="-262.5" />
-                    </g>
+              <div className="relative w-full h-[320px] pt-2">
+                <svg viewBox="0 0 450 260" className="w-full h-full">
+                  {/* Grid Lines */}
+                  <line x1="40" y1="30" x2="430" y2="30" stroke="#f1f5f9" strokeDasharray="3 3" strokeWidth="1" />
+                  <text x="32" y="34" fontSize="11" fontWeight="700" fill="#64748b" textAnchor="end">120</text>
 
-                    {/* Polyline Callout Lines & Labels */}
-                    {/* 4 (36.36%) - Jalgaon */}
-                    <polyline points="175,70 198,48 214,48" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="218" y="51" fontSize="9.5" fontWeight="600" fill="#475569">4 (36.36%)</text>
+                  <line x1="40" y1="75" x2="430" y2="75" stroke="#f1f5f9" strokeDasharray="3 3" strokeWidth="1" />
+                  <text x="32" y="79" fontSize="11" fontWeight="700" fill="#64748b" textAnchor="end">100</text>
 
-                    {/* 2 (18.18%) - Akola */}
-                    <polyline points="155,148 168,172 184,172" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="188" y="175" fontSize="9.5" fontWeight="600" fill="#475569">2 (18.18%)</text>
+                  <line x1="40" y1="120" x2="430" y2="120" stroke="#f1f5f9" strokeDasharray="3 3" strokeWidth="1" />
+                  <text x="32" y="124" fontSize="11" fontWeight="700" fill="#64748b" textAnchor="end">80</text>
 
-                    {/* 2 (18.18%) - Satara */}
-                    <polyline points="100,148 84,172 68,172" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="64" y="175" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">2 (18.18%)</text>
+                  <line x1="40" y1="165" x2="430" y2="165" stroke="#f1f5f9" strokeDasharray="3 3" strokeWidth="1" />
+                  <text x="32" y="169" fontSize="11" fontWeight="700" fill="#64748b" textAnchor="end">60</text>
 
-                    {/* 2 (18.18%) - Solapur */}
-                    <polyline points="85,115 65,115 48,115" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="44" y="118" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">2 (18.18%)</text>
+                  <line x1="40" y1="210" x2="430" y2="210" stroke="#94a3b8" strokeWidth="1.5" />
+                  <text x="32" y="214" fontSize="11" fontWeight="700" fill="#64748b" textAnchor="end">0</text>
 
-                    {/* 1 (9.09%) - Yavatmal */}
-                    <polyline points="108,68 92,48 76,48" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="72" y="51" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">1 (9.09%)</text>
-                  </svg>
-                </div>
+                  {/* Trendline */}
+                  <path
+                    d="M 40 210 L 170 85 L 300 60 L 430 45"
+                    fill="none"
+                    stroke="#091a36"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
 
-                <div className="space-y-2 text-xs font-semibold text-slate-600 min-w-[110px]">
-                  <div className="text-[11px] font-extrabold uppercase text-slate-400 mb-2">District</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Jalgaon</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-blue-900" /> Akola</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-600" /> Satara</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-purple-800" /> Solapur</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> Yavatmal</div>
-                </div>
+                  {/* Vertical Guideline at 2025 */}
+                  <line x1="300" y1="30" x2="300" y2="210" stroke="#64748b" strokeWidth="1.2" />
+                  <circle cx="300" cy="60" r="5" fill="#091a36" stroke="#ffffff" strokeWidth="2" />
+
+                  {/* Tooltip Card at 2025 */}
+                  <g transform="translate(245, 135)">
+                    <rect x="0" y="0" width="185" height="54" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.12))" />
+                    <text x="12" y="16" fontSize="10.5" fontWeight="800" fill="#0f172a">2025</text>
+                    <circle cx="16" cy="30" r="3.5" fill="#091a36" />
+                    <text x="25" y="33" fontSize="8.5" fontWeight="700" fill="#334155">Sum of Commissioned Capacity (MW)</text>
+                    <text x="175" y="33" fontSize="8.5" fontWeight="800" fill="#0f172a" textAnchor="end">105.00</text>
+                    <text x="75" y="46" fontSize="8" fontWeight="600" fill="#64748b">running total in Year 2</text>
+                  </g>
+
+                  {/* X-Axis Labels */}
+                  <text x="40" y="234" fontSize="11" fontWeight="700" fill="#475569">2023</text>
+                  <text x="170" y="234" fontSize="11" fontWeight="700" fill="#475569">2024</text>
+                  <text x="300" y="234" fontSize="11" fontWeight="700" fill="#475569">2025</text>
+                  <text x="430" y="234" fontSize="11" fontWeight="700" fill="#475569">2026</text>
+
+                  {/* Axis Titles */}
+                  <text x="235" y="254" fontSize="11.5" fontWeight="800" fill="#1e293b" textAnchor="middle">Year</text>
+                  <text x="12" y="125" fontSize="11" fontWeight="800" fill="#1e293b" transform="rotate(-90 12 125)" textAnchor="middle">MW Capacity</text>
+                </svg>
               </div>
             </div>
 
-            {/* Chart 2: KUSUM C */}
-            <div className="chart-box-card light-card p-5 border border-slate-200 rounded-2xl shadow-sm bg-white">
-              <h3 className="chart-box-title text-sm font-bold text-slate-700 mb-4">District wise Installed by MW</h3>
+            {/* Chart 2: District wise Installed by MW Donut Chart */}
+            <div className="chart-box-card bg-white p-6 border border-slate-200 rounded-2xl shadow-md space-y-4">
+              <h3 className="text-lg font-extrabold text-slate-900">District wise Installed by MW</h3>
               
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="relative w-[280px] h-[210px] flex items-center justify-center">
-                  <svg viewBox="0 0 280 210" className="w-full h-full">
+              <div className="flex flex-col lg:flex-row items-center justify-start gap-2 pt-1">
+                {/* Scaled & Enlarged Donut Chart SVG */}
+                <div className="relative w-full max-w-[480px] h-[340px] flex items-center justify-center">
+                  <svg viewBox="0 0 540 340" className="w-full h-full">
                     {/* Donut Slices */}
-                    <g transform="rotate(-90 140 105)">
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#3b82f6" strokeWidth="22" strokeDasharray="140.3 289" strokeDashoffset="0" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#1e3a8a" strokeWidth="22" strokeDasharray="71.5 289" strokeDashoffset="-140.3" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#ea580c" strokeWidth="22" strokeDasharray="22.5 289" strokeDashoffset="-211.8" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#6b21a8" strokeWidth="22" strokeDasharray="14.0 289" strokeDashoffset="-234.3" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#d946ef" strokeWidth="22" strokeDasharray="14.0 289" strokeDashoffset="-248.3" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#8b5cf6" strokeWidth="22" strokeDasharray="8.4 289" strokeDashoffset="-262.3" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#eab308" strokeWidth="22" strokeDasharray="5.6 289" strokeDashoffset="-270.7" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#ef4444" strokeWidth="22" strokeDasharray="4.2 289" strokeDashoffset="-276.3" />
-                      <circle cx="140" cy="105" r="46" fill="none" stroke="#14b8a6" strokeWidth="22" strokeDasharray="2.8 289" strokeDashoffset="-280.5" />
+                    <g transform="rotate(-90 230 170)">
+                      {/* Ahemadnagar 43.86% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#0072ff" strokeWidth="38" strokeDasharray="248.0 565.5" strokeDashoffset="0" />
+                      {/* Latur 26.75% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#0b1b7a" strokeWidth="38" strokeDasharray="151.3 565.5" strokeDashoffset="-248.0" />
+                      {/* Jalgaon 5.26% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#e65100" strokeWidth="38" strokeDasharray="29.7 565.5" strokeDashoffset="-399.3" />
+                      {/* Beed 4.82% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#6a1b9a" strokeWidth="38" strokeDasharray="27.3 565.5" strokeDashoffset="-429.0" />
+                      {/* Nanded 4.39% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#d81b60" strokeWidth="38" strokeDasharray="24.8 565.5" strokeDashoffset="-456.3" />
+                      {/* Parbhani 4.39% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#7e57c2" strokeWidth="38" strokeDasharray="24.8 565.5" strokeDashoffset="-481.1" />
+                      {/* Solapur 3.51% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#d4a017" strokeWidth="38" strokeDasharray="19.9 565.5" strokeDashoffset="-505.9" />
+                      {/* Aurangabad 2.63% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#c62828" strokeWidth="38" strokeDasharray="14.9 565.5" strokeDashoffset="-525.8" />
+                      {/* Akola 0.88% */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#00897b" strokeWidth="38" strokeDasharray="5.0 565.5" strokeDashoffset="-540.7" />
+                      {/* Satara / Yavatmal */}
+                      <circle cx="230" cy="170" r="90" fill="none" stroke="#2e7d32" strokeWidth="38" strokeDasharray="20.0 565.5" strokeDashoffset="-545.7" />
                     </g>
 
-                    {/* Polyline Callout Lines & Labels */}
-                    {/* 50 (48.54%) - Ahemadnagar */}
-                    <polyline points="180,82 205,58 220,58" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="224" y="61" fontSize="9.5" fontWeight="600" fill="#475569">50 (48.54%)</text>
+                    {/* Polyline Callouts */}
+                    {/* Ahemadnagar */}
+                    <polyline points="320,120 360,95 400,95" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="405" y="98" fontSize="11.5" fontWeight="700" fill="#0f172a">50 (43.86%)</text>
 
-                    {/* 25.5 (24.76%) - Latur */}
-                    <polyline points="128,150 110,175 90,175" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="86" y="178" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">25.5 (24.76%)</text>
+                    {/* Latur */}
+                    <polyline points="230,260 230,290 200,290" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="195" y="294" fontSize="11.5" fontWeight="700" fill="#0f172a" textAnchor="end">30.5 (26.75%)</text>
 
-                    {/* 8 (7.77%) - Other */}
-                    <polyline points="92,126 74,138 56,138" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="52" y="141" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">8 (7.77%)</text>
+                    {/* Jalgaon */}
+                    <polyline points="145,230 120,250 80,250" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="75" y="253" fontSize="11" fontWeight="700" fill="#0f172a" textAnchor="end">6 (5.26%)</text>
 
-                    {/* 5 (4.85%) - Nanded */}
-                    <polyline points="90,105 70,110 52,110" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="48" y="113" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">5 (4.85%)</text>
+                    {/* Beed */}
+                    <polyline points="125,190 95,205 60,205" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="55" y="208" fontSize="11" fontWeight="700" fill="#0f172a" textAnchor="end">5.5 (4.82%)</text>
 
-                    {/* 5 (4.85%) - Parbhani */}
-                    <polyline points="96,82 76,82 58,82" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="54" y="85" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">5 (4.85%)</text>
+                    {/* Nanded */}
+                    <polyline points="120,160 90,160 50,160" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="45" y="163" fontSize="11" fontWeight="700" fill="#0f172a" textAnchor="end">5 (4.39%)</text>
 
-                    {/* 3 (2.91%) - Aurangabad */}
-                    <polyline points="106,64 90,52 72,52" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="68" y="55" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">3 (2.91%)</text>
+                    {/* Parbhani */}
+                    <polyline points="128,130 100,120 60,120" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="55" y="123" fontSize="11" fontWeight="700" fill="#0f172a" textAnchor="end">5 (4.39%)</text>
 
-                    {/* 2 (1.94%) - Beed */}
-                    <polyline points="118,54 110,35 94,35" fill="none" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="90" y="38" fontSize="9.5" fontWeight="600" fill="#475569" textAnchor="end">2 (1.94%)</text>
+                    {/* Solapur */}
+                    <polyline points="145,100 120,85 80,85" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="75" y="88" fontSize="11" fontWeight="700" fill="#0f172a" textAnchor="end">4 (3.51%)</text>
+
+                    {/* Aurangabad */}
+                    <polyline points="170,82 150,55 110,55" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="105" y="58" fontSize="11" fontWeight="700" fill="#0f172a" textAnchor="end">3 (2.63%)</text>
+
+                    {/* Akola */}
+                    <polyline points="200,72 190,30 155,30" fill="none" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="150" y="33" fontSize="11" fontWeight="700" fill="#0f172a" textAnchor="end">1 (0.88%)</text>
                   </svg>
                 </div>
 
-                <div className="space-y-1.5 text-xs font-semibold text-slate-600 min-w-[110px]">
-                  <div className="text-[11px] font-extrabold uppercase text-slate-400 mb-1">District</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Ahemadnagar</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-blue-900" /> Latur</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-600" /> Other</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-purple-800" /> Nanded</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> Parbhani</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-violet-500" /> Aurangabad</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-yellow-500" /> Beed</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Jalgaon</div>
-                  <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-teal-500" /> Solapur</div>
+                {/* District Legend Directly Adjacent to Donut Chart */}
+                <div className="space-y-1.5 text-xs font-bold text-slate-800 shrink-0 min-w-[130px] pl-0">
+                  <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">district</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#0072ff] shadow-sm" /> Ahemadnagar</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#0b1b7a] shadow-sm" /> Latur</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#e65100] shadow-sm" /> Jalgaon</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#6a1b9a] shadow-sm" /> Beed</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#d81b60] shadow-sm" /> Nanded</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#7e57c2] shadow-sm" /> Parbhani</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#d4a017] shadow-sm" /> Solapur</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#c62828] shadow-sm" /> Aurangabad</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#00897b] shadow-sm" /> Akola</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#2e7d32] shadow-sm" /> Satara</div>
+                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-cyan-500 shadow-sm" /> Yavatmal</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      ) : activeTab === 'solar-grid' ? (
-        /* 1. SOLAR GRID VIEW (Screenshot 1) */
-        <div className="category-view-container animate-fade-in space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[800px] mx-auto">
-            <div className="executive-hero-card text-left p-5">
-              <div className="ehc-badge-pill">SOLAR GRID CONNECTED</div>
-              <div className="pink-card-val text-3xl">7,146.97 <span className="pink-card-unit">MW</span></div>
-              <div className="pink-card-lbl">Total Installed Capacity (MW)</div>
-            </div>
-
-            <div className="executive-hero-card text-left p-5">
-              <div className="ehc-badge-pill text-blue-400 border-blue-400/30 bg-blue-500/10">ACTIVE PROJECTS</div>
-              <div className="pink-card-val text-3xl">791</div>
-              <div className="pink-card-lbl">Total No. Of Projects</div>
-            </div>
+      ) : (activeTab === 'solar-grid' || activeTab === 'solar-grid-conn') ? (
+        /* SOLAR GRID CONNECTED PROJECTS VIEW (Matching Image 9 Layout 100% Exactly) */
+        <div className="category-view-container animate-fade-in space-y-5">
+          {/* Main Header Title Banner */}
+          <div className="navo-title-card flex items-center justify-center gap-3 py-3 rounded-2xl bg-white border border-slate-300 shadow-sm">
+            <svg className="w-8 h-8 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="12" rx="1.5" fill="#0f172a" stroke="#0f172a" strokeWidth="1" />
+              <line x1="9" y1="4" x2="9" y2="16" stroke="#ffffff" strokeWidth="1.2" />
+              <line x1="15" y1="4" x2="15" y2="16" stroke="#ffffff" strokeWidth="1.2" />
+              <line x1="3" y1="10" x2="21" y2="10" stroke="#ffffff" strokeWidth="1.2" />
+              <path d="M12 16L12 21M8 21L16 21" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <h2 className="navo-title-text text-xl font-extrabold tracking-tight text-slate-900">
+              Solar Grid Connected Projects
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 chart-box-card light-card">
-              <h3 className="chart-box-title">DISTRICT WISE INSTALLED BY MW</h3>
-              <div className="h-[260px] flex items-end gap-1.5 pt-6 pb-2 px-2 overflow-x-auto">
-                {[
-                  { d: 'Solapur', mw: 1417, pct: 100 },
-                  { d: 'Dhule', mw: 815, pct: 58 },
-                  { d: 'Jalna', mw: 489, pct: 35 },
-                  { d: 'Yavatmal', mw: 406, pct: 29 },
-                  { d: 'Satara', mw: 349, pct: 25 },
-                  { d: 'Beed', mw: 326, pct: 23 },
-                  { d: 'Osmanabad', mw: 298, pct: 21 },
-                  { d: 'Nanded', mw: 284, pct: 20 },
-                  { d: 'Jalgaon', mw: 271, pct: 19 },
-                  { d: 'Wardha', mw: 258, pct: 18 },
-                  { d: 'Amravati', mw: 245, pct: 17 },
-                  { d: 'Latur', mw: 232, pct: 16 },
-                  { d: 'Parbhani', mw: 215, pct: 15 },
-                  { d: 'Buldhana', mw: 198, pct: 14 },
-                  { d: 'Akola', mw: 182, pct: 13 },
-                  { d: 'Nashik', mw: 175, pct: 12 },
-                  { d: 'Nagpur', mw: 162, pct: 11 },
-                  { d: 'Pune', mw: 145, pct: 10 },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center justify-end min-w-[32px] h-full group">
-                    <span className="text-[9px] font-bold text-slate-600 mb-1 transition-all group-hover:scale-110 group-hover:text-emerald-600">{item.mw}</span>
-                    <div className="w-full h-[170px] flex items-end justify-center bg-slate-100/70 rounded-t-md p-[2px]">
-                      <div
-                        className="w-full bg-gradient-to-t from-emerald-600 to-teal-400 rounded-t-sm group-hover:from-emerald-500 group-hover:to-teal-300 transition-all shadow-sm"
-                        style={{ height: `${Math.max(item.pct, 6)}%` }}
-                      />
+          {/* Main 2-Column Split: 7 Cols Left Stack, 5 Cols Right Tall Pie Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            {/* Left 7 Columns: Stack of KPI Cards + Bar Chart + Line Chart */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-5">
+              {/* Top 2 Dark Navy KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+                  <div className="text-3xl font-extrabold tracking-tight text-white">6,589.22</div>
+                  <div className="text-sm font-bold text-slate-200 mt-1">Total Installed Capacity (MW)</div>
+                </div>
+
+                <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+                  <div className="text-3xl font-extrabold tracking-tight text-white">696</div>
+                  <div className="text-sm font-bold text-slate-200 mt-1">Total No. Of Projects</div>
+                </div>
+              </div>
+
+              {/* Bar Chart Card: District wise Installed by MW (Matching Image 11 100% Exactly) */}
+              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-slate-800 tracking-tight">District wise Installed by MW</h3>
+                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
+                    <span>0</span>
+                    <span>=</span>
+                    <span>...</span>
+                  </div>
+                </div>
+                
+                {/* Bar Chart Flex Layout with Left Log Scale Indicator */}
+                <div className="flex items-start gap-4 pt-2">
+                  {/* Left Log Scale Vertical Slider Indicator Matching Image 11 */}
+                  <div className="flex flex-col items-center justify-between h-[220px] py-1 text-[10px] font-semibold text-slate-500 min-w-[45px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-white shadow-sm flex items-center justify-center">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                      </span>
+                      <span>1,000</span>
                     </div>
-                    <div className="h-[45px] w-full flex items-start justify-center pt-2">
-                      <span className="text-[9px] font-bold text-slate-600 truncate w-full text-center rotate-[-45deg] origin-top-left">{item.d}</span>
+                    <div className="flex-1 w-[3px] bg-slate-400 my-1 rounded-full relative">
+                      <span className="absolute top-1/3 -left-1 font-bold text-[9px] text-slate-400">100</span>
+                      <span className="absolute top-2/3 -left-1 font-bold text-[9px] text-slate-400">10</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-white shadow-sm flex items-center justify-center">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                      </span>
+                      <span>1</span>
+                    </div>
+                    <span className="text-[8.5px] font-extrabold text-slate-600 transform -rotate-90 origin-center mt-3 whitespace-nowrap">MW Capacity</span>
+                  </div>
+
+                  {/* SVG Bar Chart with Log Scale Heights Matching Image 11 */}
+                  <div className="flex-1 overflow-x-auto pb-2">
+                    <svg viewBox="0 0 720 230" className="w-full min-w-[700px] h-[230px]">
+                      {/* Dotted Grid lines */}
+                      <line x1="0" y1="20" x2="720" y2="20" stroke="#f1f5f9" strokeDasharray="3 3" />
+                      <line x1="0" y1="70" x2="720" y2="70" stroke="#f1f5f9" strokeDasharray="3 3" />
+                      <line x1="0" y1="120" x2="720" y2="120" stroke="#f1f5f9" strokeDasharray="3 3" />
+                      <line x1="0" y1="160" x2="720" y2="160" stroke="#e2e8f0" />
+
+                      {[
+                        { d: 'Solapur', mw: 1340, logH: 140 },
+                        { d: 'Dhule', mw: 770, logH: 125 },
+                        { d: 'Jalna', mw: 470, logH: 110 },
+                        { d: 'Satara', mw: 340, logH: 100 },
+                        { d: 'Yavatmal', mw: 320, logH: 98 },
+                        { d: 'Beed', mw: 290, logH: 95 },
+                        { d: 'Nanded', mw: 270, logH: 93 },
+                        { d: 'Jalgaon', mw: 260, logH: 92 },
+                        { d: 'Wardha', mw: 250, logH: 90 },
+                        { d: 'Osmanab...', mw: 240, logH: 89 },
+                        { d: 'Amravati', mw: 210, logH: 86 },
+                        { d: 'Buldhana', mw: 200, logH: 85 },
+                        { d: 'Parbhani', mw: 180, logH: 82 },
+                        { d: 'Latur', mw: 175, logH: 81 },
+                        { d: 'Akola', mw: 160, logH: 79 },
+                        { d: 'Hingoli', mw: 150, logH: 78 },
+                        { d: 'Nagpur', mw: 130, logH: 74 },
+                        { d: 'Dharashiv', mw: 120, logH: 72 },
+                        { d: 'Nashik', mw: 110, logH: 70 },
+                        { d: 'Chhatrap...', mw: 95, logH: 67 },
+                        { d: 'Ahmedna...', mw: 85, logH: 64 },
+                        { d: 'Pune', mw: 75, logH: 62 },
+                        { d: 'Buldhana...', mw: 65, logH: 59 },
+                        { d: '(Blank)', mw: 22, logH: 42 },
+                        { d: 'Chandrap...', mw: 10, logH: 30 },
+                        { d: 'Sangli', mw: 10, logH: 30 },
+                        { d: 'Ahmedan...', mw: 9, logH: 28 },
+                        { d: 'Washim', mw: 7, logH: 24 },
+                        { d: 'Kolhapur', mw: 5, logH: 20 },
+                        { d: 'Ahilyana...', mw: 3, logH: 15 },
+                        { d: 'Nandurbar', mw: 2, logH: 11 },
+                        { d: 'Solapur', mw: 2, logH: 11 },
+                        { d: 'Ahmedn...', mw: 1, logH: 7 },
+                        { d: 'Ratnagiri', mw: 1, logH: 7 },
+                      ].map((item, idx) => {
+                        const x = idx * 21 + 5;
+                        const barWidth = 15;
+                        const barHeight = item.logH;
+                        const y = 160 - barHeight;
+                        return (
+                          <g key={idx} className="group cursor-pointer">
+                            <rect
+                              x={x}
+                              y={y}
+                              width={barWidth}
+                              height={barHeight}
+                              fill="#0b3c74"
+                              rx="1.5"
+                              className="group-hover:fill-blue-600 transition-colors"
+                            />
+                            <text
+                              x={x + 10}
+                              y={172}
+                              fontSize="8"
+                              fontWeight="600"
+                              fill="#475569"
+                              transform={`rotate(90 ${x + 10} 172)`}
+                              textAnchor="start"
+                            >
+                              {item.d}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+
+                    {/* Bottom Horizontal Scroll Indicator Bar */}
+                    <div className="w-full h-2.5 bg-slate-200 rounded-full mt-1 overflow-hidden p-0.5">
+                      <div className="w-4/5 h-full bg-slate-400/80 rounded-full" />
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+
+              {/* Line Chart Card: Solar Capacity Installed (MW) over years (Matching Image 11 100% Exactly) */}
+              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-3 relative overflow-visible">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-slate-800 tracking-tight">Solar Capacity Installed (MW) over years</h3>
+                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
+                    <span>0</span>
+                    <span>=</span>
+                    <span>...</span>
+                  </div>
+                </div>
+                
+                <div className="relative w-full h-[180px]">
+                  <svg viewBox="0 0 650 180" className="w-full h-full">
+                    {/* Dotted Grid lines */}
+                    <line x1="35" y1="25" x2="620" y2="25" stroke="#f1f5f9" strokeDasharray="3 3" strokeWidth="1" />
+                    <text x="28" y="29" fontSize="9" fontWeight="700" fill="#94a3b8" textAnchor="end">5K</text>
+
+                    <line x1="35" y1="135" x2="620" y2="135" stroke="#e2e8f0" strokeWidth="1" />
+                    <text x="28" y="139" fontSize="9" fontWeight="700" fill="#94a3b8" textAnchor="end">0K</text>
+
+                    {/* Smooth Rising Dark Navy Line Curve */}
+                    <path
+                      d="M 35 135 C 150 133, 260 130, 360 115 C 440 95, 520 45, 620 32"
+                      fill="none"
+                      stroke="#091a36"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                    />
+
+                    {/* 2024 Vertical Reference Guide Line */}
+                    <line x1="535" y1="25" x2="535" y2="135" stroke="#94a3b8" strokeWidth="1.5" />
+                    <circle cx="535" cy="52" r="5" fill="#091a36" stroke="#ffffff" strokeWidth="2" />
+
+                    {/* X-Axis Labels */}
+                    <text x="35" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2010</text>
+                    <text x="110" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2012</text>
+                    <text x="185" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2014</text>
+                    <text x="260" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2016</text>
+                    <text x="335" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2018</text>
+                    <text x="410" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2020</text>
+                    <text x="485" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2022</text>
+                    <text x="535" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2024</text>
+                    <text x="610" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2026</text>
+
+                    <text x="8" y="80" fontSize="8.5" fontWeight="700" fill="#475569" transform="rotate(-90 8 80)" textAnchor="middle">MW Capacity</text>
+                  </svg>
+
+                  {/* 2024 Interactive Hover Tooltip Box Matching Image 11 */}
+                  <div className="absolute top-2 right-20 bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-3 shadow-xl text-left z-20 pointer-events-none">
+                    <div className="text-xs font-black text-slate-900 mb-1">2024</div>
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#091a36]" />
+                      <span>Sum of Commissioned Capacity (MW) running total in Year</span>
+                      <span className="font-extrabold text-slate-900 ml-2">4,586.78</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Center Tag Tooltip */}
+                <div className="flex justify-center mt-1">
+                  <span className="px-3 py-1 bg-white border border-slate-300 rounded-lg text-xs font-extrabold text-slate-800 shadow-sm">
+                    Solar Grid
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="chart-box-card light-card">
-              <h3 className="chart-box-title">DISTRICT CAPACITY % DISTRIBUTION</h3>
-              <div className="donut-center-wrap my-2">
-                <svg viewBox="0 0 160 160" className="donut-sources-svg">
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#2563eb" strokeWidth="22" strokeDasharray="67 339" strokeDashoffset="0" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#1e3a8a" strokeWidth="22" strokeDasharray="39 339" strokeDashoffset="-69" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#ea580c" strokeWidth="22" strokeDasharray="23 339" strokeDashoffset="-110" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#7c3aed" strokeWidth="22" strokeDasharray="19 339" strokeDashoffset="-135" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#db2777" strokeWidth="22" strokeDasharray="17 339" strokeDashoffset="-156" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#059669" strokeWidth="22" strokeDasharray="174 339" strokeDashoffset="-175" />
-                </svg>
+            {/* Right 5 Columns: Single Tall Pie Chart Card matching Image 9 */}
+            <div className="lg:col-span-5 flex flex-col">
+              <div className="chart-box-card bg-white p-5 border border-slate-200 rounded-2xl shadow-md space-y-4 h-full flex flex-col justify-between">
+                <h3 className="text-base font-bold text-slate-800 text-center">
+                  District wise MW capacity percentage distribution
+                </h3>
+
+                {/* SVG Full Pie Chart - Large & Centered */}
+                <div className="relative w-full flex-1 flex items-center justify-center min-h-[380px] py-2">
+                  <svg viewBox="0 0 460 460" className="w-full h-full max-h-[460px]">
+                    {/* Full Pie Slices */}
+                    <g transform="rotate(-90 230 230)">
+                      {/* Solapur 20.26% */}
+                      <path d="M 230 230 L 380 230 A 150 150 0 0 1 273 373 Z" fill="#0072ff" />
+                      {/* Dhule 11.63% */}
+                      <path d="M 230 230 L 273 373 A 150 150 0 0 1 134 345 Z" fill="#0b1b7a" />
+                      {/* Jalna 7.21% */}
+                      <path d="M 230 230 L 134 345 A 150 150 0 0 1 85 273 Z" fill="#e65100" />
+                      {/* Satara 5.2% */}
+                      <path d="M 230 230 L 85 273 A 150 150 0 0 1 80 230 Z" fill="#6a1b9a" />
+                      {/* Yavatmal 4.85% */}
+                      <path d="M 230 230 L 80 230 A 150 150 0 0 1 86 186 Z" fill="#d81b60" />
+                      {/* Beed 4.47% */}
+                      <path d="M 230 230 L 86 186 A 150 150 0 0 1 100 148 Z" fill="#7e57c2" />
+                      {/* Nanded 4.12% */}
+                      <path d="M 230 230 L 100 148 A 150 150 0 0 1 122 117 Z" fill="#d4a017" />
+                      {/* Jalgaon 3.95% */}
+                      <path d="M 230 230 L 122 117 A 150 150 0 0 1 149 95 Z" fill="#c62828" />
+                      {/* Wardha 3.8% */}
+                      <path d="M 230 230 L 149 95 A 150 150 0 0 1 181 84 Z" fill="#00897b" />
+                      {/* Osmanabad 3.62% */}
+                      <path d="M 230 230 L 181 84 A 150 150 0 0 1 213 80 Z" fill="#2e7d32" />
+                      {/* Amravati 3.21% */}
+                      <path d="M 230 230 L 213 80 A 150 150 0 0 1 247 81 Z" fill="#00b4d8" />
+                      {/* Buldhana 2.66% */}
+                      <path d="M 230 230 L 247 81 A 150 150 0 0 1 276 88 Z" fill="#f72585" />
+                      {/* Parbhani 2.04% */}
+                      <path d="M 230 230 L 276 88 A 150 150 0 0 1 299 99 Z" fill="#7209b7" />
+                      {/* Latur 1.8% */}
+                      <path d="M 230 230 L 299 99 A 150 150 0 0 1 322 114 Z" fill="#4895ef" />
+                      {/* Akola 1.06% */}
+                      <path d="M 230 230 L 322 114 A 150 150 0 0 1 380 230 Z" fill="#4cc9f0" />
+                    </g>
+
+                    {/* Polyline Pointer Callouts */}
+                    <polyline points="355,160 385,140 415,140" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="418" y="143" fontSize="8.5" fontWeight="600" fill="#334155">1.34K (20.26%)</text>
+
+                    <polyline points="345,310 375,330 405,330" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="408" y="333" fontSize="8.5" fontWeight="600" fill="#334155">0.77K (11.63%)</text>
+
+                    <polyline points="220,375 240,405 270,405" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="272" y="408" fontSize="8.5" fontWeight="600" fill="#334155">0.47K (7.21%)</text>
+
+                    <polyline points="160,355 140,385 110,385" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="106" y="388" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">0.34K (5.2%)</text>
+
+                    <polyline points="120,300 90,320 60,320" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="56" y="323" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">0.32K (4.85%)</text>
+
+                    <polyline points="105,240 75,255 45,255" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="41" y="258" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">0.29K (4.47%)</text>
+
+                    <polyline points="100,180 70,195 40,195" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="36" y="198" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">0.27K (4.12%)</text>
+
+                    <polyline points="110,135 80,145 50,145" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="46" y="148" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">0.26K (3.95%)</text>
+
+                    <polyline points="130,100 100,105 70,105" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="66" y="108" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">0.24K (3.62%)</text>
+                  </svg>
+                </div>
+
+                {/* Bottom Legend */}
+                <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-600 overflow-x-auto">
+                  <span className="text-slate-400 font-extrabold uppercase">District</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0072ff]" /> Solapur</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0b1b7a]" /> Dhule</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#e65100]" /> Jalna</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#6a1b9a]" /> Satara</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#d81b60]" /> Yavatmal</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#7e57c2]" /> Beed</span>
+                  <span className="text-slate-400">▶</span>
+                </div>
               </div>
-              <div className="space-y-1 text-xs mt-1">
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-blue-600" /> Solapur</span> <span className="font-bold">1.42K (19.8%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-blue-900" /> Dhule</span> <span className="font-bold">0.82K (11.4%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-orange-600" /> Jalna</span> <span className="font-bold">0.49K (6.8%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Yavatmal</span> <span className="font-bold">0.41K (5.7%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-pink-600" /> Satara</span> <span className="font-bold">0.35K (4.9%)</span></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Balanced Pure Line Trend Chart */}
-          <div className="trendline-card-compact light-card">
-            <h3 className="chart-box-title">SOLAR CAPACITY INSTALLED (MW) OVER YEARS (2010–2026)</h3>
-            <div className="svg-trendline-wrap-compact">
-              <svg viewBox="0 0 350 150" className="trendline-svg-compact">
-                <line x1="30" y1="20" x2="330" y2="20" stroke="#f1f5f9" />
-                <line x1="30" y1="68" x2="330" y2="68" stroke="#f1f5f9" />
-                <line x1="30" y1="120" x2="330" y2="120" stroke="#e2e8f0" />
-
-                <text x="22" y="24" fontSize="9" fill="#94a3b8" textAnchor="end">2K</text>
-                <text x="22" y="72" fontSize="9" fill="#94a3b8" textAnchor="end">1K</text>
-                <text x="22" y="124" fontSize="9" fill="#94a3b8" textAnchor="end">0K</text>
-
-                {/* Pure Line Curve Overlay */}
-                <path d="M 40,118 L 80,112 L 120,98 L 160,114 L 200,80 L 240,50 L 280,22 L 320,90" fill="none" stroke="#059669" strokeWidth="2.5" />
-                <circle cx="40" cy="118" r="3.5" fill="#059669" />
-                <circle cx="80" cy="112" r="3.5" fill="#059669" />
-                <circle cx="120" cy="98" r="3.5" fill="#059669" />
-                <circle cx="160" cy="114" r="3.5" fill="#059669" />
-                <circle cx="200" cy="80" r="3.5" fill="#059669" />
-                <circle cx="240" cy="50" r="3.5" fill="#059669" />
-                <circle cx="280" cy="22" r="5" fill="#059669" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="320" cy="90" r="3.5" fill="#059669" />
-
-                <text x="40" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2010</text>
-                <text x="110" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2014</text>
-                <text x="180" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2018</text>
-                <text x="250" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2022</text>
-                <text x="320" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2026</text>
-              </svg>
             </div>
           </div>
         </div>
-      ) : (activeTab === 'mskvy' || activeTab === 'mskvy-2') ? (
-        /* 2. MSKVY VIEW (Screenshot 2) */
-        <div className="category-view-container animate-fade-in space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[800px] mx-auto">
-            <div className="executive-hero-card text-left p-5">
-              <div className="ehc-badge-pill">MSKVY 2.0 CAPACITY</div>
-              <div className="pink-card-val text-3xl">5,253.60 <span className="pink-card-unit">MW</span></div>
-              <div className="pink-card-lbl">Total Capacity Installed (MW)</div>
-            </div>
-
-            <div className="executive-hero-card text-left p-5">
-              <div className="ehc-badge-pill text-emerald-400 border-emerald-400/30 bg-emerald-500/10">FEEDER PROJECTS</div>
-              <div className="pink-card-val text-3xl">1,091</div>
-              <div className="pink-card-lbl">Total No. Of Projects</div>
-            </div>
+      ) : (activeTab === 'mskvy-2' || activeTab === 'mskvy' || activeTab === 'solar-mskvy-sum') ? (
+        /* MSKVY 2.0 SOLAR POWER PROJECTS VIEW (Matching Image 14 100% Exactly) */
+        <div className="category-view-container animate-fade-in space-y-5">
+          {/* Main Title Banner Matching Image 14 */}
+          <div className="navo-title-card flex items-center justify-center gap-3 py-3 rounded-2xl bg-white border border-slate-300 shadow-sm">
+            <svg className="w-8 h-8 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="12" rx="1.5" fill="#0f172a" stroke="#0f172a" strokeWidth="1" />
+              <line x1="9" y1="4" x2="9" y2="16" stroke="#ffffff" strokeWidth="1.2" />
+              <line x1="15" y1="4" x2="15" y2="16" stroke="#ffffff" strokeWidth="1.2" />
+              <line x1="3" y1="10" x2="21" y2="10" stroke="#ffffff" strokeWidth="1.2" />
+              <path d="M12 16L12 21M8 21L16 21" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <h2 className="navo-title-text text-xl font-extrabold tracking-tight text-slate-900">
+              MSKVY - 2.0 Solar Power Projects
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 chart-box-card light-card">
-              <h3 className="chart-box-title">DISTRICT WISE INSTALLED BY MW (MSKVY 2.0)</h3>
-              <div className="h-[260px] flex items-end gap-1.5 pt-6 pb-2 px-2 overflow-x-auto">
-                {[
-                  { d: 'Nashik', mw: 527, pct: 100 },
-                  { d: 'Latur', mw: 483, pct: 92 },
-                  { d: 'Ahilyanagar', mw: 431, pct: 82 },
-                  { d: 'Jalgaon', mw: 366, pct: 69 },
-                  { d: 'Sambhajinagar', mw: 324, pct: 61 },
-                  { d: 'Yavatmal', mw: 268, pct: 51 },
-                  { d: 'Sangli', mw: 248, pct: 47 },
-                  { d: 'Solapur', mw: 215, pct: 41 },
-                  { d: 'Dharashiv', mw: 207, pct: 39 },
-                  { d: 'Beed', mw: 203, pct: 38 },
-                  { d: 'Nanded', mw: 195, pct: 37 },
-                  { d: 'Jalna', mw: 179, pct: 34 },
-                  { d: 'Akola', mw: 175, pct: 33 },
-                  { d: 'Pune', mw: 147, pct: 28 },
-                  { d: 'Satara', mw: 145, pct: 27 },
-                  { d: 'Amravati', mw: 129, pct: 24 },
-                  { d: 'Buldhana', mw: 100, pct: 19 },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center justify-end min-w-[32px] h-full group">
-                    <span className="text-[9px] font-bold text-slate-600 mb-1 transition-all group-hover:scale-110 group-hover:text-blue-600">{item.mw}</span>
-                    <div className="w-full h-[170px] flex items-end justify-center bg-slate-100/70 rounded-t-md p-[2px]">
-                      <div
-                        className="w-full bg-gradient-to-t from-blue-600 to-indigo-400 rounded-t-sm group-hover:from-blue-500 group-hover:to-indigo-300 transition-all shadow-sm"
-                        style={{ height: `${Math.max(item.pct, 6)}%` }}
-                      />
+          {/* Main 2-Column Split: 7 Cols Left Stack, 5 Cols Right Tall Pie Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            {/* Left 7 Columns: Stack of Top 2 KPI Cards + Bar Chart + Line Chart */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-5">
+              {/* Top 2 Dark Navy KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+                  <div className="text-3xl font-extrabold tracking-tight text-white">5,253.60</div>
+                  <div className="text-sm font-bold text-slate-200 mt-1">Total Capacity Installed (MW)</div>
+                </div>
+
+                <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
+                  <div className="text-3xl font-extrabold tracking-tight text-white">1091</div>
+                  <div className="text-sm font-bold text-slate-200 mt-1">Total No. Of Projects</div>
+                </div>
+              </div>
+
+              {/* Bar Chart Card: District wise Installed by MW */}
+              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-slate-800 tracking-tight">District wise Installed by MW</h3>
+                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
+                    <span>0</span>
+                    <span>=</span>
+                    <span>...</span>
+                  </div>
+                </div>
+                
+                {/* Bar Chart Flex Layout with Left Log Scale Indicator */}
+                <div className="flex items-start gap-4 pt-2">
+                  {/* Left Log Scale Indicator */}
+                  <div className="flex flex-col items-center justify-between h-[210px] py-1 text-[10px] font-semibold text-slate-500 min-w-[45px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-white shadow-sm flex items-center justify-center">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                      </span>
+                      <span>100</span>
                     </div>
-                    <div className="h-[45px] w-full flex items-start justify-center pt-2">
-                      <span className="text-[9px] font-bold text-slate-600 truncate w-full text-center rotate-[-45deg] origin-top-left">{item.d}</span>
+                    <div className="flex-1 w-[3px] bg-slate-400 my-1 rounded-full relative">
+                      <span className="absolute top-1/2 -left-1 font-bold text-[9px] text-slate-400">10</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-white shadow-sm flex items-center justify-center">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                      </span>
+                      <span>1</span>
+                    </div>
+                    <span className="text-[8.5px] font-extrabold text-slate-600 transform -rotate-90 origin-center mt-3 whitespace-nowrap">MW Capacity</span>
+                  </div>
+
+                  {/* SVG Bar Chart with Heights Matching Image 14 */}
+                  <div className="flex-1 overflow-x-auto pb-2">
+                    <svg viewBox="0 0 680 220" className="w-full min-w-[650px] h-[220px]">
+                      <line x1="0" y1="20" x2="680" y2="20" stroke="#f1f5f9" strokeDasharray="3 3" />
+                      <line x1="0" y1="80" x2="680" y2="80" stroke="#f1f5f9" strokeDasharray="3 3" />
+                      <line x1="0" y1="160" x2="680" y2="160" stroke="#e2e8f0" />
+
+                      {[
+                        { d: 'Nashik', mw: 527, logH: 142 },
+                        { d: 'Latur', mw: 483.5, logH: 138 },
+                        { d: 'Ahilyanagar', mw: 431.8, logH: 133 },
+                        { d: 'Jalgaon', mw: 366.8, logH: 128 },
+                        { d: 'Ch. Sambhaji N...', mw: 324, logH: 122 },
+                        { d: 'Yavatmal', mw: 268, logH: 114 },
+                        { d: 'Sangli', mw: 248, logH: 110 },
+                        { d: 'Solapur', mw: 215, logH: 106 },
+                        { d: 'Dharashiv', mw: 207.5, logH: 104 },
+                        { d: 'Beed', mw: 205, logH: 103 },
+                        { d: 'Nanded', mw: 203, logH: 102 },
+                        { d: 'Jalna', mw: 195, logH: 100 },
+                        { d: 'Akola', mw: 179, logH: 98 },
+                        { d: 'Pune', mw: 175, logH: 97 },
+                        { d: 'Satara', mw: 147, logH: 92 },
+                        { d: 'Amaravati', mw: 145, logH: 91 },
+                        { d: 'Buldhana', mw: 129, logH: 87 },
+                        { d: 'Washim', mw: 100, logH: 82 },
+                        { d: 'Nandurbar', mw: 95, logH: 80 },
+                        { d: 'Kolhapur', mw: 88, logH: 78 },
+                        { d: 'Hingoli', mw: 72, logH: 72 },
+                        { d: 'Parbhani', mw: 68, logH: 70 },
+                        { d: 'Dhule', mw: 55, logH: 64 },
+                        { d: 'Wardha', mw: 25, logH: 42 },
+                        { d: 'Chandrapur', mw: 12, logH: 26 },
+                        { d: 'Nagpur', mw: 8, logH: 18 },
+                      ].map((item, idx) => {
+                        const x = idx * 24 + 5;
+                        const barWidth = 17;
+                        const barHeight = item.logH;
+                        const y = 160 - barHeight;
+                        return (
+                          <g key={idx} className="group cursor-pointer">
+                            <rect
+                              x={x}
+                              y={y}
+                              width={barWidth}
+                              height={barHeight}
+                              fill="#0b3c74"
+                              rx="1.5"
+                              className="group-hover:fill-blue-600 transition-colors"
+                            />
+                            <text
+                              x={x + 11}
+                              y={172}
+                              fontSize="8"
+                              fontWeight="600"
+                              fill="#475569"
+                              transform={`rotate(45 ${x + 11} 172)`}
+                              textAnchor="start"
+                            >
+                              {item.d}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+
+                    {/* Bottom Scrollbar Indicator */}
+                    <div className="w-full h-2 bg-slate-200 rounded-full mt-1 overflow-hidden p-0.5">
+                      <div className="w-3/4 h-full bg-slate-400/80 rounded-full" />
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+
+              {/* Line Chart Card: Capacity Installed (MW) over years */}
+              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-3 relative overflow-visible">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-slate-800 tracking-tight">Capacity Installed (MW) over years</h3>
+                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
+                    <span>0</span>
+                    <span>=</span>
+                    <span>...</span>
+                  </div>
+                </div>
+                
+                <div className="relative w-full h-[170px]">
+                  <svg viewBox="0 0 650 170" className="w-full h-full">
+                    {/* Dotted Grid lines */}
+                    <line x1="35" y1="30" x2="620" y2="30" stroke="#f1f5f9" strokeDasharray="3 3" strokeWidth="1" />
+                    <text x="28" y="34" fontSize="9" fontWeight="700" fill="#94a3b8" textAnchor="end">2K</text>
+
+                    <line x1="35" y1="135" x2="620" y2="135" stroke="#e2e8f0" strokeWidth="1" />
+                    <text x="28" y="139" fontSize="9" fontWeight="700" fill="#94a3b8" textAnchor="end">0K</text>
+
+                    {/* Peak Trend Line Path Matching Image 14 */}
+                    <path
+                      d="M 35 130 L 180 125 L 325 35 L 470 30 L 615 130"
+                      fill="none"
+                      stroke="#091a36"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* X-Axis Labels */}
+                    <text x="35" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2023</text>
+                    <text x="180" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2024</text>
+                    <text x="325" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2025</text>
+                    <text x="470" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2026</text>
+                    <text x="615" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2027</text>
+
+                    <text x="8" y="80" fontSize="8.5" fontWeight="700" fill="#475569" transform="rotate(-90 8 80)" textAnchor="middle">MW Capacity</text>
+                  </svg>
+                </div>
+
+                {/* Bottom Tag Tooltip */}
+                <div className="flex justify-center mt-1">
+                  <span className="px-3 py-1 bg-white border border-slate-300 rounded-lg text-xs font-extrabold text-slate-800 shadow-sm">
+                    MSKVY 2.0
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="chart-box-card light-card">
-              <h3 className="chart-box-title">DISTRICT CAPACITY % DISTRIBUTION</h3>
-              <div className="donut-center-wrap my-2">
-                <svg viewBox="0 0 160 160" className="donut-sources-svg">
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#2563eb" strokeWidth="22" strokeDasharray="34 339" strokeDashoffset="0" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#1e3a8a" strokeWidth="22" strokeDasharray="31 339" strokeDashoffset="-36" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#ea580c" strokeWidth="22" strokeDasharray="28 339" strokeDashoffset="-69" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#7c3aed" strokeWidth="22" strokeDasharray="24 339" strokeDashoffset="-99" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#db2777" strokeWidth="22" strokeDasharray="21 339" strokeDashoffset="-125" />
-                  <circle cx="80" cy="80" r="54" fill="none" stroke="#059669" strokeWidth="22" strokeDasharray="201 339" strokeDashoffset="-148" />
-                </svg>
+            {/* Right 5 Columns: Single Tall Pie Chart Card matching Image 14 */}
+            <div className="lg:col-span-5 flex flex-col">
+              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-4 h-full flex flex-col justify-between">
+                <h3 className="text-base font-bold text-slate-800 text-center">
+                  District wise MW capacity percentage distribution
+                </h3>
+
+                {/* SVG Full Pie Chart - Large & Centered Matching Image 14 */}
+                <div className="relative w-full flex-1 flex items-center justify-center min-h-[400px] py-2">
+                  <svg viewBox="0 0 460 460" className="w-full h-full max-h-[460px]">
+                    {/* Full Pie Slices */}
+                    <g transform="rotate(-90 230 230)">
+                      {/* Nashik 527 MW (10.03%) */}
+                      <path d="M 230 230 L 380 230 A 150 150 0 0 1 318 351 Z" fill="#0072ff" />
+                      {/* Latur 483.5 MW (9.2%) */}
+                      <path d="M 230 230 L 318 351 A 150 150 0 0 1 206 378 Z" fill="#0b1b7a" />
+                      {/* Ahilyanagar 431.8 MW (8.22%) */}
+                      <path d="M 230 230 L 206 378 A 150 150 0 0 1 97 304 Z" fill="#e65100" />
+                      {/* Jalgaon 366.8 MW (6.98%) */}
+                      <path d="M 230 230 L 97 304 A 150 150 0 0 1 80 230 Z" fill="#6a1b9a" />
+                      {/* Ch. Sambhaji Nagar 324 MW (6.17%) */}
+                      <path d="M 230 230 L 80 230 A 150 150 0 0 1 91 174 Z" fill="#d81b60" />
+                      {/* Yavatmal 268 MW (5.1%) */}
+                      <path d="M 230 230 L 91 174 A 150 150 0 0 1 113 134 Z" fill="#7e57c2" />
+                      {/* Sangli 248 MW (4.72%) */}
+                      <path d="M 230 230 L 113 134 A 150 150 0 0 1 138 103 Z" fill="#d4a017" />
+                      {/* Solapur 215 MW (4.09%) */}
+                      <path d="M 230 230 L 138 103 A 150 150 0 0 1 166 84 Z" fill="#c62828" />
+                      {/* Dharashiv 207.5 MW (3.95%) */}
+                      <path d="M 230 230 L 166 84 A 150 150 0 0 1 196 76 Z" fill="#00897b" />
+                      {/* Beed 205 MW (3.9%) */}
+                      <path d="M 230 230 L 196 76 A 150 150 0 0 1 226 73 Z" fill="#2e7d32" />
+                      {/* Nanded 203 MW (3.86%) */}
+                      <path d="M 230 230 L 226 73 A 150 150 0 0 1 256 75 Z" fill="#00b4d8" />
+                      {/* Jalna 195 MW (3.71%) */}
+                      <path d="M 230 230 L 256 75 A 150 150 0 0 1 283 82 Z" fill="#f72585" />
+                      {/* Akola 179 MW (3.41%) */}
+                      <path d="M 230 230 L 283 82 A 150 150 0 0 1 306 93 Z" fill="#7209b7" />
+                      {/* Pune 175 MW (3.3%) */}
+                      <path d="M 230 230 L 306 93 A 150 150 0 0 1 328 107 Z" fill="#4895ef" />
+                      {/* Satara 147 MW (2.8%) */}
+                      <path d="M 230 230 L 328 107 A 150 150 0 0 1 346 122 Z" fill="#4cc9f0" />
+                      {/* Amaravati 145 MW (2.76%) */}
+                      <path d="M 230 230 L 346 122 A 150 150 0 0 1 362 139 Z" fill="#a855f7" />
+                      {/* Buldhana 129 MW (2.46%) */}
+                      <path d="M 230 230 L 362 139 A 150 150 0 0 1 374 158 Z" fill="#22c55e" />
+                      {/* Washim 100 MW (1.9%) */}
+                      <path d="M 230 230 L 374 158 A 150 150 0 0 1 380 230 Z" fill="#eab308" />
+                    </g>
+
+                    {/* Polyline Pointer Callouts Matching Image 14 */}
+                    <polyline points="350,150 380,130 410,130" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="413" y="133" fontSize="8.5" fontWeight="600" fill="#334155">527 (10.03%)</text>
+
+                    <polyline points="340,300 370,320 400,320" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="403" y="323" fontSize="8.5" fontWeight="600" fill="#334155">483.5 (9.2%)</text>
+
+                    <polyline points="230,378 245,405 275,405" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="278" y="408" fontSize="8.5" fontWeight="600" fill="#334155">431.8 (8.22%)</text>
+
+                    <polyline points="150,340 130,370 100,370" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="96" y="373" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">366.8 (6.98%)</text>
+
+                    <polyline points="105,290 80,310 50,310" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="46" y="313" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">324 (6.17%)</text>
+
+                    <polyline points="95,210 65,225 35,225" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="31" y="228" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">268 (5.1%)</text>
+
+                    <polyline points="100,160 70,175 40,175" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="36" y="178" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">248 (4.72%)</text>
+
+                    <polyline points="115,120 85,130 55,130" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="51" y="133" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">215 (4.09%)</text>
+
+                    <polyline points="135,90 105,95 75,95" fill="none" stroke="#64748b" strokeWidth="1" />
+                    <text x="71" y="98" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">207.5 (3.95%)</text>
+                  </svg>
+                </div>
+
+                {/* Bottom Legend Matching Image 14 */}
+                <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-600 overflow-x-auto">
+                  <span className="text-slate-400 font-extrabold uppercase">District</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0072ff]" /> Nashik</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0b1b7a]" /> Latur</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#e65100]" /> Ahilyanagar</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#6a1b9a]" /> Jalgaon</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#d81b60]" /> Ch. Samb...</span>
+                  <span className="text-slate-400">▶</span>
+                </div>
               </div>
-              <div className="space-y-1 text-xs mt-1">
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-blue-600" /> Nashik</span> <span className="font-bold">527 (10.0%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-blue-900" /> Latur</span> <span className="font-bold">483.5 (9.2%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-orange-600" /> Ahilyanagar</span> <span className="font-bold">431.8 (8.2%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Jalgaon</span> <span className="font-bold">366.8 (7.0%)</span></div>
-                <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 font-medium"><span className="w-2.5 h-2.5 rounded-full bg-pink-600" /> Ch. Sambhajinagar</span> <span className="font-bold">324 (6.2%)</span></div>
+            </div>
+          </div>
+        </div>
+      ) : (activeTab === 'solar-rooftop' || activeTab === 'rooftop') ? (
+        /* GRID CONNECTED ROOFTOP SOLAR PROJECTS VIEW (Matching Image 7 Reference UI) */
+        <div className="category-view-container animate-fade-in space-y-8">
+          {/* Main Title Banner Matching Image 7 */}
+          <div className="navo-title-card max-w-[1000px] mx-auto">
+            <h2 className="navo-title-text text-center text-xl font-extrabold text-slate-800 tracking-tight">
+              Grid Connected Rooftop Solar Projects
+            </h2>
+          </div>
+
+          {/* Centered Top Hero Card: Solar Projects Under Rooftop Scheme */}
+          <div className="flex justify-center">
+            <div className="navo-gradient-card card-warm-gold w-full max-w-[460px]">
+              <div className="navo-card-inner text-left">
+                <div className="navo-card-mw text-3xl font-black">
+                  8,000.04 <span className="navo-card-unit text-lg font-bold">MW</span>
+                </div>
+                <div className="navo-card-label mt-3 text-base font-bold text-slate-900">
+                  Solar Projects Under Rooftop Scheme
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="trendline-card-compact light-card">
-            <h3 className="chart-box-title">CAPACITY INSTALLED (MW) OVER YEARS (2023–2027)</h3>
-            <div className="svg-trendline-wrap-compact">
-              <svg viewBox="0 0 350 150" className="trendline-svg-compact">
-                <line x1="30" y1="20" x2="330" y2="20" stroke="#f1f5f9" />
-                <line x1="30" y1="68" x2="330" y2="68" stroke="#f1f5f9" />
-                <line x1="30" y1="120" x2="330" y2="120" stroke="#e2e8f0" />
+          {/* Bottom 4-Column Grid: Discom Networks */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Card 1: MSEDCL Network */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner text-left">
+                <div className="navo-card-mw text-2xl font-black">
+                  6,636.67 <span className="navo-card-unit text-base font-bold">MW</span>
+                </div>
+                <div className="navo-card-label mt-3 text-sm font-bold text-slate-900">
+                  MSEDCL Network
+                </div>
+              </div>
+            </div>
 
-                <text x="22" y="24" fontSize="9" fill="#94a3b8" textAnchor="end">2K</text>
-                <text x="22" y="124" fontSize="9" fill="#94a3b8" textAnchor="end">0K</text>
+            {/* Card 2: TATA - Discom Network */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner text-left">
+                <div className="navo-card-mw text-2xl font-black">
+                  372.88 <span className="navo-card-unit text-base font-bold">MW</span>
+                </div>
+                <div className="navo-card-label mt-3 text-sm font-bold text-slate-900">
+                  TATA - Discom Network
+                </div>
+              </div>
+            </div>
 
-                {/* Pure Line Curve Overlay */}
-                <path d="M 40,118 Q 110,105 180,30 T 320,110" fill="none" stroke="#2563eb" strokeWidth="2.5" />
-                <circle cx="40" cy="118" r="3.5" fill="#2563eb" />
-                <circle cx="110" cy="105" r="3.5" fill="#2563eb" />
-                <circle cx="180" cy="30" r="5" fill="#2563eb" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="250" cy="70" r="3.5" fill="#2563eb" />
-                <circle cx="320" cy="110" r="3.5" fill="#2563eb" />
+            {/* Card 3: ADANI - Discom Network */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner text-left">
+                <div className="navo-card-mw text-2xl font-black">
+                  757.77 <span className="navo-card-unit text-base font-bold">MW</span>
+                </div>
+                <div className="navo-card-label mt-3 text-sm font-bold text-slate-900">
+                  ADANI - Discom Network
+                </div>
+              </div>
+            </div>
 
-                <text x="40" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2023</text>
-                <text x="110" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2024</text>
-                <text x="180" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2025</text>
-                <text x="250" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2026</text>
-                <text x="320" y="138" fontSize="9" fill="#64748b" textAnchor="middle">2027</text>
-              </svg>
+            {/* Card 4: BEST - Discom Network */}
+            <div className="navo-gradient-card card-warm-gold">
+              <div className="navo-card-inner text-left">
+                <div className="navo-card-mw text-2xl font-black">
+                  232.72 <span className="navo-card-unit text-base font-bold">MW</span>
+                </div>
+                <div className="navo-card-label mt-3 text-sm font-bold text-slate-900">
+                  BEST - Discom Network
+                </div>
+              </div>
             </div>
           </div>
         </div>
       ) : activeTab === 'pm-kusum' ? (
-        /* 3. PM KUSUM COMPONENT B VIEW (Screenshot 3) */
+        /* PM KUSUM COMPONENT B SCHEME DASHBOARD VIEW */
         <div className="category-view-container animate-fade-in space-y-6">
+          {/* Executive Hero Card */}
           <div className="executive-hero-card">
             <div className="ehc-badge-pill">PM KUSUM COMPONENT-B</div>
             <div className="pink-card-val">265,083</div>
             <div className="pink-card-lbl">Total No. Of Solar Agriculture Pumps Installed</div>
           </div>
 
+          {/* 3 Sub-Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div className="dashboard-data-card text-center">
               <div className="ddc-accent-bar bg-pink-500" />
@@ -1405,8 +2017,10 @@ const Dashboard = ({ currentUser }) => {
             </div>
           </div>
 
+          {/* 2 Charts Split Grid: Stacked HP Bar Chart (2 Cols) + Donut Chart (1 Col) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 chart-box-card light-card">
+            {/* Chart 1: District Wise Solar Pumps Installed By HP */}
+            <div className="lg:col-span-2 chart-box-card light-card p-5">
               <h3 className="chart-box-title">DISTRICT WISE SOLAR PUMPS INSTALLED BY HP</h3>
               <div className="space-y-2.5 mt-4 max-h-[300px] overflow-y-auto pr-2">
                 {[
@@ -1424,10 +2038,10 @@ const Dashboard = ({ currentUser }) => {
                       <span>{item.d}</span>
                       <span className="text-[10px] text-slate-500 font-semibold">{item.p3 + item.p5 + item.p7}k pumps</span>
                     </div>
-                    <div className="flex h-3 rounded-full overflow-hidden bg-slate-100 gap-0.5">
-                      <div className="bg-pink-500 h-full" style={{ width: `${item.p3 * 4}%` }} title={`3 HP: ${item.p3}k`} />
-                      <div className="bg-blue-500 h-full" style={{ width: `${item.p5 * 4}%` }} title={`5 HP: ${item.p5}k`} />
-                      <div className="bg-amber-500 h-full" style={{ width: `${item.p7 * 4}%` }} title={`7.5 HP: ${item.p7}k`} />
+                    <div className="flex h-3.5 rounded-full overflow-hidden bg-slate-100 gap-0.5 shadow-inner">
+                      <div className="bg-pink-500 h-full rounded-l-full transition-all duration-500 hover:opacity-90 cursor-pointer" style={{ width: `${item.p3 * 4}%` }} title={`3 HP: ${item.p3}k`} />
+                      <div className="bg-blue-500 h-full transition-all duration-500 hover:opacity-90 cursor-pointer" style={{ width: `${item.p5 * 4}%` }} title={`5 HP: ${item.p5}k`} />
+                      <div className="bg-amber-500 h-full rounded-r-full transition-all duration-500 hover:opacity-90 cursor-pointer" style={{ width: `${item.p7 * 4}%` }} title={`7.5 HP: ${item.p7}k`} />
                     </div>
                   </div>
                 ))}
@@ -1439,10 +2053,11 @@ const Dashboard = ({ currentUser }) => {
               </div>
             </div>
 
-            <div className="chart-box-card light-card">
+            {/* Chart 2: District HP Capacity % Distribution Donut */}
+            <div className="chart-box-card light-card p-5">
               <h3 className="chart-box-title">DISTRICT HP CAPACITY % DISTRIBUTION</h3>
-              <div className="donut-center-wrap my-2">
-                <svg viewBox="0 0 160 160" className="donut-sources-svg">
+              <div className="donut-center-wrap my-2 flex justify-center">
+                <svg viewBox="0 0 160 160" className="w-[140px] h-[140px]">
                   <circle cx="80" cy="80" r="54" fill="none" stroke="#2563eb" strokeWidth="22" strokeDasharray="31 339" strokeDashoffset="0" />
                   <circle cx="80" cy="80" r="54" fill="none" stroke="#1e3a8a" strokeWidth="22" strokeDasharray="26 339" strokeDashoffset="-33" />
                   <circle cx="80" cy="80" r="54" fill="none" stroke="#ea580c" strokeWidth="22" strokeDasharray="23 339" strokeDashoffset="-61" />
@@ -1460,11 +2075,11 @@ const Dashboard = ({ currentUser }) => {
             </div>
           </div>
 
-          {/* PM KUSUM Annual Pump Installation Trend (Balanced Pure Line) */}
-          <div className="trendline-card-compact light-card">
-            <h3 className="chart-box-title">PM KUSUM ANNUAL PUMP INSTALLATIONS & TRAJECTORY (2020–2026)</h3>
-            <div className="svg-trendline-wrap-compact">
-              <svg viewBox="0 0 350 150" className="trendline-svg-compact">
+          {/* Bottom Card: PM KUSUM Annual Pump Installation Trendline */}
+          <div className="trendline-card-compact light-card p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <h3 className="chart-box-title font-extrabold text-slate-900">PM KUSUM ANNUAL PUMP INSTALLATIONS & TRAJECTORY (2020–2026)</h3>
+            <div className="svg-trendline-wrap-compact w-full h-[150px] mt-2">
+              <svg viewBox="0 0 350 150" className="w-full h-full">
                 <line x1="30" y1="20" x2="330" y2="20" stroke="#f1f5f9" />
                 <line x1="30" y1="68" x2="330" y2="68" stroke="#f1f5f9" />
                 <line x1="30" y1="120" x2="330" y2="120" stroke="#e2e8f0" />
@@ -2156,6 +2771,208 @@ const Dashboard = ({ currentUser }) => {
         </div>
       )}
       <style>{`
+        /* Image 1, 2, 3, 4 Reference Dashboard (Navo UI) Styles */
+        .navo-title-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-left: 4px solid #059669;
+          border-radius: 8px;
+          padding: 16px 24px;
+          text-align: center;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .navo-title-text {
+          font-size: 1.4rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+          letter-spacing: -0.3px;
+          line-height: 1.25;
+        }
+
+        .navo-total-capacity-card {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #e0f2fe 100%);
+          border: 1px solid #bbf7d0;
+          border-radius: 8px;
+          padding: 16px 24px;
+          text-align: center;
+          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
+        }
+
+        .navo-tc-label {
+          font-size: 1.3rem;
+          font-weight: 800;
+          color: #0f172a;
+          letter-spacing: 0.5px;
+        }
+
+        .navo-tc-val {
+          font-size: 1.75rem;
+          font-weight: 900;
+          color: #15803d;
+          letter-spacing: 0.3px;
+        }
+
+        /* Light Pastel Cards */
+        .navo-gradient-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+          overflow: hidden;
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          position: relative;
+          min-height: 135px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        .navo-gradient-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .navo-subcard {
+          background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+          border: 1px solid #fde68a;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .navo-subcard:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        .navo-card-inner {
+          padding: 16px 20px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          box-sizing: border-box;
+        }
+
+        .card-pink-magenta {
+          background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 50%, #fda4af 100%) !important;
+          border: 1px solid #f43f5e !important;
+          border-left: 5px solid #e11d48 !important;
+        }
+
+        .card-green {
+          background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 50%, #86efac 100%) !important;
+          border: 1px solid #4ade80 !important;
+          border-left: 5px solid #16a34a !important;
+        }
+
+        .card-peach-orange {
+          background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 50%, #fdba74 100%) !important;
+          border: 1px solid #fb923c !important;
+          border-left: 5px solid #ea580c !important;
+        }
+
+        .card-cyan-blue {
+          background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%) !important;
+          border: 1px solid #38bdf8 !important;
+          border-left: 5px solid #0284c7 !important;
+        }
+
+        .card-lavender-purple {
+          background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 50%, #d8b4fe 100%) !important;
+          border: 1px solid #c084fc !important;
+          border-left: 5px solid #9333ea !important;
+        }
+
+        .card-gold-yellow {
+          background: linear-gradient(135deg, #fef9c3 0%, #fef08a 50%, #fde047 100%) !important;
+          border: 1px solid #facc15 !important;
+          border-left: 5px solid #ca8a04 !important;
+        }
+
+        .card-teal-ocean {
+          background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 50%, #5eead4 100%) !important;
+          border: 1px solid #2dd4bf !important;
+          border-left: 5px solid #0d9488 !important;
+        }
+
+        .card-warm-gold {
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%) !important;
+          border: 1px solid #fbbf24 !important;
+          border-left: 5px solid #d97706 !important;
+        }
+
+        .navo-tag-link {
+          font-size: 0.8rem;
+          font-weight: 900;
+          color: #0f172a;
+          text-decoration: underline;
+          cursor: pointer;
+          letter-spacing: 0.3px;
+          background: transparent;
+          border: none;
+          padding: 0;
+          transition: color 0.2s ease;
+        }
+
+        .navo-tag-link:hover {
+          color: #15803d;
+        }
+
+        .navo-card-mw {
+          font-size: 1.85rem;
+          font-weight: 900;
+          color: #0f172a;
+          letter-spacing: -0.4px;
+          line-height: 1.1;
+        }
+
+        .navo-card-unit {
+          font-size: 1.1rem;
+          font-weight: 900;
+          margin-left: 4px;
+        }
+
+        .navo-card-footer {
+          margin-top: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .navo-card-label {
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: #0f172a;
+        }
+
+        .navo-link-btn {
+          font-size: 0.78rem;
+          font-weight: 900;
+          color: #0f172a;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(6px);
+          padding: 4px 12px;
+          border-radius: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.95);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          user-select: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navo-link-btn:hover {
+          background: #0f172a;
+          color: #ffffff;
+          border-color: #0f172a;
+          transform: translateY(-1px);
+        }
+
         .meda-dashboard-wrap {
           display: flex;
           flex-direction: column;
@@ -2477,7 +3294,7 @@ const Dashboard = ({ currentUser }) => {
           background: #ffffff;
           border: 1.5px solid #e2e8f0;
           border-radius: 14px;
-          padding: 8px 14px;
+          padding: 14px 18px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
           position: relative;
           overflow: hidden;
@@ -2485,7 +3302,7 @@ const Dashboard = ({ currentUser }) => {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          height: 98px;
+          height: 125px;
           box-sizing: border-box;
         }
 
@@ -3132,7 +3949,273 @@ const Dashboard = ({ currentUser }) => {
             grid-template-columns: 1fr;
           }
         }
+
+        /* Smooth Entrance Animation for Dashboard Pages */
+        @keyframes dashboardPageFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: dashboardPageFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* 3D Gradient Cards Smooth Hover */
+        .navo-gradient-card {
+          transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+        }
+
+        .navo-gradient-card:hover {
+          transform: translateY(-3px) scale(1.015) !important;
+          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22) !important;
+        }
+
+        /* Chart Cards Smooth Hover */
+        .chart-box-card {
+          transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+        }
+
+        .chart-box-card:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07) !important;
+        }
+
+        /* Interactive Bar Chart Hover Effect with proper transform-box */
+        svg rect {
+          transform-box: fill-box;
+          transform-origin: bottom;
+          transition: opacity 0.2s ease, fill 0.2s ease, transform 0.2s ease !important;
+        }
+
+        svg rect:hover {
+          opacity: 0.95;
+          fill: #2563eb !important;
+          transform: scaleY(1.04) !important;
+          cursor: pointer;
+        }
+
+        /* Interactive Pie / Donut Slice Hover with proper transform-box */
+        svg path {
+          transform-box: fill-box;
+          transform-origin: center;
+          transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease !important;
+        }
+
+        svg path:hover {
+          opacity: 0.92;
+          transform: scale(1.03);
+          filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25));
+          cursor: pointer;
+        }
+
+        /* Interactive Circle Data Points */
+        svg circle {
+          transform-box: fill-box;
+          transform-origin: center;
+          transition: transform 0.2s ease, fill 0.2s ease !important;
+        }
+
+        svg circle:hover {
+          transform: scale(1.35);
+          cursor: pointer;
+        }
+
+        /* ========================================================= */
+        /* PRINTABLE REPORT SPECIFIC STYLES (Light & Pastel Theme)   */
+        /* ========================================================= */
+        .print-report-header,
+        .print-report-footer {
+          display: none;
+        }
+
+        @media print {
+          .print-report-header {
+            display: block !important;
+            margin-bottom: 20px !important;
+            padding: 16px 20px !important;
+            background: #f4fbf7 !important;
+            border: 1px solid #bbf7d0 !important;
+            border-top: 3px solid #059669 !important;
+            border-radius: 10px !important;
+          }
+
+          .prh-top {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+          }
+
+          .prh-brand {
+            display: flex !important;
+            align-items: center !important;
+            gap: 14px !important;
+          }
+
+          .prh-logo {
+            width: 50px !important;
+            height: 50px !important;
+            object-fit: contain !important;
+          }
+
+          .prh-org-title {
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            letter-spacing: -0.2px !important;
+          }
+
+          .prh-org-sub {
+            font-size: 0.75rem !important;
+            color: #047857 !important;
+            font-weight: 600 !important;
+            margin: 2px 0 0 0 !important;
+          }
+
+          .prh-meta {
+            text-align: right !important;
+          }
+
+          .prh-meta-badge {
+            display: inline-block !important;
+            background: #dcfce7 !important;
+            color: #14532d !important;
+            border: 1px solid #86efac !important;
+            font-size: 0.65rem !important;
+            font-weight: 800 !important;
+            padding: 4px 10px !important;
+            border-radius: 6px !important;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 4px !important;
+          }
+
+          .prh-meta-item {
+            font-size: 0.75rem !important;
+            color: #475569 !important;
+            margin: 1px 0 !important;
+          }
+
+          .prh-divider {
+            height: 1px !important;
+            background: #cbd5e1 !important;
+            margin: 12px 0 !important;
+          }
+
+          .prh-report-info {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 12px !important;
+            background: #ffffff !important;
+            padding: 10px 14px !important;
+            border-radius: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+          }
+
+          .prh-info-box {
+            display: flex !important;
+            flex-direction: column !important;
+            background: #f8fafc !important;
+            padding: 8px 10px !important;
+            border-radius: 6px !important;
+            border: 1px solid #f1f5f9 !important;
+          }
+
+          .prh-info-label {
+            font-size: 0.62rem !important;
+            font-weight: 800 !important;
+            color: #64748b !important;
+            letter-spacing: 0.5px !important;
+          }
+
+          .prh-info-value {
+            font-size: 0.82rem !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            margin-top: 2px !important;
+          }
+
+          .dashboard-top-header {
+            margin-bottom: 12px !important;
+            padding-bottom: 8px !important;
+            border-bottom: 1px dashed #e2e8f0 !important;
+          }
+
+          .category-scroller-card {
+            border: 1px solid #e2e8f0 !important;
+            padding: 8px 12px !important;
+            background: #fafafa !important;
+            box-shadow: none !important;
+          }
+
+          .category-tabs-track {
+            overflow: visible !important;
+            flex-wrap: wrap !important;
+            gap: 6px !important;
+          }
+
+          .cat-tab-pill {
+            display: none !important;
+          }
+
+          .cat-tab-pill.active {
+            display: inline-flex !important;
+            background: #e0f2fe !important;
+            color: #0369a1 !important;
+            border: 1px solid #bae6fd !important;
+            font-weight: 700 !important;
+            border-radius: 6px !important;
+            padding: 6px 12px !important;
+          }
+
+          .navo-gradient-card,
+          .light-card,
+          .kpi-card,
+          .chart-card,
+          .master-table-card {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: none !important;
+          }
+
+          .print-report-footer {
+            display: block !important;
+            margin-top: 30px !important;
+            padding-top: 12px !important;
+            border-top: 1px solid #cbd5e1 !important;
+          }
+
+          .prf-line {
+            height: 1px !important;
+            background: #e2e8f0 !important;
+            margin-bottom: 8px !important;
+          }
+
+          .prf-content {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            font-size: 0.75rem !important;
+            color: #64748b !important;
+            font-weight: 600 !important;
+          }
+        }
       `}</style>
+
+      {/* PRINT-ONLY OFFICIAL REPORT FOOTER */}
+      <div className="print-report-footer">
+        <div className="prf-line"></div>
+        <div className="prf-content">
+          <span>Maharashtra Energy Development Agency (MEDA) • Official Executive Report</span>
+          <span>Government of Maharashtra • Energy Department</span>
+          <span>Confidential & Proprietary</span>
+        </div>
+      </div>
     </div>
   );
 };
