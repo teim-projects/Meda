@@ -48,7 +48,8 @@ import {
   Compass,
   Navigation,
   Layers,
-  Info
+  Info,
+  ArrowUpRight
 } from 'lucide-react';
 import axios from 'axios';
 import { medaApi } from '../../services/medaApi';
@@ -923,83 +924,94 @@ const Dashboard = ({ currentUser }) => {
           <div className="summary-full-grid">
             {/* Card 1: Solar Energy Projects (Grid Connected & Off Grid) - Spans 2 cols */}
             <div
-              className="summary-card card-gridconn-solar col-span-1 md:col-span-2"
+              className="summary-card card-gridconn-solar col-span-1 md:col-span-2 rounded-2xl p-4 sm:p-5 border relative overflow-hidden transition-all duration-300 hover:shadow-lg"
               style={{
-                background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #fecdd3 100%)',
+                background: 'linear-gradient(135deg, #fff5f5 0%, #ffe4e6 50%, #fecdd3 100%)',
                 borderColor: '#fda4af',
-                boxShadow: '0 3px 10px -2px rgba(253, 164, 175, 0.35)'
+                boxShadow: '0 4px 16px -2px rgba(253, 164, 175, 0.35)'
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
-              
-              {/* Top Row: Big Bold Capacity + Tag Badge */}
-              <div className="flex items-start justify-between gap-2">
+              {/* Soft gloss highlight line */}
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent"></div>
+
+              {/* Top Row: Capacity & Portfolio Header */}
+              <div className="flex items-start justify-between gap-3 mb-3.5">
                 <div>
-                  <div className="text-xl sm:text-2xl font-black text-rose-950 tracking-tight leading-none font-mono">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span className="text-[10px] font-black tracking-wider uppercase text-rose-800">
+                      Solar Energy Portfolio
+                    </span>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-rose-950 tracking-tight leading-none font-mono">
                     {formatCapacityMw(dynamicGridConnectedMw)}{' '}
-                    <span className="text-xs sm:text-sm font-bold text-rose-800">MW</span>
+                    <span className="text-sm sm:text-base font-bold text-rose-700">MW</span>
                   </div>
-                  <div className="text-[11px] font-bold text-rose-800/90 mt-1 flex items-center gap-1.5 flex-wrap">
-                    <span>Solar Energy Projects</span>
-                    <span>•</span>
-                    <span className="bg-rose-200/70 text-rose-900 px-1.5 py-0.2 rounded text-[9px] font-black">49.4% RE SHARE</span>
-                  </div>
+                  <p className="text-[11px] font-semibold text-rose-800/85 mt-1">
+                    Statewide Grid Connected & Distributed Solar Infrastructure
+                  </p>
                 </div>
 
-                <span className="font-black text-[9px] sm:text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-rose-100 text-rose-900 border-rose-300 flex items-center gap-1 shadow-2xs">
-                  <Sun size={11} className="text-rose-600" />
-                  <span>SOLAR</span>
-                </span>
-              </div>
-
-              {/* Middle Mini Progress Bar */}
-              <div className="my-1.5">
-                <div className="w-full bg-rose-200/70 rounded-full h-1 overflow-hidden">
-                  <div className="bg-rose-600 h-full rounded-full transition-all duration-500" style={{ width: '49.4%' }}></div>
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-white/90 border border-rose-200/90 shadow-2xs flex items-center justify-center shrink-0 text-rose-600">
+                  <Sun size={22} strokeWidth={2.3} />
                 </div>
               </div>
 
-              {/* Bottom Row: 2 Interactive Sub-Scheme Pills for Grid Connected & Off Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
+              {/* Bottom Row: 2 Premium Interactive KPI Tiles (Grid Connected & Off Grid) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setActiveTab('solar-grid-conn')}
-                  className="bg-white/85 hover:bg-white border border-rose-200/90 rounded-lg px-2.5 py-1.5 text-left transition-all hover:shadow-xs group cursor-pointer flex items-center justify-between"
+                  className="group bg-white/90 hover:bg-white border border-rose-200/90 hover:border-rose-300 rounded-xl p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer flex items-center justify-between"
                   title="Navigate to Grid Connected Dashboard"
                 >
-                  <div>
-                    <div className="text-[11px] font-black text-rose-950 group-hover:text-rose-700 leading-tight">
-                      Grid Connected
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-8 w-8 rounded-lg bg-rose-50 border border-rose-200/80 flex items-center justify-center text-rose-600 shrink-0 group-hover:scale-105 transition-transform">
+                      <Zap size={15} />
                     </div>
-                    <div className="text-[10px] font-semibold text-rose-800/80 leading-tight">
-                      {formatCapacityMw(dynamicGridConnectedMw)} MW
+                    <div className="min-w-0">
+                      <div className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">
+                        Grid Connected
+                      </div>
+                      <div className="text-[13px] font-black text-slate-900 group-hover:text-rose-700 transition-colors font-mono truncate">
+                        {formatCapacityMw(dynamicGridConnectedMw)} MW
+                      </div>
                     </div>
                   </div>
-                  <ChevronRight size={13} className="text-rose-400 group-hover:text-rose-700 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
+                  <div className="h-7 w-7 rounded-lg bg-rose-50 group-hover:bg-rose-600 text-rose-600 group-hover:text-white flex items-center justify-center transition-colors shrink-0 ml-2 shadow-2xs">
+                    <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab('solar-offgrid-sum')}
-                  className="bg-white/85 hover:bg-white border border-rose-200/90 rounded-lg px-2.5 py-1.5 text-left transition-all hover:shadow-xs group cursor-pointer flex items-center justify-between"
+                  className="group bg-white/90 hover:bg-white border border-rose-200/90 hover:border-rose-300 rounded-xl p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer flex items-center justify-between"
                   title="Navigate to Off Grid Dashboard"
                 >
-                  <div>
-                    <div className="text-[11px] font-black text-rose-950 group-hover:text-rose-700 leading-tight">
-                      Off Grid Solar
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-8 w-8 rounded-lg bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-600 shrink-0 group-hover:scale-105 transition-transform">
+                      <Sun size={15} />
                     </div>
-                    <div className="text-[10px] font-semibold text-rose-800/80 leading-tight">
-                      10,03,077 Pumps • 43.42 L HP
+                    <div className="min-w-0">
+                      <div className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">
+                        Off Grid Solar
+                      </div>
+                      <div className="text-[12px] font-black text-slate-900 group-hover:text-amber-700 transition-colors truncate">
+                        10,03,077 Pumps • 43.42 L HP
+                      </div>
                     </div>
                   </div>
-                  <ChevronRight size={13} className="text-rose-400 group-hover:text-rose-700 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
+                  <div className="h-7 w-7 rounded-lg bg-amber-50 group-hover:bg-amber-600 text-amber-600 group-hover:text-white flex items-center justify-center transition-colors shrink-0 ml-2 shadow-2xs">
+                    <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </div>
                 </button>
               </div>
             </div>
 
             {/* Card 2: Wind Power Project - Pastel Sky Blue */}
             <div
-              className="summary-card card-gridconn-wind cursor-pointer group"
+              className="summary-card card-gridconn-wind cursor-pointer group rounded-2xl p-4 sm:p-4.5 border relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               onClick={() => setActiveTab('wind')}
               role="button"
               tabIndex={0}
@@ -1007,46 +1019,43 @@ const Dashboard = ({ currentUser }) => {
               style={{
                 background: 'linear-gradient(135deg, #f8fafc 0%, #f0f9ff 50%, #e0f2fe 100%)',
                 borderColor: '#bae6fd',
-                boxShadow: '0 3px 10px -2px rgba(186, 230, 253, 0.35)'
+                boxShadow: '0 3px 12px -2px rgba(186, 230, 253, 0.4)'
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent"></div>
               
-              <div className="flex items-start justify-between gap-1.5">
-                <div>
-                  <div className="text-lg sm:text-xl font-black text-sky-950 tracking-tight leading-none font-mono">
-                    {formatCapacityMw(windSummary.rawMw)}{' '}
-                    <span className="text-xs font-bold text-sky-700">MW</span>
-                  </div>
-                  <div className="text-[10px] font-semibold text-sky-800 mt-0.5">
-                    15.4% RE Share
-                  </div>
-                </div>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="font-black text-[9.5px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-sky-100 text-sky-900 border-sky-300/80 flex items-center gap-1 shadow-2xs">
+                  <Wind size={11} className="text-sky-600" />
+                  <span>WIND POWER</span>
+                </span>
 
-                <div className="flex items-center gap-1">
-                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-sky-100 text-sky-900 border-sky-300 flex items-center gap-1">
-                    <Wind size={10} className="text-sky-600" />
-                    <span>WIND</span>
-                  </span>
-                  <ChevronRight size={12} className="text-slate-400 group-hover:text-sky-700 group-hover:translate-x-0.5 transition-all" />
+                <div className="h-8 w-8 rounded-lg bg-white/85 border border-sky-200 flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform shadow-2xs">
+                  <Wind size={15} />
                 </div>
               </div>
 
-              <div className="my-1.5">
-                <div className="w-full bg-sky-200/70 rounded-full h-1 overflow-hidden">
-                  <div className="bg-sky-500 h-full rounded-full transition-all duration-500" style={{ width: '15.4%' }}></div>
+              <div className="mb-2">
+                <div className="text-xl sm:text-2xl font-black text-sky-950 tracking-tight leading-none font-mono">
+                  {formatCapacityMw(windSummary.rawMw)}{' '}
+                  <span className="text-xs font-bold text-sky-700">MW</span>
+                </div>
+                <div className="text-[10.5px] font-semibold text-sky-800/80 mt-1">
+                  Wind Turbines & Generating Stations
                 </div>
               </div>
 
-              <div className="text-xs font-extrabold tracking-tight text-sky-950 flex items-center justify-between">
+              <div className="text-xs font-extrabold tracking-tight text-sky-950 flex items-center justify-between pt-2 border-t border-sky-200/60 mt-2">
                 <span>Wind Power Project</span>
-                <span className="text-[9px] font-bold text-sky-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
+                <span className="text-[9.5px] font-bold text-sky-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                  Explore <ChevronRight size={12} />
+                </span>
               </div>
             </div>
 
             {/* Card 3: Bagasse Power Project - Pastel Mint Emerald */}
             <div
-              className="summary-card card-gridconn-bagasse cursor-pointer group"
+              className="summary-card card-gridconn-bagasse cursor-pointer group rounded-2xl p-4 sm:p-4.5 border relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               onClick={() => setActiveTab('bagasse')}
               role="button"
               tabIndex={0}
@@ -1054,46 +1063,43 @@ const Dashboard = ({ currentUser }) => {
               style={{
                 background: 'linear-gradient(135deg, #fbfdfc 0%, #f0fdf4 50%, #dcfce7 100%)',
                 borderColor: '#bbf7d0',
-                boxShadow: '0 3px 10px -2px rgba(187, 247, 208, 0.35)'
+                boxShadow: '0 3px 12px -2px rgba(187, 247, 208, 0.4)'
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent"></div>
               
-              <div className="flex items-start justify-between gap-1.5">
-                <div>
-                  <div className="text-lg sm:text-xl font-black text-emerald-950 tracking-tight leading-none font-mono">
-                    {formatCapacityMw(bagasseSummary.rawMw)}{' '}
-                    <span className="text-xs font-bold text-emerald-700">MW</span>
-                  </div>
-                  <div className="text-[10px] font-semibold text-emerald-800 mt-0.5">
-                    26.3% RE Share
-                  </div>
-                </div>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="font-black text-[9.5px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-emerald-100 text-emerald-900 border-emerald-300/80 flex items-center gap-1 shadow-2xs">
+                  <Leaf size={11} className="text-emerald-600" />
+                  <span>BAGASSE CO-GEN</span>
+                </span>
 
-                <div className="flex items-center gap-1">
-                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-emerald-100 text-emerald-900 border-emerald-300 flex items-center gap-1">
-                    <Leaf size={10} className="text-emerald-600" />
-                    <span>BAGASSE</span>
-                  </span>
-                  <ChevronRight size={12} className="text-slate-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-all" />
+                <div className="h-8 w-8 rounded-lg bg-white/85 border border-emerald-200 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shadow-2xs">
+                  <Leaf size={15} />
                 </div>
               </div>
 
-              <div className="my-1.5">
-                <div className="w-full bg-emerald-200/70 rounded-full h-1 overflow-hidden">
-                  <div className="bg-emerald-600 h-full rounded-full transition-all duration-500" style={{ width: '26.3%' }}></div>
+              <div className="mb-2">
+                <div className="text-xl sm:text-2xl font-black text-emerald-950 tracking-tight leading-none font-mono">
+                  {formatCapacityMw(bagasseSummary.rawMw)}{' '}
+                  <span className="text-xs font-bold text-emerald-700">MW</span>
+                </div>
+                <div className="text-[10.5px] font-semibold text-emerald-800/80 mt-1">
+                  Sugar Mill Co-generation Stations
                 </div>
               </div>
 
-              <div className="text-xs font-extrabold tracking-tight text-emerald-950 flex items-center justify-between">
+              <div className="text-xs font-extrabold tracking-tight text-emerald-950 flex items-center justify-between pt-2 border-t border-emerald-200/60 mt-2">
                 <span>Bagasse Power Project</span>
-                <span className="text-[9px] font-bold text-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
+                <span className="text-[9.5px] font-bold text-emerald-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                  Explore <ChevronRight size={12} />
+                </span>
               </div>
             </div>
 
             {/* Card 4: Small Hydro Projects - Pastel Fresh Aqua Teal */}
             <div
-              className="summary-card card-gridconn-hydro cursor-pointer group"
+              className="summary-card card-gridconn-hydro cursor-pointer group rounded-2xl p-4 sm:p-4.5 border relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               onClick={() => setActiveTab('small-hydro')}
               role="button"
               tabIndex={0}
@@ -1101,46 +1107,43 @@ const Dashboard = ({ currentUser }) => {
               style={{
                 background: 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%, #99f6e4 100%)',
                 borderColor: '#99f6e4',
-                boxShadow: '0 3px 10px -2px rgba(153, 246, 228, 0.35)'
+                boxShadow: '0 3px 12px -2px rgba(153, 246, 228, 0.4)'
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent"></div>
               
-              <div className="flex items-start justify-between gap-1.5">
-                <div>
-                  <div className="text-lg sm:text-xl font-black text-teal-950 tracking-tight leading-none font-mono">
-                    {formatCapacityMw(shpSummary.rawMw)}{' '}
-                    <span className="text-xs font-bold text-teal-700">MW</span>
-                  </div>
-                  <div className="text-[10px] font-semibold text-teal-800 mt-0.5">
-                    0.9% RE Share
-                  </div>
-                </div>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="font-black text-[9.5px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-teal-100 text-teal-900 border-teal-300/80 flex items-center gap-1 shadow-2xs">
+                  <Droplets size={11} className="text-teal-600" />
+                  <span>HYDRO POWER</span>
+                </span>
 
-                <div className="flex items-center gap-1">
-                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-teal-100 text-teal-900 border-teal-300 flex items-center gap-1">
-                    <Droplets size={10} className="text-teal-600" />
-                    <span>HYDRO</span>
-                  </span>
-                  <ChevronRight size={12} className="text-slate-400 group-hover:text-teal-700 group-hover:translate-x-0.5 transition-all" />
+                <div className="h-8 w-8 rounded-lg bg-white/85 border border-teal-200 flex items-center justify-center text-teal-600 group-hover:scale-110 transition-transform shadow-2xs">
+                  <Droplets size={15} />
                 </div>
               </div>
 
-              <div className="my-1.5">
-                <div className="w-full bg-teal-200/70 rounded-full h-1 overflow-hidden">
-                  <div className="bg-teal-600 h-full rounded-full transition-all duration-500" style={{ width: '4%' }}></div>
+              <div className="mb-2">
+                <div className="text-xl sm:text-2xl font-black text-teal-950 tracking-tight leading-none font-mono">
+                  {formatCapacityMw(shpSummary.rawMw)}{' '}
+                  <span className="text-xs font-bold text-teal-700">MW</span>
+                </div>
+                <div className="text-[10.5px] font-semibold text-teal-800/80 mt-1">
+                  Small Run-of-River Generators
                 </div>
               </div>
 
-              <div className="text-xs font-extrabold tracking-tight text-teal-950 flex items-center justify-between">
+              <div className="text-xs font-extrabold tracking-tight text-teal-950 flex items-center justify-between pt-2 border-t border-teal-200/60 mt-2">
                 <span>Small Hydro Projects</span>
-                <span className="text-[9px] font-bold text-teal-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
+                <span className="text-[9.5px] font-bold text-teal-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                  Explore <ChevronRight size={12} />
+                </span>
               </div>
             </div>
 
             {/* Card 5: Municipal Solid Waste - Pastel Lavender Purple */}
             <div
-              className="summary-card card-gridconn-msw cursor-pointer group"
+              className="summary-card card-gridconn-msw cursor-pointer group rounded-2xl p-4 sm:p-4.5 border relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               onClick={() => setActiveTab('municipal-waste')}
               role="button"
               tabIndex={0}
@@ -1148,46 +1151,43 @@ const Dashboard = ({ currentUser }) => {
               style={{
                 background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)',
                 borderColor: '#d8b4fe',
-                boxShadow: '0 3px 10px -2px rgba(216, 180, 254, 0.35)'
+                boxShadow: '0 3px 12px -2px rgba(216, 180, 254, 0.4)'
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent"></div>
               
-              <div className="flex items-start justify-between gap-1.5">
-                <div>
-                  <div className="text-lg sm:text-xl font-black text-purple-950 tracking-tight leading-none font-mono">
-                    {mswSummary.rawMw > 0 ? formatCapacityMw(mswSummary.rawMw) : '59.79'}{' '}
-                    <span className="text-xs font-bold text-purple-700">MW</span>
-                  </div>
-                  <div className="text-[10px] font-semibold text-purple-800 mt-0.5">
-                    Waste to Energy
-                  </div>
-                </div>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="font-black text-[9.5px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-purple-100 text-purple-900 border-purple-300/80 flex items-center gap-1 shadow-2xs">
+                  <Trash2 size={11} className="text-purple-600" />
+                  <span>SOLID WASTE</span>
+                </span>
 
-                <div className="flex items-center gap-1">
-                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-purple-100 text-purple-900 border-purple-300 flex items-center gap-1">
-                    <Trash2 size={10} className="text-purple-600" />
-                    <span>MSW</span>
-                  </span>
-                  <ChevronRight size={12} className="text-slate-400 group-hover:text-purple-700 group-hover:translate-x-0.5 transition-all" />
+                <div className="h-8 w-8 rounded-lg bg-white/85 border border-purple-200 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform shadow-2xs">
+                  <Trash2 size={15} />
                 </div>
               </div>
 
-              <div className="my-1.5">
-                <div className="w-full bg-purple-200/70 rounded-full h-1 overflow-hidden">
-                  <div className="bg-purple-600 h-full rounded-full transition-all duration-500" style={{ width: '2%' }}></div>
+              <div className="mb-2">
+                <div className="text-xl sm:text-2xl font-black text-purple-950 tracking-tight leading-none font-mono">
+                  {mswSummary.rawMw > 0 ? formatCapacityMw(mswSummary.rawMw) : '59.79'}{' '}
+                  <span className="text-xs font-bold text-purple-700">MW</span>
+                </div>
+                <div className="text-[10.5px] font-semibold text-purple-800/80 mt-1">
+                  Urban Solid Waste to Energy
                 </div>
               </div>
 
-              <div className="text-xs font-extrabold tracking-tight text-purple-950 flex items-center justify-between">
+              <div className="text-xs font-extrabold tracking-tight text-purple-950 flex items-center justify-between pt-2 border-t border-purple-200/60 mt-2">
                 <span>Municipal Solid Waste</span>
-                <span className="text-[9px] font-bold text-purple-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
+                <span className="text-[9.5px] font-bold text-purple-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                  Explore <ChevronRight size={12} />
+                </span>
               </div>
             </div>
 
             {/* Card 6: Biomass Power Project - Pastel Warm Vanilla Amber */}
             <div
-              className="summary-card card-gridconn-biomass cursor-pointer group"
+              className="summary-card card-gridconn-biomass cursor-pointer group rounded-2xl p-4 sm:p-4.5 border relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               onClick={() => setActiveTab('biomass')}
               role="button"
               tabIndex={0}
@@ -1195,81 +1195,78 @@ const Dashboard = ({ currentUser }) => {
               style={{
                 background: 'linear-gradient(135deg, #fffdf0 0%, #fef9c3 50%, #fef08a 100%)',
                 borderColor: '#fde047',
-                boxShadow: '0 3px 10px -2px rgba(254, 240, 138, 0.35)'
+                boxShadow: '0 3px 12px -2px rgba(254, 240, 138, 0.4)'
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent"></div>
               
-              <div className="flex items-start justify-between gap-1.5">
-                <div>
-                  <div className="text-lg sm:text-xl font-black text-amber-950 tracking-tight leading-none font-mono">
-                    {formatCapacityMw(biomassSummary.rawMw)}{' '}
-                    <span className="text-xs font-bold text-amber-700">MW</span>
-                  </div>
-                  <div className="text-[10px] font-semibold text-amber-800 mt-0.5">
-                    Agro & Biomass
-                  </div>
-                </div>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="font-black text-[9.5px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-amber-100 text-amber-900 border-amber-300/80 flex items-center gap-1 shadow-2xs">
+                  <Flame size={11} className="text-amber-600" />
+                  <span>BIOMASS POWER</span>
+                </span>
 
-                <div className="flex items-center gap-1">
-                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-amber-100 text-amber-900 border-amber-300 flex items-center gap-1">
-                    <Flame size={10} className="text-amber-600" />
-                    <span>BIOMASS</span>
-                  </span>
-                  <ChevronRight size={12} className="text-slate-400 group-hover:text-amber-700 group-hover:translate-x-0.5 transition-all" />
+                <div className="h-8 w-8 rounded-lg bg-white/85 border border-amber-200 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform shadow-2xs">
+                  <Flame size={15} />
                 </div>
               </div>
 
-              <div className="my-1.5">
-                <div className="w-full bg-amber-200/70 rounded-full h-1 overflow-hidden">
-                  <div className="bg-amber-600 h-full rounded-full transition-all duration-500" style={{ width: '2.5%' }}></div>
+              <div className="mb-2">
+                <div className="text-xl sm:text-2xl font-black text-amber-950 tracking-tight leading-none font-mono">
+                  {formatCapacityMw(biomassSummary.rawMw)}{' '}
+                  <span className="text-xs font-bold text-amber-700">MW</span>
+                </div>
+                <div className="text-[10.5px] font-semibold text-amber-800/80 mt-1">
+                  Agricultural Residue & Briquettes
                 </div>
               </div>
 
-              <div className="text-xs font-extrabold tracking-tight text-amber-950 flex items-center justify-between">
+              <div className="text-xs font-extrabold tracking-tight text-amber-950 flex items-center justify-between pt-2 border-t border-amber-200/60 mt-2">
                 <span>Biomass Power Project</span>
-                <span className="text-[9px] font-bold text-amber-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
+                <span className="text-[9.5px] font-bold text-amber-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                  Explore <ChevronRight size={12} />
+                </span>
               </div>
             </div>
 
             {/* Card 7: Large Hydro Power Projects - Pastel Warm Peach */}
             <div
-              className="summary-card card-gridconn-largehydro"
+              className="summary-card card-gridconn-largehydro rounded-2xl p-4 sm:p-4.5 border relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               title="Large Hydro Power Projects"
               style={{
                 background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fed7aa 100%)',
                 borderColor: '#fed7aa',
-                boxShadow: '0 3px 10px -2px rgba(254, 215, 170, 0.35)'
+                boxShadow: '0 3px 12px -2px rgba(254, 215, 170, 0.4)'
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent"></div>
               
-              <div className="flex items-start justify-between gap-1.5">
-                <div>
-                  <div className="text-lg sm:text-xl font-black text-orange-950 tracking-tight leading-none font-mono">
-                    3,061{' '}
-                    <span className="text-xs font-bold text-orange-700">MW</span>
-                  </div>
-                  <div className="text-[10px] font-semibold text-orange-800 mt-0.5">
-                    7.4% RE Share
-                  </div>
-                </div>
-
-                <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-orange-100 text-orange-900 border-orange-300 flex items-center gap-1">
-                  <Layers size={10} className="text-orange-600" />
-                  <span>HYDRO</span>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="font-black text-[9.5px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-orange-100 text-orange-900 border-orange-300/80 flex items-center gap-1 shadow-2xs">
+                  <Layers size={11} className="text-orange-600" />
+                  <span>LARGE HYDEL</span>
                 </span>
-              </div>
 
-              <div className="my-1.5">
-                <div className="w-full bg-orange-200/70 rounded-full h-1 overflow-hidden">
-                  <div className="bg-orange-600 h-full rounded-full transition-all duration-500" style={{ width: '7.4%' }}></div>
+                <div className="h-8 w-8 rounded-lg bg-white/85 border border-orange-200 flex items-center justify-center text-orange-600 shadow-2xs">
+                  <Layers size={15} />
                 </div>
               </div>
 
-              <div className="text-xs font-extrabold tracking-tight text-orange-950 flex items-center justify-between">
+              <div className="mb-2">
+                <div className="text-xl sm:text-2xl font-black text-orange-950 tracking-tight leading-none font-mono">
+                  3,061{' '}
+                  <span className="text-xs font-bold text-orange-700">MW</span>
+                </div>
+                <div className="text-[10.5px] font-semibold text-orange-800/80 mt-1">
+                  Major State Dams & Hydel Turbines
+                </div>
+              </div>
+
+              <div className="text-xs font-extrabold tracking-tight text-orange-950 flex items-center justify-between pt-2 border-t border-orange-200/60 mt-2">
                 <span>Large Hydro Power Projects</span>
-                <span className="text-[9px] font-bold text-orange-700">State Dams</span>
+                <span className="text-[9.5px] font-bold text-orange-700 bg-orange-100/90 px-2 py-0.5 rounded-md border border-orange-200">
+                  State Dams
+                </span>
               </div>
             </div>
           </div>
