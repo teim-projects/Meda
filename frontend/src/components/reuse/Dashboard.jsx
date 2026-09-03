@@ -71,14 +71,14 @@ const Dashboard = ({ currentUser }) => {
     }).replace(/\.00$/, '');
   };
 
-  const [govtSolarSummary, setGovtSolarSummary] = useState({ count: '6,617', capacity: '61.4 MW', rawCount: 6617, rawMw: 61.4 });
-  const [solarGridSummary, setSolarGridSummary] = useState({ count: '696', capacity: '6,589.22 MW', rawCount: 696, rawMw: 6589.22 });
-  const [bagasseSummary, setBagasseSummary] = useState({ count: '156', capacity: '2,732.8 MW', rawCount: 156, rawMw: 2732.8 });
-  const [biomassSummary, setBiomassSummary] = useState({ count: '19', capacity: '215 MW', rawCount: 19, rawMw: 215.0 });
-  const [mswSummary, setMswSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0.0 });
-  const [shpSummary, setShpSummary] = useState({ count: '70', capacity: '374.07 MW', rawCount: 70, rawMw: 374.07 });
-  const [kusumSummary, setKusumSummary] = useState({ count: '31', capacity: '114 MW', rawCount: 31, rawMw: 114.0 });
-  const [windSummary, setWindSummary] = useState({ count: '3,063', capacity: '6,371.81 MW', rawCount: 3063, rawMw: 6371.81 });
+  const [govtSolarSummary, setGovtSolarSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [solarGridSummary, setSolarGridSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [bagasseSummary, setBagasseSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [biomassSummary, setBiomassSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [mswSummary, setMswSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [shpSummary, setShpSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [kusumSummary, setKusumSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [windSummary, setWindSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
 
   const setActiveTab = (tabId) => {
     setActiveTabState(tabId);

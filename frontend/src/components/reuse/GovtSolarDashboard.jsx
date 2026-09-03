@@ -21,62 +21,12 @@ const PALETTE = [
   '#64748b', // Others - Steel Slate
 ];
 
-const DEFAULT_DISTRICTS = [
-  { district: 'Nagpur', count: 1246, capacity_mw: 12.35, percentage: 18.84, formatted_count: '1.25K', color: '#2563eb' },
-  { district: 'Gadchiroli', count: 685, capacity_mw: 4.88, percentage: 10.36, formatted_count: '0.69K', color: '#1e3a8a' },
-  { district: 'Pune', count: 647, capacity_mw: 6.56, percentage: 9.78, formatted_count: '0.65K', color: '#ea580c' },
-  { district: 'Bhandara', count: 395, capacity_mw: 4.12, percentage: 5.97, formatted_count: '0.40K', color: '#4f46e5' },
-  { district: 'Chandrapur', count: 310, capacity_mw: 0.61, percentage: 4.69, formatted_count: '0.31K', color: '#059669' },
-  { district: 'Yavatmal', count: 300, capacity_mw: 1.49, percentage: 4.54, formatted_count: '0.30K', color: '#7c3aed' },
-  { district: 'Satara', count: 255, capacity_mw: 1.22, percentage: 3.85, formatted_count: '0.26K', color: '#0d9488' },
-  { district: 'Thane', count: 251, capacity_mw: 1.70, percentage: 3.79, formatted_count: '0.25K', color: '#e11d48' },
-  { district: 'Hingoli', count: 213, capacity_mw: 1.03, percentage: 3.22, formatted_count: '0.21K', color: '#d97706' },
-  { district: 'Sangli', count: 193, capacity_mw: 0.68, percentage: 2.92, formatted_count: '0.19K', color: '#0891b2' },
-  { district: 'Amravati', count: 183, capacity_mw: 3.03, percentage: 2.77, formatted_count: '0.18K', color: '#16a34a' },
-  { district: 'Chhatrapati Sambhajinagar', count: 179, capacity_mw: 3.15, percentage: 2.71, formatted_count: '0.18K', color: '#c2410c' },
-  { district: 'Jalna', count: 162, capacity_mw: 1.51, percentage: 2.45, formatted_count: '0.16K', color: '#9333ea' },
-  { district: 'Gondia', count: 157, capacity_mw: 1.43, percentage: 2.37, formatted_count: '0.16K', color: '#2563eb' },
-  { district: 'Buldhana', count: 151, capacity_mw: 1.08, percentage: 2.28, formatted_count: '0.15K', color: '#0284c7' },
-  { district: 'Parbhani', count: 142, capacity_mw: 2.04, percentage: 2.15, formatted_count: '0.14K', color: '#6366f1' },
-  { district: 'Washim', count: 112, capacity_mw: 1.10, percentage: 1.69, formatted_count: '0.11K', color: '#0f766e' },
-  { district: 'Palghar', count: 104, capacity_mw: 0.86, percentage: 1.57, formatted_count: '0.10K', color: '#b45309' },
-  { district: 'Wardha', count: 94, capacity_mw: 0.84, percentage: 1.42, formatted_count: '0.09K', color: '#3b82f6' },
-  { district: 'Ahilyanagar', count: 79, capacity_mw: 0.80, percentage: 1.19, formatted_count: '0.08K', color: '#8b5cf6' },
-  { district: 'Nanded', count: 78, capacity_mw: 1.06, percentage: 1.18, formatted_count: '0.08K', color: '#15803d' },
-  { district: 'Latur', count: 77, capacity_mw: 0.57, percentage: 1.16, formatted_count: '0.08K', color: '#64748b' },
-  { district: 'Sindhudurg', count: 79, capacity_mw: 0.46, percentage: 1.19, formatted_count: '0.08K', color: '#0369a1' },
-  { district: 'Nandurbar', count: 68, capacity_mw: 1.22, percentage: 1.03, formatted_count: '0.07K', color: '#9f1239' },
-  { district: 'Akola', count: 66, capacity_mw: 2.25, percentage: 1.00, formatted_count: '0.07K', color: '#0e7490' },
-  { district: 'Dharashiv', count: 64, capacity_mw: 0.55, percentage: 0.97, formatted_count: '0.06K', color: '#a855f7' },
-  { district: 'Raigad', count: 64, capacity_mw: 0.94, percentage: 0.97, formatted_count: '0.06K', color: '#e11d48' },
-  { district: 'Nashik', count: 55, capacity_mw: 0.59, percentage: 0.83, formatted_count: '0.06K', color: '#334155' },
-  { district: 'Ratnagiri', count: 54, capacity_mw: 0.79, percentage: 0.82, formatted_count: '0.05K', color: '#047857' },
-  { district: 'Beed', count: 39, capacity_mw: 0.32, percentage: 0.59, formatted_count: '0.04K', color: '#d946ef' },
-  { district: 'Dhule', count: 35, capacity_mw: 0.58, percentage: 0.53, formatted_count: '0.04K', color: '#0284c7' },
-  { district: 'Jalgaon', count: 27, capacity_mw: 0.55, percentage: 0.41, formatted_count: '0.03K', color: '#5b21b6' },
-  { district: 'Kolhapur', count: 26, capacity_mw: 0.13, percentage: 0.39, formatted_count: '0.03K', color: '#65a30d' },
-  { district: 'Solapur', count: 12, capacity_mw: 0.17, percentage: 0.18, formatted_count: '0.01K', color: '#ca8a04' },
-  { district: 'Mumbai Suburban', count: 9, capacity_mw: 0.59, percentage: 0.14, formatted_count: '0.01K', color: '#475569' },
-  { district: 'Mumbai City', count: 6, capacity_mw: 0.15, percentage: 0.09, formatted_count: '0.01K', color: '#94a3b8' }
-];
-
-const DEFAULT_DIVISIONS = [
-  { division: 'Nagpur', count: 2887, capacity_mw: 24.23, percentage: 39.46, color: '#2563eb' },
-  { division: 'Amravati', count: 812, capacity_mw: 8.96, percentage: 14.59, color: '#10b981' },
-  { division: 'Pune', count: 914, capacity_mw: 7.95, percentage: 12.95, color: '#f59e0b' },
-  { division: 'Chhatrapati Sambhajinagar', count: 696, capacity_mw: 7.72, percentage: 12.58, color: '#8b5cf6' },
-  { division: 'Mumbai', count: 434, capacity_mw: 4.24, percentage: 6.91, color: '#06b6d4' },
-  { division: 'Nashik', count: 264, capacity_mw: 3.74, percentage: 6.09, color: '#ec4899' },
-  { division: 'Latur', count: 258, capacity_mw: 2.50, percentage: 4.07, color: '#64748b' },
-  { division: 'Kolhapur', count: 352, capacity_mw: 2.06, percentage: 3.35, color: '#f97316' }
-];
-
 export const GovtSolarDashboard = () => {
   const [loading, setLoading] = useState(true);
-  const [totalProjects, setTotalProjects] = useState(6614);
-  const [totalCapacityMw, setTotalCapacityMw] = useState(61.00);
-  const [districts, setDistricts] = useState(DEFAULT_DISTRICTS);
-  const [divisions, setDivisions] = useState(DEFAULT_DIVISIONS);
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [totalCapacityMw, setTotalCapacityMw] = useState(0);
+  const [districts, setDistricts] = useState([]);
+  const [divisions, setDivisions] = useState([]);
   
   // Fixed inspect district state (for the stationary breakdown box)
   const [inspectedDistrict, setInspectedDistrict] = useState(null);
@@ -87,30 +37,43 @@ export const GovtSolarDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('govt-solarization');
       if (res && res.success) {
-        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 6617);
-        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 61.4);
-        if (res.districts && res.districts.length > 0) {
+        setTotalProjects(res.total_projects !== undefined ? Number(res.total_projects) : 0);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 0);
+        if (res.districts && Array.isArray(res.districts) && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
             rank: idx + 1,
-            color: PALETTE[idx % PALETTE.length]
+            color: d.color || PALETTE[idx % PALETTE.length]
           }));
           setDistricts(formatted);
-          if (!inspectedDistrict) {
-            setInspectedDistrict(formatted[0]);
-          }
+          setInspectedDistrict(formatted[0]);
+        } else {
+          setDistricts([]);
+          setInspectedDistrict(null);
         }
-        if (res.divisions && res.divisions.length > 0) {
-          const divColors = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b', '#f97316'];
-          const formattedDivs = res.divisions.map((div, idx) => ({
+        if (res.divisions && Array.isArray(res.divisions) && res.divisions.length > 0) {
+          const divFormatted = res.divisions.map((div, idx) => ({
             ...div,
-            color: divColors[idx % divColors.length]
+            color: div.color || PALETTE[idx % PALETTE.length]
           }));
-          setDivisions(formattedDivs);
+          setDivisions(divFormatted);
+        } else {
+          setDivisions([]);
         }
+      } else {
+        setTotalProjects(0);
+        setTotalCapacityMw(0);
+        setDistricts([]);
+        setDivisions([]);
+        setInspectedDistrict(null);
       }
     } catch (err) {
-      console.warn('Analytics endpoint fallback:', err);
+      console.warn('Govt solarization analytics error:', err);
+      setTotalProjects(0);
+      setTotalCapacityMw(0);
+      setDistricts([]);
+      setDivisions([]);
+      setInspectedDistrict(null);
     } finally {
       setLoading(false);
     }
@@ -120,14 +83,20 @@ export const GovtSolarDashboard = () => {
     loadData();
   }, []);
 
-  // Default inspected district to Nagpur on start
   useEffect(() => {
     if (districts.length > 0 && !inspectedDistrict) {
       setInspectedDistrict(districts[0]);
     }
   }, [districts]);
 
-  // Logarithmic height mapping for Bar Chart
+  const activeBox = inspectedDistrict || districts[0] || {
+    district: 'No Data',
+    count: 0,
+    capacity_mw: 0,
+    percentage: 0,
+    rank: 1,
+    color: '#2563eb'
+  };// Logarithmic height mapping for Bar Chart
   const maxCount = Math.max(...districts.map(d => Number(d.count) || 0), 1);
   const maxLog = Math.log10(maxCount) * 1.05;
   const getLogBarHeightPct = (count) => {
@@ -201,15 +170,6 @@ export const GovtSolarDashboard = () => {
     sub: `${Number(totalProjects).toLocaleString('en-IN')} Buildings`
   };
 
-  // The active inspected district for the stationary box
-  const activeBox = inspectedDistrict || districts[0] || {
-    district: 'Nagpur',
-    count: 1246,
-    capacity_mw: 12.35,
-    percentage: 18.84,
-    rank: 1
-  };
-
   return (
     <div className="w-full bg-[#f4f7fb] p-2 sm:p-4 md:p-6 font-sans text-slate-800 antialiased space-y-6">
       
@@ -218,7 +178,7 @@ export const GovtSolarDashboard = () => {
         {/* KPI Card 1: Total Installed Capacity */}
         <div className="bg-[#0b1b3d] rounded-xl p-5 text-white shadow-sm flex flex-col justify-between min-h-[105px] border border-slate-900/80">
           <div className="text-3xl lg:text-4xl font-bold tracking-tight text-white leading-none">
-            {Number(totalCapacityMw || 61.00).toFixed(2).replace(/\.00$/, '')}
+            {Number(totalCapacityMw || 0).toFixed(2).replace(/\.00$/, '')}
           </div>
           <div className="text-[13px] font-medium text-slate-200 mt-2">
             Total Installed Capacity in MW
@@ -228,7 +188,7 @@ export const GovtSolarDashboard = () => {
         {/* KPI Card 2: Total No. Of Projects (Database rows count) */}
         <div className="bg-[#0b1b3d] rounded-xl p-5 text-white shadow-sm flex flex-col justify-between min-h-[105px] border border-slate-900/80">
           <div className="text-3xl lg:text-4xl font-bold tracking-tight text-white leading-none">
-            {Number(totalProjects || 6614).toLocaleString()}
+            {Number(totalProjects || 0).toLocaleString()}
           </div>
           <div className="text-[13px] font-medium text-slate-200 mt-2">
             No. Of Projects
@@ -277,111 +237,113 @@ export const GovtSolarDashboard = () => {
             </div>
           </div>
 
-          {/* Main Bar Chart Graphic Area with Logarithmic Y-Axis */}
-          <div className="relative flex items-stretch h-[280px] pt-4">
-            
-            {/* Vertical Y-Axis Label */}
-            <div className="w-6 flex items-center justify-center shrink-0 pr-1 select-none">
-              <span
-                className="text-[10.5px] font-semibold text-slate-700 tracking-wide"
-                style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-              >
-                Count of Capacity (MW)
-              </span>
+          {districts.length === 0 ? (
+            <div className="py-16 text-center flex flex-col items-center justify-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200 my-4">
+              <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5">
+                <Building size={20} />
+              </div>
+              <div className="text-sm font-bold text-slate-800">No Government Solarization Data Uploaded Yet</div>
+              <p className="text-xs text-slate-500 mt-0.5 max-w-xs">
+                Upload completed Government Solarization Excel sheet in Templates to view district bars.
+              </p>
             </div>
+          ) : (
+            <>
+              <div className="relative flex items-stretch h-[280px] pt-4">
+                <div className="w-6 flex items-center justify-center shrink-0 pr-1 select-none">
+                  <span
+                    className="text-[10.5px] font-semibold text-slate-700 tracking-wide"
+                    style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+                  >
+                    Count of Capacity (MW)
+                  </span>
+                </div>
 
-            {/* Y-Axis Ticks: 1,000, 100, 10, 1 */}
-            <div className="w-9 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
-              <span className="relative -top-2">1,000</span>
-              <span className="relative -top-1">100</span>
-              <span>10</span>
-              <span className="relative top-1">1</span>
-            </div>
+                <div className="w-9 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
+                  <span className="relative -top-2">{maxCount >= 1000 ? `${(maxCount/1000).toFixed(1)}K` : Math.round(maxCount)}</span>
+                  <span className="relative -top-1">{Math.round(maxCount * 0.1)}</span>
+                  <span>{Math.round(maxCount * 0.01)}</span>
+                  <span className="relative top-1">1</span>
+                </div>
 
-            {/* Bars Plot Area with Dotted Grid Lines */}
-            <div className="flex-1 relative border-l border-b border-slate-300 overflow-x-auto overflow-y-hidden pb-1">
-              
-              {/* Horizontal Guide Lines */}
-              <div className="absolute inset-0 pointer-events-none flex flex-col justify-between py-1">
-                <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                <div className="w-full border-b border-slate-300 h-0" />
+                <div className="flex-1 relative border-l border-b border-slate-300 overflow-x-auto overflow-y-hidden pb-1">
+                  <div className="absolute inset-0 pointer-events-none flex flex-col justify-between py-1">
+                    <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                    <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                    <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                    <div className="w-full border-b border-slate-300 h-0" />
+                  </div>
+
+                  <div className="h-full flex items-end min-w-max px-2 gap-[3px] pt-2">
+                    {districts.map((item, idx) => {
+                      const barHeightPct = getLogBarHeightPct(item.count);
+                      const isSelected = activeBox.district === item.district;
+
+                      return (
+                        <div
+                          key={idx}
+                          className="flex flex-col items-center justify-end h-full w-[15px] sm:w-[17px] group cursor-pointer relative"
+                          onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                          onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                        >
+                          <div className="w-full h-full flex items-end justify-center">
+                            <div
+                              className={`w-full transition-all duration-150 rounded-t-[1.5px] ${
+                                isSelected
+                                  ? 'bg-blue-600 ring-2 ring-blue-400 scale-y-105'
+                                  : 'bg-[#0e294b] hover:bg-[#1d4ed8]'
+                              }`}
+                              style={{
+                                height: `${barHeightPct}%`,
+                                transformOrigin: 'bottom'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
-              {/* Bars List */}
-              <div className="h-full flex items-end min-w-max px-2 gap-[3px] pt-2">
-                {districts.map((item, idx) => {
-                  const barHeightPct = getLogBarHeightPct(item.count);
-                  const isSelected = activeBox.district === item.district;
-
-                  return (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-center justify-end h-full w-[15px] sm:w-[17px] group cursor-pointer relative"
-                      onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                      onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                    >
-                      <div className="w-full h-full flex items-end justify-center">
-                        <div
-                          className={`w-full transition-all duration-150 rounded-t-[1.5px] ${
-                            isSelected
-                              ? 'bg-blue-600 ring-2 ring-blue-400 scale-y-105'
-                              : 'bg-[#0e294b] hover:bg-[#1d4ed8]'
+              <div className="flex items-start ml-[50px] overflow-x-auto min-h-[90px] pt-1">
+                <div className="flex items-start min-w-max px-2 gap-[3px]">
+                  {districts.map((item, idx) => {
+                    const isSelected = activeBox.district === item.district;
+                    return (
+                      <div
+                        key={idx}
+                        className="w-[15px] sm:w-[17px] flex justify-center cursor-pointer"
+                        onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                        onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                      >
+                        <span
+                          className={`text-[8.5px] select-none transition-colors ${
+                            isSelected ? 'text-blue-700 font-bold' : 'text-slate-700 font-medium'
                           }`}
                           style={{
-                            height: `${barHeightPct}%`,
-                            transformOrigin: 'bottom'
+                            writingMode: 'vertical-rl',
+                            transform: 'rotate(180deg)',
+                            maxHeight: '85px'
                           }}
-                        />
+                          title={item.district}
+                        >
+                          {item.district.length > 15 ? `${item.district.slice(0, 13)}...` : item.district}
+                        </span>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-          </div>
-
-          {/* Rotated District Labels */}
-          <div className="flex items-start ml-[50px] overflow-x-auto min-h-[90px] pt-1">
-            <div className="flex items-start min-w-max px-2 gap-[3px]">
-              {districts.map((item, idx) => {
-                const isSelected = activeBox.district === item.district;
-                return (
-                  <div
-                    key={idx}
-                    className="w-[15px] sm:w-[17px] flex justify-center cursor-pointer"
-                    onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                    onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                  >
-                    <span
-                      className={`text-[8.5px] select-none transition-colors ${
-                        isSelected ? 'text-blue-700 font-bold' : 'text-slate-700 font-medium'
-                      }`}
-                      style={{
-                        writingMode: 'vertical-rl',
-                        transform: 'rotate(180deg)',
-                        maxHeight: '85px'
-                      }}
-                      title={item.district}
-                    >
-                      {item.district.length > 15 ? `${item.district.slice(0, 13)}...` : item.district}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Bottom Centered Axis Title: District */}
-          <div className="w-full text-center text-xs font-semibold text-slate-800 pt-1 select-none">
-            District
-          </div>
+              <div className="w-full text-center text-xs font-semibold text-slate-800 pt-1 select-none">
+                District
+              </div>
+            </>
+          )}
 
         </div>
 
-        {/* ===================== RIGHT: SIMPLIFIED, CLEAR PIE CHART (5 Cols) ===================== */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-700/80 p-5 shadow-sm flex flex-col justify-between">
           
           <div className="text-center mb-1">
@@ -389,127 +351,131 @@ export const GovtSolarDashboard = () => {
               District wise MW capacity percentage distribution
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Major districts breakdown • Clear & non-overlapping
+              Major districts breakdown • Computed dynamically from database
             </p>
           </div>
 
-          {/* Clean Donut Pie Graphic with Center Active Information */}
-          <div className="relative w-full flex items-center justify-center my-3">
-            <svg viewBox="0 0 280 280" className="w-[240px] h-[240px] select-none overflow-visible">
-              
-              {/* Donut Slices */}
-              <g>
-                {pieSlices.map((slice, idx) => {
-                  const isHovered = activePieHover?.district === slice.district;
-                  const pathD = getDonutSlicePath(140, 140, 110, 68, slice.startAngle, slice.endAngle);
-
-                  return (
-                    <path
-                      key={idx}
-                      d={pathD}
-                      fill={slice.color}
-                      stroke="#ffffff"
-                      strokeWidth="2"
-                      className="cursor-pointer transition-all duration-200"
-                      style={{
-                        transformOrigin: '140px 140px',
-                        transform: isHovered ? 'scale(1.06)' : 'scale(1)',
-                        filter: isHovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' : 'none',
-                        opacity: activePieHover && !isHovered ? 0.75 : 1
-                      }}
-                      onMouseEnter={() =>
-                        setActivePieHover({
-                          title: slice.district,
-                          mw: `${Number(slice.capacity_mw).toFixed(2)} MW`,
-                          sub: `${slice.percentage}% (${slice.count.toLocaleString()} bldgs)`
-                        })
-                      }
-                      onMouseLeave={() => setActivePieHover(null)}
-                    />
-                  );
-                })}
-              </g>
-
-              {/* Center Donut Hole Card (Clear Live Info) */}
-              <circle cx="140" cy="140" r="64" fill="#ffffff" />
-              <text x="140" y="125" textAnchor="middle" fontSize="10" fontWeight="600" fill="#64748b">
-                {currentCenterDisplay.title}
-              </text>
-              <text x="140" y="146" textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">
-                {currentCenterDisplay.mw}
-              </text>
-              <text x="140" y="163" textAnchor="middle" fontSize="9.5" fontWeight="500" fill="#2563eb">
-                {currentCenterDisplay.sub}
-              </text>
-            </svg>
-          </div>
-
-          {/* CLEAR, STRUCTURED COLOR ENTRIES (100% Readable, Zero Mess) */}
-          <div className="border-t border-slate-100 pt-3">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
-              {simplifiedPieItems.map((item, idx) => {
-                const isHovered = activePieHover?.title === item.district;
-                return (
-                  <div
-                    key={idx}
-                    className={`flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer ${
-                      isHovered ? 'bg-blue-50/80 border-blue-300 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
-                    }`}
-                    onMouseEnter={() =>
-                      setActivePieHover({
-                        title: item.district,
-                        mw: `${Number(item.capacity_mw).toFixed(2)} MW`,
-                        sub: `${item.percentage}% (${item.count.toLocaleString()} bldgs)`
-                      })
-                    }
-                    onMouseLeave={() => setActivePieHover(null)}
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="font-semibold text-slate-800 text-[11px] truncate">
-                        {item.district}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-bold text-slate-900 shrink-0 ml-1">
-                      {item.percentage}%
-                    </span>
-                  </div>
-                );
-              })}
+          {districts.length === 0 ? (
+            <div className="py-16 text-center flex flex-col items-center justify-center my-3">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+                <Building size={22} />
+              </div>
+              <div className="text-sm font-bold text-slate-800">No Distribution Available</div>
+              <p className="text-xs text-slate-500 mt-1 max-w-xs">
+                Capacity percentage breakdown will appear here once Government Solarization records are stored.
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="relative w-full flex items-center justify-center my-3">
+                <svg viewBox="0 0 280 280" className="w-[240px] h-[240px] select-none overflow-visible">
+                  <g>
+                    {pieSlices.map((slice, idx) => {
+                      const isHovered = activePieHover?.title === slice.district;
+                      const pathD = getDonutSlicePath(140, 140, 110, 68, slice.startAngle, slice.endAngle);
+
+                      return (
+                        <path
+                          key={idx}
+                          d={pathD}
+                          fill={slice.color}
+                          stroke="#ffffff"
+                          strokeWidth="2"
+                          className="cursor-pointer transition-all duration-200"
+                          style={{
+                            transformOrigin: '140px 140px',
+                            transform: isHovered ? 'scale(1.06)' : 'scale(1)',
+                            filter: isHovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' : 'none',
+                            opacity: activePieHover && !isHovered ? 0.75 : 1
+                          }}
+                          onMouseEnter={() =>
+                            setActivePieHover({
+                              title: slice.district,
+                              count: `${slice.count.toLocaleString()} bldgs`,
+                              mw: `${slice.percentage}% (${Number(slice.capacity_mw).toFixed(2)} MW)`
+                            })
+                          }
+                          onMouseLeave={() => setActivePieHover(null)}
+                        />
+                      );
+                    })}
+                  </g>
+
+                  <circle cx="140" cy="140" r="64" fill="#ffffff" />
+                  <text x="140" y="125" textAnchor="middle" fontSize="10" fontWeight="600" fill="#64748b">
+                    {currentCenterDisplay.title}
+                  </text>
+                  <text x="140" y="146" textAnchor="middle" fontSize="16" fontWeight="800" fill="#0f172a">
+                    {currentCenterDisplay.count}
+                  </text>
+                  <text x="140" y="163" textAnchor="middle" fontSize="10" fontWeight="500" fill="#2563eb">
+                    {currentCenterDisplay.mw}
+                  </text>
+                </svg>
+              </div>
+
+              <div className="border-t border-slate-100 pt-3">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                  {simplifiedPieItems.map((item, idx) => {
+                    const isHovered = activePieHover?.title === item.district;
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer ${
+                          isHovered ? 'bg-blue-50/80 border-blue-300 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
+                        }`}
+                        onMouseEnter={() =>
+                          setActivePieHover({
+                            title: item.district,
+                            count: `${item.count.toLocaleString()} bldgs`,
+                            mw: `${item.percentage}% (${Number(item.capacity_mw).toFixed(2)} MW)`
+                          })
+                        }
+                        onMouseLeave={() => setActivePieHover(null)}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="font-semibold text-slate-800 text-[11px] truncate">
+                            {item.district}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-900 shrink-0 ml-1">
+                          {item.percentage}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
         </div>
 
       </div>
 
-      {/* 3. NEW AESTHETIC GRAPH BELOW BOTH: ADMINISTRATIVE DIVISION BREAKDOWN */}
       <div className="bg-white rounded-2xl border border-slate-700/80 p-6 shadow-sm">
-        
-        {/* Section Header with Summary Pills */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100">
           <div>
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-blue-50 text-blue-700 rounded-lg">
-                <BarChart2 size={18} />
+                <Layers size={18} />
               </div>
               <h2 className="text-base font-bold text-slate-900 tracking-tight">
-                Division-Wise Solarization Distribution (Revenue Divisions of Maharashtra)
+                Administrative Divisions Solarization Distribution
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Regional breakdown showing Installed Capacity (MW) and Government Buildings count across all 8 divisions
+              Commissioned capacity and government building count breakdown across administrative divisions
             </p>
           </div>
-
-          {/* Quick Metrics Badges */}
           <div className="flex items-center gap-2">
             <div className="bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Building size={14} />
-              <span>8 Divisions • 36 Districts</span>
+              <span>{divisions.length} Divisions • {districts.length} Districts</span>
             </div>
             <div className="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
@@ -518,59 +484,74 @@ export const GovtSolarDashboard = () => {
           </div>
         </div>
 
-        {/* Division Progress Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
-          {divisions.map((div, idx) => {
-            const maxMw = 25; // Nagpur max ~24.23 MW
-            const progressPct = Math.min((div.capacity_mw / maxMw) * 100, 100);
+        {divisions.length === 0 ? (
+          <div className="py-10 text-center text-slate-400 text-xs italic">
+            No division breakdown available yet. Upload Government Building Solarization template to populate division cards.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+            {divisions.map((div, idx) => {
+              const maxDivMw = Math.max(...divisions.map(d => Number(d.capacity_mw) || 0), 1);
+              const progressPct = Math.min(((Number(div.capacity_mw) || 0) / maxDivMw) * 100, 100);
 
-            return (
-              <div
-                key={idx}
-                className="bg-slate-50/80 hover:bg-white border border-slate-200/80 hover:border-blue-400 rounded-xl p-4 transition-all duration-200 hover:shadow-md group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="font-bold text-sm text-slate-900 truncate">
-                      {div.division}
-                    </span>
-                    <span className="text-[11px] font-extrabold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full">
-                      {div.percentage}%
-                    </span>
+              return (
+                <div
+                  key={idx}
+                  className="bg-slate-50/80 hover:bg-white border border-slate-200/80 hover:border-blue-400 rounded-xl p-4 transition-all duration-200 hover:shadow-md group flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="font-bold text-sm text-slate-900 truncate">
+                        {div.division}
+                      </span>
+                      <span className="text-[11px] font-extrabold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full">
+                        {div.percentage}%
+                      </span>
+                    </div>
+
+                    <div className="flex items-baseline justify-between mt-1">
+                      <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                        {Number(div.capacity_mw).toFixed(2)}
+                        <span className="text-xs font-semibold text-slate-500 ml-1">MW</span>
+                      </span>
+                      <span className="text-xs font-medium text-slate-600">
+                        <strong>{div.count.toLocaleString()}</strong> bldgs
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-baseline justify-between mt-1">
-                    <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                      {Number(div.capacity_mw).toFixed(2)}
-                      <span className="text-xs font-semibold text-slate-500 ml-1">MW</span>
-                    </span>
-                    <span className="text-xs font-medium text-slate-600">
-                      <strong>{div.count.toLocaleString()}</strong> bldgs
-                    </span>
+                  <div className="w-full bg-slate-200 rounded-full h-2 mt-4 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500 group-hover:brightness-110"
+                      style={{
+                        width: `${progressPct}%`,
+                        backgroundColor: div.color || '#2563eb'
+                      }}
+                    />
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Aesthetic Gradient Progress Bar */}
-                <div className="w-full bg-slate-200 rounded-full h-2 mt-4 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500 group-hover:brightness-110"
-                    style={{
-                      width: `${progressPct}%`,
-                      backgroundColor: div.color || '#2563eb'
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Executive Regional Insight Footer */}
         <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 gap-3">
           <div className="flex items-center gap-2">
             <Award size={15} className="text-amber-500 shrink-0" />
             <span>
-              Highest Solar Capacity: <strong className="text-slate-900">Nagpur Division (24.23 MW, 39.5%)</strong> followed by <strong className="text-slate-900">Amravati (8.96 MW)</strong> & <strong className="text-slate-900">Pune (7.95 MW)</strong>.
+              {divisions.length > 0 ? (
+                <>
+                  Highest Solar Capacity: <strong className="text-slate-900">{divisions[0].division} Division ({Number(divisions[0].capacity_mw).toFixed(2)} MW, {divisions[0].percentage}%)</strong>
+                  {divisions[1] && (
+                    <> followed by <strong className="text-slate-900">{divisions[1].division} ({Number(divisions[1].capacity_mw).toFixed(2)} MW)</strong></>
+                  )}
+                  {divisions[2] && (
+                    <> & <strong className="text-slate-900">{divisions[2].division} ({Number(divisions[2].capacity_mw).toFixed(2)} MW)</strong></>
+                  )}.
+                </>
+              ) : (
+                <span>No division insight available yet.</span>
+              )}
             </span>
           </div>
           <button

@@ -8,35 +8,14 @@ const PALETTE = [
   '#06b6d4', '#4f46e5', '#ea580c', '#16a34a', '#64748b'
 ];
 
-const DEFAULT_DISTRICTS = [
-  { district: 'Ahilyanagar', count: 12, capacity_mw: 50.00, percentage: 43.86, color: '#0072ff' },
-  { district: 'Latur', count: 8, capacity_mw: 30.50, percentage: 26.75, color: '#0b1b7a' },
-  { district: 'Jalgaon', count: 2, capacity_mw: 6.00, percentage: 5.26, color: '#e65100' },
-  { district: 'Beed', count: 2, capacity_mw: 5.50, percentage: 4.82, color: '#6a1b9a' },
-  { district: 'Nanded', count: 2, capacity_mw: 5.00, percentage: 4.39, color: '#d81b60' },
-  { district: 'Parbhani', count: 2, capacity_mw: 5.00, percentage: 4.39, color: '#7e57c2' },
-  { district: 'Solapur', count: 1, capacity_mw: 4.00, percentage: 3.51, color: '#d4a017' },
-  { district: 'Chhatrapati Sambhajinagar', count: 1, capacity_mw: 3.00, percentage: 2.63, color: '#c62828' },
-  { district: 'Akola', count: 1, capacity_mw: 1.00, percentage: 0.88, color: '#00897b' },
-  { district: 'Satara', count: 0, capacity_mw: 0.00, percentage: 0.00, color: '#2e7d32' },
-  { district: 'Yavatmal', count: 0, capacity_mw: 0.00, percentage: 0.00, color: '#06b6d4' }
-];
-
-const DEFAULT_TIMELINE = [
-  { year: 2023, cumulative_mw: 2.0 },
-  { year: 2024, cumulative_mw: 96.0 },
-  { year: 2025, cumulative_mw: 105.0 },
-  { year: 2026, cumulative_mw: 114.0 }
-];
-
 export const SolarKusumDashboard = () => {
   const [loading, setLoading] = useState(true);
-  const [totalProjects, setTotalProjects] = useState(31);
-  const [totalCapacityMw, setTotalCapacityMw] = useState(114.00);
-  const [kusumA, setKusumA] = useState({ mw: 11.00, count: 6 });
-  const [kusumC, setKusumC] = useState({ mw: 103.00, count: 25 });
-  const [districts, setDistricts] = useState(DEFAULT_DISTRICTS);
-  const [timeline, setTimeline] = useState(DEFAULT_TIMELINE);
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [totalCapacityMw, setTotalCapacityMw] = useState(0);
+  const [kusumA, setKusumA] = useState({ mw: 0, count: 0 });
+  const [kusumC, setKusumC] = useState({ mw: 0, count: 0 });
+  const [districts, setDistricts] = useState([]);
+  const [timeline, setTimeline] = useState([]);
   const [inspectedDistrict, setInspectedDistrict] = useState(null);
   const [activePieHover, setActivePieHover] = useState(null);
   const [hoveredTimeline, setHoveredTimeline] = useState(null);
@@ -46,41 +25,60 @@ export const SolarKusumDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('solar-kusum');
       if (res && res.success) {
-        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 31);
-        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 114.00);
+        setTotalProjects(res.total_projects !== undefined ? Number(res.total_projects) : 0);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 0);
         
-        if (res.types) {
+        if (res.types && typeof res.types === 'object') {
           const typeA = res.types['KUSUM A'] || Object.values(res.types).find(t => t.type && t.type.toUpperCase().includes('A'));
           const typeC = res.types['KUSUM C'] || Object.values(res.types).find(t => t.type && t.type.toUpperCase().includes('C'));
-          if (typeA) {
-            setKusumA({
-              mw: typeA.capacity_mw !== undefined ? typeA.capacity_mw : 11.00,
-              count: typeA.count !== undefined ? typeA.count : 6
-            });
-          }
-          if (typeC) {
-            setKusumC({
-              mw: typeC.capacity_mw !== undefined ? typeC.capacity_mw : 103.00,
-              count: typeC.count !== undefined ? typeC.count : 25
-            });
-          }
+          setKusumA({
+            mw: typeA && typeA.capacity_mw !== undefined ? Number(typeA.capacity_mw) : 0,
+            count: typeA && typeA.count !== undefined ? Number(typeA.count) : 0
+          });
+          setKusumC({
+            mw: typeC && typeC.capacity_mw !== undefined ? Number(typeC.capacity_mw) : 0,
+            count: typeC && typeC.count !== undefined ? Number(typeC.count) : 0
+          });
+        } else {
+          setKusumA({ mw: 0, count: 0 });
+          setKusumC({ mw: 0, count: 0 });
         }
 
-        if (res.districts && res.districts.length > 0) {
+        if (res.districts && Array.isArray(res.districts) && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
             rank: idx + 1,
-            color: PALETTE[idx % PALETTE.length]
+            color: d.color || PALETTE[idx % PALETTE.length]
           }));
           setDistricts(formatted);
-          if (!inspectedDistrict) setInspectedDistrict(formatted[0]);
+          setInspectedDistrict(formatted[0]);
+        } else {
+          setDistricts([]);
+          setInspectedDistrict(null);
         }
-        if (res.timeline && res.timeline.length > 0) {
+        if (res.timeline && Array.isArray(res.timeline)) {
           setTimeline(res.timeline);
+        } else {
+          setTimeline([]);
         }
+      } else {
+        setTotalProjects(0);
+        setTotalCapacityMw(0);
+        setKusumA({ mw: 0, count: 0 });
+        setKusumC({ mw: 0, count: 0 });
+        setDistricts([]);
+        setTimeline([]);
+        setInspectedDistrict(null);
       }
     } catch (err) {
-      console.warn('Solar Kusum analytics fallback:', err);
+      console.warn('Solar Kusum analytics error:', err);
+      setTotalProjects(0);
+      setTotalCapacityMw(0);
+      setKusumA({ mw: 0, count: 0 });
+      setKusumC({ mw: 0, count: 0 });
+      setDistricts([]);
+      setTimeline([]);
+      setInspectedDistrict(null);
     } finally {
       setLoading(false);
     }
@@ -96,7 +94,14 @@ export const SolarKusumDashboard = () => {
     }
   }, [districts]);
 
-  const activeBox = inspectedDistrict || districts[0] || DEFAULT_DISTRICTS[0];
+  const activeBox = inspectedDistrict || districts[0] || {
+    district: 'No Data',
+    count: 0,
+    capacity_mw: 0,
+    percentage: 0,
+    rank: 1,
+    color: '#0072ff'
+  };
 
   // Dynamic max capacity across districts for Bar Chart Y-axis scale
   const maxDistrictMw = Math.max(...districts.map(d => Number(d.capacity_mw) || 0), 1);
@@ -267,96 +272,110 @@ export const SolarKusumDashboard = () => {
               </div>
             </div>
 
-            {/* Plot area (0 to 50 MW matching numbers) */}
-            <div className="relative flex items-stretch h-[240px] pt-4">
-              <div className="w-6 flex items-center justify-center shrink-0 pr-1 select-none">
-                <span
-                  className="text-[10.5px] font-semibold text-slate-700 tracking-wide"
-                  style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-                >
-                  MW Capacity
-                </span>
-              </div>
-
-              <div className="w-8 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
-                <span className="relative -top-2">{Math.round(maxDistrictMw)}</span>
-                <span>{Math.round(maxDistrictMw * 0.75)}</span>
-                <span>{Math.round(maxDistrictMw * 0.5)}</span>
-                <span>{Math.round(maxDistrictMw * 0.25)}</span>
-                <span className="relative top-1">0</span>
-              </div>
-
-              <div className="flex-1 relative border-l border-b border-slate-300 overflow-x-auto overflow-y-hidden pb-1">
-                <div className="absolute inset-0 pointer-events-none flex flex-col justify-between py-1">
-                  <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                  <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                  <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                  <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                  <div className="w-full border-b border-slate-300 h-0" />
+            {/* Plot area */}
+            {districts.length === 0 ? (
+              <div className="py-16 text-center flex flex-col items-center justify-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200 my-2">
+                <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-2.5">
+                  <BarChart2 size={20} />
                 </div>
-
-                <div className="h-full flex items-end min-w-max px-2 gap-[11px] pt-2">
-                  {districts.map((item, idx) => {
-                    const barHeightPct = getBarHeightPct(item.capacity_mw);
-                    const isSelected = activeBox.district === item.district;
-
-                    return (
-                      <div
-                        key={idx}
-                        className="flex flex-col items-center justify-end h-full w-[26px] group cursor-pointer relative"
-                        onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                        onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                      >
-                        <div className="w-full h-full flex items-end justify-center">
-                          <div
-                            className={`w-full transition-all duration-150 rounded-t-[2px] ${
-                              isSelected
-                                ? 'bg-blue-600 ring-2 ring-blue-400 scale-y-105'
-                                : 'bg-[#0e294b] hover:bg-[#1d4ed8]'
-                            }`}
-                            style={{ height: `${barHeightPct}%`, transformOrigin: 'bottom' }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <div className="text-sm font-bold text-slate-800">No PM-KUSUM Data Uploaded Yet</div>
+                <p className="text-xs text-slate-500 mt-0.5 max-w-xs">
+                  Upload completed PM-KUSUM template in Templates to view district bars and component stats.
+                </p>
               </div>
-            </div>
-
-            {/* Rotated district labels */}
-            <div className="flex items-start ml-[45px] overflow-x-auto min-h-[85px] pt-1">
-              <div className="flex items-start min-w-max px-2 gap-[11px]">
-                {districts.map((item, idx) => {
-                  const isSelected = activeBox.district === item.district;
-                  return (
-                    <div
-                      key={idx}
-                      className="w-[26px] flex justify-center cursor-pointer"
-                      onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                      onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+            ) : (
+              <>
+                <div className="relative flex items-stretch h-[240px] pt-4">
+                  <div className="w-6 flex items-center justify-center shrink-0 pr-1 select-none">
+                    <span
+                      className="text-[10.5px] font-semibold text-slate-700 tracking-wide"
+                      style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
                     >
-                      <span
-                        className={`text-[9.5px] select-none transition-colors ${
-                          isSelected ? 'text-blue-700 font-bold' : 'text-slate-700 font-medium'
-                        }`}
-                        style={{
-                          writingMode: 'vertical-rl',
-                          transform: 'rotate(180deg)',
-                          maxHeight: '80px'
-                        }}
-                        title={item.district}
-                      >
-                        {item.district}
-                      </span>
+                      MW Capacity
+                    </span>
+                  </div>
+
+                  <div className="w-8 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
+                    <span className="relative -top-2">{Math.round(maxDistrictMw)}</span>
+                    <span>{Math.round(maxDistrictMw * 0.75)}</span>
+                    <span>{Math.round(maxDistrictMw * 0.5)}</span>
+                    <span>{Math.round(maxDistrictMw * 0.25)}</span>
+                    <span className="relative top-1">0</span>
+                  </div>
+
+                  <div className="flex-1 relative border-l border-b border-slate-300 overflow-x-auto overflow-y-hidden pb-1">
+                    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between py-1">
+                      <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                      <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                      <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                      <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                      <div className="w-full border-b border-slate-300 h-0" />
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+
+                    <div className="h-full flex items-end min-w-max px-2 gap-[11px] pt-2">
+                      {districts.map((item, idx) => {
+                        const barHeightPct = getBarHeightPct(item.capacity_mw);
+                        const isSelected = activeBox.district === item.district;
+
+                        return (
+                          <div
+                            key={idx}
+                            className="flex flex-col items-center justify-end h-full w-[26px] group cursor-pointer relative"
+                            onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                            onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                          >
+                            <div className="w-full h-full flex items-end justify-center">
+                              <div
+                                className={`w-full transition-all duration-150 rounded-t-[2px] ${
+                                  isSelected
+                                    ? 'bg-blue-600 ring-2 ring-blue-400 scale-y-105'
+                                    : 'bg-[#0e294b] hover:bg-[#1d4ed8]'
+                                }`}
+                                style={{ height: `${barHeightPct}%`, transformOrigin: 'bottom' }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rotated district labels */}
+                <div className="flex items-start ml-[45px] overflow-x-auto min-h-[85px] pt-1">
+                  <div className="flex items-start min-w-max px-2 gap-[11px]">
+                    {districts.map((item, idx) => {
+                      const isSelected = activeBox.district === item.district;
+                      return (
+                        <div
+                          key={idx}
+                          className="w-[26px] flex justify-center cursor-pointer"
+                          onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                          onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                        >
+                          <span
+                            className={`text-[9.5px] select-none transition-colors ${
+                              isSelected ? 'text-blue-700 font-bold' : 'text-slate-700 font-medium'
+                            }`}
+                            style={{
+                              writingMode: 'vertical-rl',
+                              transform: 'rotate(180deg)',
+                              maxHeight: '80px'
+                            }}
+                            title={item.district}
+                          >
+                            {item.district}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* TIMELINE GRAPH: Solar Capacity Installed (MW) over years (2023 to 2026 matching Screenshot 3) */}
+          {/* TIMELINE GRAPH: Solar Capacity Installed (MW) over years */}
           <div className="bg-white rounded-2xl border border-slate-700/80 p-5 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-bold text-slate-900">
@@ -369,64 +388,68 @@ export const SolarKusumDashboard = () => {
               )}
             </div>
 
-            <div className="relative w-full h-[140px]">
-              <svg viewBox="0 0 500 130" className="w-full h-full overflow-visible">
-                <line x1="35" y1="20" x2="480" y2="20" stroke="#f1f5f9" strokeDasharray="3 3" />
-                <line x1="35" y1="42" x2="480" y2="42" stroke="#f1f5f9" strokeDasharray="3 3" />
-                <line x1="35" y1="65" x2="480" y2="65" stroke="#f1f5f9" strokeDasharray="3 3" />
-                <line x1="35" y1="87" x2="480" y2="87" stroke="#f1f5f9" strokeDasharray="3 3" />
-                <line x1="35" y1="110" x2="480" y2="110" stroke="#e2e8f0" />
+            {timeline.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 text-xs italic bg-slate-50/60 rounded-xl border border-dashed border-slate-200">
+                No commissioning dates recorded in database to plot timeline curve yet.
+              </div>
+            ) : (
+              <div className="relative w-full h-[140px]">
+                <svg viewBox="0 0 500 130" className="w-full h-full overflow-visible">
+                  <line x1="35" y1="25" x2="480" y2="25" stroke="#f1f5f9" strokeDasharray="3 3" />
+                  <line x1="35" y1="67" x2="480" y2="67" stroke="#f1f5f9" strokeDasharray="3 3" />
+                  <line x1="35" y1="110" x2="480" y2="110" stroke="#e2e8f0" />
 
-                <text x="28" y="24" fontSize="8.5" fill="#94a3b8" textAnchor="end">120</text>
-                <text x="28" y="46" fontSize="8.5" fill="#94a3b8" textAnchor="end">100</text>
-                <text x="28" y="69" fontSize="8.5" fill="#94a3b8" textAnchor="end">60</text>
-                <text x="28" y="91" fontSize="8.5" fill="#94a3b8" textAnchor="end">20</text>
-                <text x="28" y="113" fontSize="8.5" fill="#94a3b8" textAnchor="end">0</text>
+                  <text x="28" y="29" fontSize="9" fill="#94a3b8" textAnchor="end">{Math.round(maxTimelineMw)}</text>
+                  <text x="28" y="70" fontSize="9" fill="#94a3b8" textAnchor="end">{Math.round(maxTimelineMw / 2)}</text>
+                  <text x="28" y="113" fontSize="9" fill="#94a3b8" textAnchor="end">0</text>
 
-                <defs>
-                  <linearGradient id="kusumGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d={timelineAreaD} fill="url(#kusumGrad)" />
-                <path d={timelinePathD} fill="none" stroke="#0e294b" strokeWidth="2.4" strokeLinecap="round" />
+                  <defs>
+                    <linearGradient id="kusumGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  <path d={timelineAreaD} fill="url(#kusumGrad)" />
+                  <path d={timelinePathD} fill="none" stroke="#0e294b" strokeWidth="2.4" strokeLinecap="round" />
 
-                {timeline.map((pt, idx) => {
-                  const { x, y } = getTimelineCoords(pt);
-                  const isHover = hoveredTimeline?.year === pt.year;
-                  return (
-                    <g key={idx}>
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={isHover ? '5' : '3'}
-                        fill={isHover ? '#2563eb' : '#0e294b'}
-                        stroke="#ffffff"
-                        strokeWidth="1.5"
-                        className="cursor-pointer transition-all"
-                        onMouseEnter={() => setHoveredTimeline(pt)}
-                        onMouseLeave={() => setHoveredTimeline(null)}
-                      />
-                    </g>
-                  );
-                })}
+                  {timeline.map((pt, idx) => {
+                    const { x, y } = getTimelineCoords(pt);
+                    const isHover = hoveredTimeline?.year === pt.year;
+                    return (
+                      <g key={idx}>
+                        <circle
+                          cx={x}
+                          cy={y}
+                          r={isHover ? '5' : '3'}
+                          fill={isHover ? '#f59e0b' : '#0e294b'}
+                          stroke="#ffffff"
+                          strokeWidth="1.5"
+                          className="cursor-pointer transition-all"
+                          onMouseEnter={() => setHoveredTimeline(pt)}
+                          onMouseLeave={() => setHoveredTimeline(null)}
+                        />
+                      </g>
+                    );
+                  })}
 
-                {timeline.map((pt, idx) => {
-                  const { x } = getTimelineCoords(pt);
-                  return (
-                    <text key={idx} x={x} y="125" fontSize="9" fill="#64748b" textAnchor="middle">
-                      {pt.year}
-                    </text>
-                  );
-                })}
-              </svg>
-            </div>
+                  {timeline
+                    .filter((_, idx) => idx % Math.max(Math.ceil(timeline.length / 5), 1) === 0 || idx === timeline.length - 1)
+                    .map((pt, idx) => {
+                      const { x } = getTimelineCoords(pt);
+                      return (
+                        <text key={idx} x={x} y="125" fontSize="9" fill="#64748b" textAnchor="middle">
+                          {pt.year}
+                        </text>
+                      );
+                    })}
+                </svg>
+              </div>
+            )}
           </div>
 
         </div>
 
-        {/* ===================== RIGHT SIDE: PIE / DONUT CHART (5 Cols) ===================== */}
+        {/* ===================== RIGHT SIDE: PIE CHART (5 Cols) ===================== */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-700/80 p-5 shadow-sm flex flex-col justify-between">
           
           <div className="text-center mb-1">
@@ -434,95 +457,109 @@ export const SolarKusumDashboard = () => {
               District wise MW capacity percentage distribution
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Solar KUSUM Feeder Distribution
+              PM-KUSUM Feeder Solarization Distribution
             </p>
           </div>
 
-          <div className="relative w-full flex items-center justify-center my-3">
-            <svg viewBox="0 0 280 280" className="w-[240px] h-[240px] select-none overflow-visible">
-              <g>
-                {pieSlices.map((slice, idx) => {
-                  const isHovered = activePieHover?.title === slice.district;
-                  const pathD = getDonutSlicePath(140, 140, 110, 68, slice.startAngle, slice.endAngle);
-
-                  return (
-                    <path
-                      key={idx}
-                      d={pathD}
-                      fill={slice.color}
-                      stroke="#ffffff"
-                      strokeWidth="2"
-                      className="cursor-pointer transition-all duration-200"
-                      style={{
-                        transformOrigin: '140px 140px',
-                        transform: isHovered ? 'scale(1.06)' : 'scale(1)',
-                        filter: isHovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' : 'none',
-                        opacity: activePieHover && !isHovered ? 0.75 : 1
-                      }}
-                      onMouseEnter={() =>
-                        setActivePieHover({
-                          title: slice.district,
-                          mw: `${Number(slice.capacity_mw).toFixed(1)} MW`,
-                          sub: `${slice.percentage}% (${slice.count} projects)`
-                        })
-                      }
-                      onMouseLeave={() => setActivePieHover(null)}
-                    />
-                  );
-                })}
-              </g>
-
-              {/* Center Donut Hole Card */}
-              <circle cx="140" cy="140" r="64" fill="#ffffff" />
-              <text x="140" y="125" textAnchor="middle" fontSize="10" fontWeight="600" fill="#64748b">
-                {currentCenterDisplay.title}
-              </text>
-              <text x="140" y="146" textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">
-                {currentCenterDisplay.mw}
-              </text>
-              <text x="140" y="163" textAnchor="middle" fontSize="9.5" fontWeight="500" fill="#2563eb">
-                {currentCenterDisplay.sub}
-              </text>
-            </svg>
-          </div>
-
-          {/* CLEAR COLOR BADGE GRID */}
-          <div className="border-t border-slate-100 pt-3">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
-              {simplifiedPieItems.map((item, idx) => {
-                const isHovered = activePieHover?.title === item.district;
-                return (
-                  <div
-                    key={idx}
-                    className={`flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer ${
-                      isHovered ? 'bg-blue-50/80 border-blue-300 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
-                    }`}
-                    onMouseEnter={() =>
-                      setActivePieHover({
-                        title: item.district,
-                        mw: `${Number(item.capacity_mw).toFixed(1)} MW`,
-                        sub: `${item.percentage}% (${item.count} projects)`
-                      })
-                    }
-                    onMouseLeave={() => setActivePieHover(null)}
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="font-semibold text-slate-800 text-[11px] truncate">
-                        {item.district}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-bold text-slate-900 shrink-0 ml-1">
-                      {item.percentage}%
-                    </span>
-                  </div>
-                );
-              })}
+          {districts.length === 0 ? (
+            <div className="py-16 text-center flex flex-col items-center justify-center my-3">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+                <Sun size={22} />
+              </div>
+              <div className="text-sm font-bold text-slate-800">No Distribution Available</div>
+              <p className="text-xs text-slate-500 mt-1 max-w-xs">
+                Capacity percentage breakdown will appear here once PM-KUSUM rows are uploaded into the database.
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="relative w-full flex items-center justify-center my-3">
+                <svg viewBox="0 0 280 280" className="w-[240px] h-[240px] select-none overflow-visible">
+                  <g>
+                    {pieSlices.map((slice, idx) => {
+                      const isHovered = activePieHover?.title === slice.district;
+                      const pathD = getDonutSlicePath(140, 140, 110, 68, slice.startAngle, slice.endAngle);
+
+                      return (
+                        <path
+                          key={idx}
+                          d={pathD}
+                          fill={slice.color}
+                          stroke="#ffffff"
+                          strokeWidth="2"
+                          className="cursor-pointer transition-all duration-200"
+                          style={{
+                            transformOrigin: '140px 140px',
+                            transform: isHovered ? 'scale(1.06)' : 'scale(1)',
+                            filter: isHovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' : 'none',
+                            opacity: activePieHover && !isHovered ? 0.75 : 1
+                          }}
+                          onMouseEnter={() =>
+                            setActivePieHover({
+                              title: slice.district,
+                              mw: `${Number(slice.capacity_mw).toFixed(2)} MW`,
+                              sub: `${slice.percentage}% (${slice.count} projects)`
+                            })
+                          }
+                          onMouseLeave={() => setActivePieHover(null)}
+                        />
+                      );
+                    })}
+                  </g>
+
+                  {/* Center Donut Hole Card */}
+                  <circle cx="140" cy="140" r="64" fill="#ffffff" />
+                  <text x="140" y="125" textAnchor="middle" fontSize="10" fontWeight="600" fill="#64748b">
+                    {currentCenterDisplay.title}
+                  </text>
+                  <text x="140" y="146" textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">
+                    {currentCenterDisplay.mw}
+                  </text>
+                  <text x="140" y="163" textAnchor="middle" fontSize="9.5" fontWeight="500" fill="#2563eb">
+                    {currentCenterDisplay.sub}
+                  </text>
+                </svg>
+              </div>
+
+              {/* CLEAR COLOR BADGE GRID */}
+              <div className="border-t border-slate-100 pt-3">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                  {simplifiedPieItems.map((item, idx) => {
+                    const isHovered = activePieHover?.title === item.district;
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer ${
+                          isHovered ? 'bg-blue-50/80 border-blue-300 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
+                        }`}
+                        onMouseEnter={() =>
+                          setActivePieHover({
+                            title: item.district,
+                            mw: `${Number(item.capacity_mw).toFixed(2)} MW`,
+                            sub: `${item.percentage}% (${item.count} projects)`
+                          })
+                        }
+                        onMouseLeave={() => setActivePieHover(null)}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="font-semibold text-slate-800 text-[11px] truncate">
+                            {item.district}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-900 shrink-0 ml-1">
+                          {item.percentage}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
         </div>
 
@@ -541,45 +578,58 @@ export const SolarKusumDashboard = () => {
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Component-A (Decentralized Ground Mounted) & Component-C (Agricultural Feeder Solarization)
+              Top agricultural feeder solarization zones computed dynamically from database records
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="bg-amber-50 text-amber-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
               <span>{Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW Combined</span>
             </div>
+            <button
+              onClick={loadData}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition"
+              title="Refresh PM-KUSUM Data from Database"
+            >
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+              <span>Sync</span>
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Performing District</div>
-            <div className="text-xl font-extrabold text-slate-900 mt-1">Ahilyanagar</div>
-            <div className="text-sm font-bold text-blue-700 mt-0.5">50 MW • 12 Projects</div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-              <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '100%' }} />
-            </div>
-          </div>
+        {districts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
+            {districts.slice(0, 3).map((hub, hIdx) => {
+              const maxCap = Number(districts[0]?.capacity_mw) || 1;
+              const pctWidth = Math.min(Math.round(((Number(hub.capacity_mw) || 0) / maxCap) * 100), 100);
 
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Marathwada Agricultural Zone</div>
-            <div className="text-xl font-extrabold text-slate-900 mt-1">Latur, Beed, Nanded</div>
-            <div className="text-sm font-bold text-emerald-700 mt-0.5">41 MW • 12 Projects</div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-              <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '82%' }} />
-            </div>
+              return (
+                <div key={hIdx} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    #{hIdx + 1} Leading District
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-900 mt-1 truncate">
+                    {hub.district}
+                  </div>
+                  <div className="text-sm font-bold text-blue-700 mt-0.5">
+                    {Number(hub.capacity_mw).toFixed(2)} MW • {hub.count} Projects ({hub.percentage}%)
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
+                    <div
+                      className="bg-blue-600 h-1.5 rounded-full"
+                      style={{ width: `${pctWidth}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Khandesh & Central Hubs</div>
-            <div className="text-xl font-extrabold text-slate-900 mt-1">Jalgaon, Solapur, Parbhani</div>
-            <div className="text-sm font-bold text-amber-700 mt-0.5">15.00 MW • 5 Projects</div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-              <div className="bg-amber-600 h-1.5 rounded-full" style={{ width: '60%' }} />
-            </div>
+        ) : (
+          <div className="py-8 text-center text-slate-400 text-xs italic">
+            No district ranking data available. Upload PM-KUSUM records in Templates to view leading hubs.
           </div>
-        </div>
+        )}
       </div>
 
     </div>

@@ -795,7 +795,8 @@ class EnergyAnalyticsView(APIView):
         
         mw_field = next((f.name for f in model._meta.fields if f.name in ('capacity_mw', 'commissioned_capacity_mw', 'installed_capacity_mw')), None)
         kw_field = next((f.name for f in model._meta.fields if f.name in ('capacity_kw', 'commissioned_capacity_kw')), None)
-        date_field = next((f.name for f in model._meta.fields if f.name in ('standardized_date', 'date_of_commissioned', 'commissioned_date', 'commission_date', 'date_of_commissioning', 'comissioning_year', 'year')), None)
+        date_field = next((f.name for f in model._meta.fields if f.name in ('standardized_date', 'date_of_commissioned', 'commissioned_date', 'commission_date', 'date_of_commissioning')), None)
+        year_field = next((f.name for f in model._meta.fields if f.name in ('comissioning_year', 'commissioning_year', 'year')), None)
         has_district = any(f.name == 'district' for f in model._meta.fields)
         has_division = any(f.name == 'division' for f in model._meta.fields)
         has_type = any(f.name == 'type' for f in model._meta.fields)
@@ -897,12 +898,18 @@ class EnergyAnalyticsView(APIView):
                     'color': palette[idx % len(palette)]
                 })
 
-        # Timeline aggregation (Capacity over years)
+        # Timeline aggregation (Capacity over years strictly from database)
         timeline_data = []
-        if date_field and mw_field:
+        if (date_field or year_field) and mw_field:
             yearly_map = {}
-            for r in model.objects.exclude(**{f"{date_field}__isnull": True}).values(date_field, mw_field):
-                d_val = r.get(date_field)
+            query_fields_tl = [mw_field]
+            if date_field:
+                query_fields_tl.append(date_field)
+            if year_field and year_field != date_field:
+                query_fields_tl.append(year_field)
+
+            for r in model.objects.values(*query_fields_tl):
+                d_val = r.get(date_field) if date_field else None
                 yr = None
                 if d_val and hasattr(d_val, 'year'):
                     yr = d_val.year
@@ -911,6 +918,17 @@ class EnergyAnalyticsView(APIView):
                         yr = int(str(d_val)[:4])
                     except (ValueError, TypeError):
                         yr = None
+
+                # Fallback to year_field if date_field was empty or out of bounds
+                if (yr is None or not (1950 <= yr <= 2035)) and year_field:
+                    y_val = r.get(year_field)
+                    if y_val:
+                        try:
+                            match = re.search(r'\b(19\d\d|20\d\d)\b', str(y_val).strip())
+                            if match:
+                                yr = int(match.group(1))
+                        except Exception:
+                            yr = None
 
                 if yr and 1950 <= yr <= 2035:
                     if yr not in yearly_map:
@@ -933,19 +951,6 @@ class EnergyAnalyticsView(APIView):
                     'cumulative_count': cum_cnt,
                     'added_count': yearly_map[yr]['count']
                 })
-
-        # Fallback timeline for MSW if dates are not populated in raw dataset
-        if not timeline_data and resolved_type == 'msw' and total_mw > 0:
-            timeline_data = [
-                {'year': 2000, 'cumulative_mw': 1.0, 'added_mw': 1.0, 'cumulative_count': 1, 'added_count': 1},
-                {'year': 2005, 'cumulative_mw': 4.5, 'added_mw': 3.5, 'cumulative_count': 3, 'added_count': 2},
-                {'year': 2008, 'cumulative_mw': 11.2, 'added_mw': 6.7, 'cumulative_count': 7, 'added_count': 4},
-                {'year': 2010, 'cumulative_mw': 18.5, 'added_mw': 7.3, 'cumulative_count': 12, 'added_count': 5},
-                {'year': 2014, 'cumulative_mw': 32.0, 'added_mw': 13.5, 'cumulative_count': 18, 'added_count': 6},
-                {'year': 2018, 'cumulative_mw': 42.5, 'added_mw': 10.5, 'cumulative_count': 23, 'added_count': 5},
-                {'year': 2021, 'cumulative_mw': 51.0, 'added_mw': 8.5, 'cumulative_count': 28, 'added_count': 5},
-                {'year': 2024, 'cumulative_mw': round(total_mw, 2), 'added_mw': round(total_mw - 51.0, 2), 'cumulative_count': total_projects, 'added_count': 4}
-            ]
 
         division_data = []
         if has_division:

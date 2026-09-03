@@ -8,43 +8,12 @@ const PALETTE = [
   '#16a34a', '#c2410c', '#9333ea', '#3b82f6', '#64748b'
 ];
 
-const DEFAULT_DISTRICTS = [
-  { district: 'Chandrapur', count: 3, capacity_mw: 33.0, percentage: 15.35, color: '#2563eb' },
-  { district: 'Ahilyanagar', count: 1, capacity_mw: 25.0, percentage: 11.63, color: '#1e3a8a' },
-  { district: 'Gadchiroli', count: 2, capacity_mw: 20.0, percentage: 9.30, color: '#ea580c' },
-  { district: 'Nagpur', count: 2, capacity_mw: 20.0, percentage: 9.30, color: '#4f46e5' },
-  { district: 'Nanded', count: 1, capacity_mw: 20.0, percentage: 9.30, color: '#059669' },
-  { district: 'Chhatrapati Sambhajinagar', count: 1, capacity_mw: 13.0, percentage: 6.05, color: '#7c3aed' },
-  { district: 'Bhandara', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#0d9488' },
-  { district: 'Hingoli', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#e11d48' },
-  { district: 'Jalgaon', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#d97706' },
-  { district: 'Parbhani', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#0891b2' },
-  { district: 'Sangli', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#16a34a' },
-  { district: 'Wardha', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#c2410c' },
-  { district: 'Yeotmal', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#9333ea' },
-  { district: 'Gondia', count: 1, capacity_mw: 10.0, percentage: 4.65, color: '#3b82f6' },
-  { district: 'Nashik', count: 1, capacity_mw: 8.0, percentage: 3.72, color: '#64748b' }
-];
-
-const DEFAULT_TIMELINE = [
-  { year: 2005, cumulative_mw: 8.0 },
-  { year: 2006, cumulative_mw: 18.0 },
-  { year: 2008, cumulative_mw: 65.0 },
-  { year: 2009, cumulative_mw: 95.0 },
-  { year: 2010, cumulative_mw: 145.0 },
-  { year: 2012, cumulative_mw: 160.0 },
-  { year: 2013, cumulative_mw: 170.0 },
-  { year: 2014, cumulative_mw: 180.0 },
-  { year: 2015, cumulative_mw: 190.0 },
-  { year: 2016, cumulative_mw: 215.0 }
-];
-
 export const BiomassDashboard = () => {
   const [loading, setLoading] = useState(true);
-  const [totalProjects, setTotalProjects] = useState(19);
-  const [totalCapacityMw, setTotalCapacityMw] = useState(215.00);
-  const [districts, setDistricts] = useState(DEFAULT_DISTRICTS);
-  const [timeline, setTimeline] = useState(DEFAULT_TIMELINE);
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [totalCapacityMw, setTotalCapacityMw] = useState(0);
+  const [districts, setDistricts] = useState([]);
+  const [timeline, setTimeline] = useState([]);
   const [inspectedDistrict, setInspectedDistrict] = useState(null);
   const [activePieHover, setActivePieHover] = useState(null);
   const [hoveredTimeline, setHoveredTimeline] = useState(null);
@@ -54,23 +23,39 @@ export const BiomassDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('biomass');
       if (res && res.success) {
-        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 19);
-        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 215.00);
-        if (res.districts && res.districts.length > 0) {
+        setTotalProjects(res.total_projects !== undefined ? Number(res.total_projects) : 0);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 0);
+        if (res.districts && Array.isArray(res.districts) && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
             rank: idx + 1,
-            color: PALETTE[idx % PALETTE.length]
+            color: d.color || PALETTE[idx % PALETTE.length]
           }));
           setDistricts(formatted);
-          if (!inspectedDistrict) setInspectedDistrict(formatted[0]);
+          setInspectedDistrict(formatted[0]);
+        } else {
+          setDistricts([]);
+          setInspectedDistrict(null);
         }
-        if (res.timeline && res.timeline.length > 0) {
+        if (res.timeline && Array.isArray(res.timeline)) {
           setTimeline(res.timeline);
+        } else {
+          setTimeline([]);
         }
+      } else {
+        setTotalProjects(0);
+        setTotalCapacityMw(0);
+        setDistricts([]);
+        setTimeline([]);
+        setInspectedDistrict(null);
       }
     } catch (err) {
-      console.warn('Biomass analytics fallback:', err);
+      console.warn('Biomass analytics error:', err);
+      setTotalProjects(0);
+      setTotalCapacityMw(0);
+      setDistricts([]);
+      setTimeline([]);
+      setInspectedDistrict(null);
     } finally {
       setLoading(false);
     }
@@ -86,7 +71,14 @@ export const BiomassDashboard = () => {
     }
   }, [districts]);
 
-  const activeBox = inspectedDistrict || districts[0] || DEFAULT_DISTRICTS[0];
+  const activeBox = inspectedDistrict || districts[0] || {
+    district: 'No Data',
+    count: 0,
+    capacity_mw: 0,
+    percentage: 0,
+    rank: 1,
+    color: '#2563eb'
+  };
 
   // Dynamic max capacity across districts for Bar Chart Y-axis scale
   const maxDistrictMw = Math.max(...districts.map(d => Number(d.capacity_mw) || 0), 1);
@@ -235,94 +227,108 @@ export const BiomassDashboard = () => {
               </div>
             </div>
 
-            {/* Plot area (Ticks: 0, 10, 20, 30 matching Screenshot 2) */}
-            <div className="relative flex items-stretch h-[240px] pt-4">
-              <div className="w-6 flex items-center justify-center shrink-0 pr-1 select-none">
-                <span
-                  className="text-[10.5px] font-semibold text-slate-700 tracking-wide"
-                  style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-                >
-                  MW Capacity
-                </span>
-              </div>
-
-              <div className="w-8 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
-                <span className="relative -top-2">{Math.round(maxDistrictMw)}</span>
-                <span>{Math.round(maxDistrictMw * 0.67)}</span>
-                <span>{Math.round(maxDistrictMw * 0.33)}</span>
-                <span className="relative top-1">0</span>
-              </div>
-
-              <div className="flex-1 relative border-l border-b border-slate-300 overflow-x-auto overflow-y-hidden pb-1">
-                <div className="absolute inset-0 pointer-events-none flex flex-col justify-between py-1">
-                  <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                  <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                  <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
-                  <div className="w-full border-b border-slate-300 h-0" />
+            {/* Plot area */}
+            {districts.length === 0 ? (
+              <div className="py-16 text-center flex flex-col items-center justify-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200 my-2">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2.5">
+                  <BarChart2 size={20} />
                 </div>
-
-                <div className="h-full flex items-end min-w-max px-2 gap-[7px] pt-2">
-                  {districts.map((item, idx) => {
-                    const barHeightPct = getBarHeightPct(item.capacity_mw);
-                    const isSelected = activeBox.district === item.district;
-
-                    return (
-                      <div
-                        key={idx}
-                        className="flex flex-col items-center justify-end h-full w-[22px] group cursor-pointer relative"
-                        onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                        onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                      >
-                        <div className="w-full h-full flex items-end justify-center">
-                          <div
-                            className={`w-full transition-all duration-150 rounded-t-[1.5px] ${
-                              isSelected
-                                ? 'bg-blue-600 ring-2 ring-blue-400 scale-y-105'
-                                : 'bg-[#0e294b] hover:bg-[#1d4ed8]'
-                            }`}
-                            style={{ height: `${barHeightPct}%`, transformOrigin: 'bottom' }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <div className="text-sm font-bold text-slate-800">No Biomass Data Uploaded Yet</div>
+                <p className="text-xs text-slate-500 mt-0.5 max-w-xs">
+                  Upload completed Biomass template in Templates to view district-wise bars.
+                </p>
               </div>
-            </div>
-
-            {/* Rotated district labels */}
-            <div className="flex items-start ml-[45px] overflow-x-auto min-h-[85px] pt-1">
-              <div className="flex items-start min-w-max px-2 gap-[7px]">
-                {districts.map((item, idx) => {
-                  const isSelected = activeBox.district === item.district;
-                  return (
-                    <div
-                      key={idx}
-                      className="w-[22px] flex justify-center cursor-pointer"
-                      onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
-                      onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+            ) : (
+              <>
+                <div className="relative flex items-stretch h-[240px] pt-4">
+                  <div className="w-6 flex items-center justify-center shrink-0 pr-1 select-none">
+                    <span
+                      className="text-[10.5px] font-semibold text-slate-700 tracking-wide"
+                      style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
                     >
-                      <span
-                        className={`text-[9px] select-none transition-colors ${
-                          isSelected ? 'text-blue-700 font-bold' : 'text-slate-700 font-medium'
-                        }`}
-                        style={{
-                          writingMode: 'vertical-rl',
-                          transform: 'rotate(180deg)',
-                          maxHeight: '80px'
-                        }}
-                        title={item.district}
-                      >
-                        {item.district}
-                      </span>
+                      MW Capacity
+                    </span>
+                  </div>
+
+                  <div className="w-8 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
+                    <span className="relative -top-2">{Math.round(maxDistrictMw)}</span>
+                    <span>{Math.round(maxDistrictMw * 0.67)}</span>
+                    <span>{Math.round(maxDistrictMw * 0.33)}</span>
+                    <span className="relative top-1">0</span>
+                  </div>
+
+                  <div className="flex-1 relative border-l border-b border-slate-300 overflow-x-auto overflow-y-hidden pb-1">
+                    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between py-1">
+                      <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                      <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                      <div className="w-full border-b border-dashed border-slate-200/90 h-0" />
+                      <div className="w-full border-b border-slate-300 h-0" />
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+
+                    <div className="h-full flex items-end min-w-max px-2 gap-[7px] pt-2">
+                      {districts.map((item, idx) => {
+                        const barHeightPct = getBarHeightPct(item.capacity_mw);
+                        const isSelected = activeBox.district === item.district;
+
+                        return (
+                          <div
+                            key={idx}
+                            className="flex flex-col items-center justify-end h-full w-[22px] group cursor-pointer relative"
+                            onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                            onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                          >
+                            <div className="w-full h-full flex items-end justify-center">
+                              <div
+                                className={`w-full transition-all duration-150 rounded-t-[1.5px] ${
+                                  isSelected
+                                    ? 'bg-blue-600 ring-2 ring-blue-400 scale-y-105'
+                                    : 'bg-[#0e294b] hover:bg-[#1d4ed8]'
+                                }`}
+                                style={{ height: `${barHeightPct}%`, transformOrigin: 'bottom' }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rotated district labels */}
+                <div className="flex items-start ml-[45px] overflow-x-auto min-h-[85px] pt-1">
+                  <div className="flex items-start min-w-max px-2 gap-[7px]">
+                    {districts.map((item, idx) => {
+                      const isSelected = activeBox.district === item.district;
+                      return (
+                        <div
+                          key={idx}
+                          className="w-[22px] flex justify-center cursor-pointer"
+                          onMouseEnter={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                          onClick={() => setInspectedDistrict({ ...item, rank: idx + 1 })}
+                        >
+                          <span
+                            className={`text-[9px] select-none transition-colors ${
+                              isSelected ? 'text-blue-700 font-bold' : 'text-slate-700 font-medium'
+                            }`}
+                            style={{
+                              writingMode: 'vertical-rl',
+                              transform: 'rotate(180deg)',
+                              maxHeight: '80px'
+                            }}
+                            title={item.district}
+                          >
+                            {item.district}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* TIMELINE GRAPH: Capacity Installed (MW) over years (2006 to 2016) */}
+          {/* TIMELINE GRAPH: Capacity Installed (MW) over years */}
           <div className="bg-white rounded-2xl border border-slate-700/80 p-5 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-bold text-slate-900">
@@ -335,56 +341,63 @@ export const BiomassDashboard = () => {
               )}
             </div>
 
-            <div className="relative w-full h-[140px]">
-              <svg viewBox="0 0 500 130" className="w-full h-full overflow-visible">
-                <line x1="35" y1="25" x2="480" y2="25" stroke="#f1f5f9" strokeDasharray="3 3" />
-                <line x1="35" y1="67" x2="480" y2="67" stroke="#f1f5f9" strokeDasharray="3 3" />
-                <line x1="35" y1="110" x2="480" y2="110" stroke="#e2e8f0" />
+            {timeline.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 text-xs italic bg-slate-50/60 rounded-xl border border-dashed border-slate-200">
+                No commissioning dates recorded in database to plot timeline curve yet.
+              </div>
+            ) : (
+              <div className="relative w-full h-[140px]">
+                <svg viewBox="0 0 500 130" className="w-full h-full overflow-visible">
+                  <line x1="35" y1="25" x2="480" y2="25" stroke="#f1f5f9" strokeDasharray="3 3" />
+                  <line x1="35" y1="67" x2="480" y2="67" stroke="#f1f5f9" strokeDasharray="3 3" />
+                  <line x1="35" y1="110" x2="480" y2="110" stroke="#e2e8f0" />
 
-                <text x="28" y="29" fontSize="9" fill="#94a3b8" textAnchor="end">200</text>
-                <text x="28" y="113" fontSize="9" fill="#94a3b8" textAnchor="end">0</text>
+                  <text x="28" y="29" fontSize="9" fill="#94a3b8" textAnchor="end">{Math.round(maxTimelineMw)}</text>
+                  <text x="28" y="70" fontSize="9" fill="#94a3b8" textAnchor="end">{Math.round(maxTimelineMw / 2)}</text>
+                  <text x="28" y="113" fontSize="9" fill="#94a3b8" textAnchor="end">0</text>
 
-                <defs>
-                  <linearGradient id="biomassGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d={timelineAreaD} fill="url(#biomassGrad)" />
-                <path d={timelinePathD} fill="none" stroke="#0e294b" strokeWidth="2.4" strokeLinecap="round" />
+                  <defs>
+                    <linearGradient id="biomassGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  <path d={timelineAreaD} fill="url(#biomassGrad)" />
+                  <path d={timelinePathD} fill="none" stroke="#0e294b" strokeWidth="2.4" strokeLinecap="round" />
 
-                {timeline.map((pt, idx) => {
-                  const { x, y } = getTimelineCoords(pt);
-                  const isHover = hoveredTimeline?.year === pt.year;
-                  return (
-                    <g key={idx}>
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={isHover ? '5' : '3'}
-                        fill={isHover ? '#10b981' : '#0e294b'}
-                        stroke="#ffffff"
-                        strokeWidth="1.5"
-                        className="cursor-pointer transition-all"
-                        onMouseEnter={() => setHoveredTimeline(pt)}
-                        onMouseLeave={() => setHoveredTimeline(null)}
-                      />
-                    </g>
-                  );
-                })}
-
-                {timeline
-                  .filter((_, idx) => idx % Math.ceil(timeline.length / 6) === 0 || idx === timeline.length - 1)
-                  .map((pt, idx) => {
-                    const { x } = getTimelineCoords(pt);
+                  {timeline.map((pt, idx) => {
+                    const { x, y } = getTimelineCoords(pt);
+                    const isHover = hoveredTimeline?.year === pt.year;
                     return (
-                      <text key={idx} x={x} y="125" fontSize="9" fill="#64748b" textAnchor="middle">
-                        {pt.year}
-                      </text>
+                      <g key={idx}>
+                        <circle
+                          cx={x}
+                          cy={y}
+                          r={isHover ? '5' : '3'}
+                          fill={isHover ? '#10b981' : '#0e294b'}
+                          stroke="#ffffff"
+                          strokeWidth="1.5"
+                          className="cursor-pointer transition-all"
+                          onMouseEnter={() => setHoveredTimeline(pt)}
+                          onMouseLeave={() => setHoveredTimeline(null)}
+                        />
+                      </g>
                     );
                   })}
-              </svg>
-            </div>
+
+                  {timeline
+                    .filter((_, idx) => idx % Math.max(Math.ceil(timeline.length / 6), 1) === 0 || idx === timeline.length - 1)
+                    .map((pt, idx) => {
+                      const { x } = getTimelineCoords(pt);
+                      return (
+                        <text key={idx} x={x} y="125" fontSize="9" fill="#64748b" textAnchor="middle">
+                          {pt.year}
+                        </text>
+                      );
+                    })}
+                </svg>
+              </div>
+            )}
           </div>
 
         </div>
@@ -401,91 +414,105 @@ export const BiomassDashboard = () => {
             </p>
           </div>
 
-          <div className="relative w-full flex items-center justify-center my-3">
-            <svg viewBox="0 0 280 280" className="w-[240px] h-[240px] select-none overflow-visible">
-              <g>
-                {pieSlices.map((slice, idx) => {
-                  const isHovered = activePieHover?.title === slice.district;
-                  const pathD = getDonutSlicePath(140, 140, 110, 68, slice.startAngle, slice.endAngle);
-
-                  return (
-                    <path
-                      key={idx}
-                      d={pathD}
-                      fill={slice.color}
-                      stroke="#ffffff"
-                      strokeWidth="2"
-                      className="cursor-pointer transition-all duration-200"
-                      style={{
-                        transformOrigin: '140px 140px',
-                        transform: isHovered ? 'scale(1.06)' : 'scale(1)',
-                        filter: isHovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' : 'none',
-                        opacity: activePieHover && !isHovered ? 0.75 : 1
-                      }}
-                      onMouseEnter={() =>
-                        setActivePieHover({
-                          title: slice.district,
-                          mw: `${Number(slice.capacity_mw).toFixed(2)} MW`,
-                          sub: `${slice.percentage}% (${slice.count} projects)`
-                        })
-                      }
-                      onMouseLeave={() => setActivePieHover(null)}
-                    />
-                  );
-                })}
-              </g>
-
-              {/* Center Donut Hole Card */}
-              <circle cx="140" cy="140" r="64" fill="#ffffff" />
-              <text x="140" y="125" textAnchor="middle" fontSize="10" fontWeight="600" fill="#64748b">
-                {currentCenterDisplay.title}
-              </text>
-              <text x="140" y="146" textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">
-                {currentCenterDisplay.mw}
-              </text>
-              <text x="140" y="163" textAnchor="middle" fontSize="9.5" fontWeight="500" fill="#2563eb">
-                {currentCenterDisplay.sub}
-              </text>
-            </svg>
-          </div>
-
-          {/* CLEAR COLOR BADGE GRID */}
-          <div className="border-t border-slate-100 pt-3">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
-              {simplifiedPieItems.map((item, idx) => {
-                const isHovered = activePieHover?.title === item.district;
-                return (
-                  <div
-                    key={idx}
-                    className={`flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer ${
-                      isHovered ? 'bg-blue-50/80 border-blue-300 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
-                    }`}
-                    onMouseEnter={() =>
-                      setActivePieHover({
-                        title: item.district,
-                        mw: `${Number(item.capacity_mw).toFixed(2)} MW`,
-                        sub: `${item.percentage}% (${item.count} projects)`
-                      })
-                    }
-                    onMouseLeave={() => setActivePieHover(null)}
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="font-semibold text-slate-800 text-[11px] truncate">
-                        {item.district}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-bold text-slate-900 shrink-0 ml-1">
-                      {item.percentage}%
-                    </span>
-                  </div>
-                );
-              })}
+          {districts.length === 0 ? (
+            <div className="py-16 text-center flex flex-col items-center justify-center my-3">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+                <Flame size={22} />
+              </div>
+              <div className="text-sm font-bold text-slate-800">No Distribution Available</div>
+              <p className="text-xs text-slate-500 mt-1 max-w-xs">
+                Capacity percentage breakdown will appear here once Biomass rows are present in the table.
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="relative w-full flex items-center justify-center my-3">
+                <svg viewBox="0 0 280 280" className="w-[240px] h-[240px] select-none overflow-visible">
+                  <g>
+                    {pieSlices.map((slice, idx) => {
+                      const isHovered = activePieHover?.title === slice.district;
+                      const pathD = getDonutSlicePath(140, 140, 110, 68, slice.startAngle, slice.endAngle);
+
+                      return (
+                        <path
+                          key={idx}
+                          d={pathD}
+                          fill={slice.color}
+                          stroke="#ffffff"
+                          strokeWidth="2"
+                          className="cursor-pointer transition-all duration-200"
+                          style={{
+                            transformOrigin: '140px 140px',
+                            transform: isHovered ? 'scale(1.06)' : 'scale(1)',
+                            filter: isHovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' : 'none',
+                            opacity: activePieHover && !isHovered ? 0.75 : 1
+                          }}
+                          onMouseEnter={() =>
+                            setActivePieHover({
+                              title: slice.district,
+                              mw: `${Number(slice.capacity_mw).toFixed(2)} MW`,
+                              sub: `${slice.percentage}% (${slice.count} projects)`
+                            })
+                          }
+                          onMouseLeave={() => setActivePieHover(null)}
+                        />
+                      );
+                    })}
+                  </g>
+
+                  {/* Center Donut Hole Card */}
+                  <circle cx="140" cy="140" r="64" fill="#ffffff" />
+                  <text x="140" y="125" textAnchor="middle" fontSize="10" fontWeight="600" fill="#64748b">
+                    {currentCenterDisplay.title}
+                  </text>
+                  <text x="140" y="146" textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">
+                    {currentCenterDisplay.mw}
+                  </text>
+                  <text x="140" y="163" textAnchor="middle" fontSize="9.5" fontWeight="500" fill="#2563eb">
+                    {currentCenterDisplay.sub}
+                  </text>
+                </svg>
+              </div>
+
+              {/* CLEAR COLOR BADGE GRID */}
+              <div className="border-t border-slate-100 pt-3">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                  {simplifiedPieItems.map((item, idx) => {
+                    const isHovered = activePieHover?.title === item.district;
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer ${
+                          isHovered ? 'bg-blue-50/80 border-blue-300 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
+                        }`}
+                        onMouseEnter={() =>
+                          setActivePieHover({
+                            title: item.district,
+                            mw: `${Number(item.capacity_mw).toFixed(2)} MW`,
+                            sub: `${item.percentage}% (${item.count} projects)`
+                          })
+                        }
+                        onMouseLeave={() => setActivePieHover(null)}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="font-semibold text-slate-800 text-[11px] truncate">
+                            {item.district}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-900 shrink-0 ml-1">
+                          {item.percentage}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
         </div>
 
@@ -504,45 +531,60 @@ export const BiomassDashboard = () => {
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Agricultural residue energy plants across Eastern & Central Maharashtra
+              Top generating district clusters computed dynamically from database records
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
               <span>{Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW Commissioned</span>
             </div>
+            <button
+              onClick={loadData}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition"
+              title="Refresh Biomass Data from Database"
+            >
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+              <span>Sync</span>
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Eastern Vidarbha Hub</div>
-            <div className="text-xl font-extrabold text-slate-900 mt-1">Chandrapur & Gadchiroli</div>
-            <div className="text-sm font-bold text-blue-700 mt-0.5">53.00 MW • 5 Projects</div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-              <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '100%' }} />
-            </div>
-          </div>
+        {districts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
+            {districts.slice(0, 3).map((hub, hIdx) => {
+              const colors = ['blue', 'emerald', 'amber'];
+              const theme = colors[hIdx % colors.length];
+              const maxCap = Number(districts[0]?.capacity_mw) || 1;
+              const pctWidth = Math.min(Math.round(((Number(hub.capacity_mw) || 0) / maxCap) * 100), 100);
 
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Nagpur & Wardha Cluster</div>
-            <div className="text-xl font-extrabold text-slate-900 mt-1">Nagpur, Wardha, Bhandara</div>
-            <div className="text-sm font-bold text-emerald-700 mt-0.5">40.00 MW • 4 Projects</div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-              <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '75%' }} />
-            </div>
+              return (
+                <div key={hIdx} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    #{hIdx + 1} Leading District
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-900 mt-1 truncate">
+                    {hub.district}
+                  </div>
+                  <div className="text-sm font-bold text-blue-700 mt-0.5">
+                    {Number(hub.capacity_mw).toFixed(2)} MW • {hub.count} Projects ({hub.percentage}%)
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
+                    <div
+                      className="bg-blue-600 h-1.5 rounded-full"
+                      style={{ width: `${pctWidth}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Marathwada & Western Hub</div>
-            <div className="text-xl font-extrabold text-slate-900 mt-1">Ahilyanagar, Nanded, Chhatrapati Sambhajinagar</div>
-            <div className="text-sm font-bold text-amber-700 mt-0.5">58.00 MW • 3 Projects</div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-              <div className="bg-amber-600 h-1.5 rounded-full" style={{ width: '82%' }} />
-            </div>
+        ) : (
+          <div className="py-8 text-center text-slate-400 text-xs italic">
+            No district ranking data available. Upload Biomass data in Templates to display leading generation hubs.
           </div>
-        </div>
+        )}
       </div>
 
     </div>
