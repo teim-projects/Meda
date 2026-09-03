@@ -5,7 +5,11 @@ import { energyApi } from '../../services/energyApi';
 const PALETTE = [
   '#2563eb', '#1e3a8a', '#ea580c', '#4f46e5', '#059669',
   '#7c3aed', '#0d9488', '#e11d48', '#d97706', '#0891b2',
-  '#16a34a', '#c2410c', '#9333ea', '#3b82f6', '#64748b'
+  '#16a34a', '#c2410c', '#9333ea', '#3b82f6', '#475569',
+  '#0284c7', '#15803d', '#b45309', '#6d28d9', '#be185d',
+  '#047857', '#0369a1', '#a16207', '#4338ca', '#9f1239',
+  '#0f766e', '#1d4ed8', '#c05621', '#5b21b6', '#831843',
+  '#166534', '#075985', '#92400e', '#3730a3', '#881337', '#334155'
 ];
 
 export const MswDashboard = () => {
@@ -17,6 +21,8 @@ export const MswDashboard = () => {
   const [inspectedDistrict, setInspectedDistrict] = useState(null);
   const [activePieHover, setActivePieHover] = useState(null);
   const [hoveredTimeline, setHoveredTimeline] = useState(null);
+  const [pieViewMode, setPieViewMode] = useState('page'); // 'page' | 'all'
+  const [piePage, setPiePage] = useState(1);
 
   const loadData = async () => {
     setLoading(true);
@@ -87,29 +93,48 @@ export const MswDashboard = () => {
     return Math.min(Math.max((mw / maxDistrictMw) * 94, 6), 98);
   };
 
-  // Simplified pie chart slices
-  const topSegmentsCount = 6;
-  const topDistricts = districts.slice(0, topSegmentsCount);
-  const otherDistricts = districts.slice(topSegmentsCount);
-  const otherMw = otherDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
-  const otherCount = otherDistricts.reduce((acc, d) => acc + d.count, 0);
-  const otherPct = otherDistricts.reduce((acc, d) => acc + (d.percentage || 0), 0);
+  // 10-District Pagination & "All" view logic
+  const PAGE_SIZE = 10;
+  const totalPages = Math.max(1, Math.ceil(districts.length / PAGE_SIZE));
 
-  const simplifiedPieItems = [
-    ...topDistricts,
-    ...(otherDistricts.length > 0 ? [{
-      district: `Other ${otherDistricts.length} Districts`,
-      count: otherCount,
-      capacity_mw: Number(otherMw.toFixed(2)),
-      percentage: Number(otherPct.toFixed(2)),
-      color: '#64748b'
-    }] : [])
-  ];
+  let simplifiedPieItems = [];
+  if (pieViewMode === 'all' || districts.length <= PAGE_SIZE) {
+    // Show all districts
+    simplifiedPieItems = districts.map((d, idx) => ({
+      ...d,
+      color: d.color || PALETTE[idx % PALETTE.length],
+      isOther: false
+    }));
+  } else {
+    // Show 10 districts for the current page
+    const safePage = Math.min(Math.max(piePage, 1), totalPages);
+    const startIndex = (safePage - 1) * PAGE_SIZE;
+    const pageDistricts = districts.slice(startIndex, startIndex + PAGE_SIZE);
+    const remainingDistricts = districts.slice(startIndex + PAGE_SIZE);
 
-  const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (d.percentage || 0), 0) || 100;
+    simplifiedPieItems = pageDistricts.map(d => ({ ...d, isOther: false }));
+
+    if (remainingDistricts.length > 0) {
+      const otherMw = remainingDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
+      const otherCount = remainingDistricts.reduce((acc, d) => acc + (d.count || 0), 0);
+      const otherPct = remainingDistricts.reduce((acc, d) => acc + (Number(d.percentage) || 0), 0);
+
+      simplifiedPieItems.push({
+        district: `Other ${remainingDistricts.length} District${remainingDistricts.length > 1 ? 's' : ''}`,
+        count: otherCount,
+        capacity_mw: Number(otherMw.toFixed(2)),
+        percentage: Number(otherPct.toFixed(2)),
+        color: '#64748b',
+        isOther: true,
+        targetPage: safePage + 1
+      });
+    }
+  }
+
+  const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (Number(d.percentage) || 0), 0) || 100;
   let anglePointer = -90;
   const pieSlices = simplifiedPieItems.map((item) => {
-    const sliceAngle = ((item.percentage || 0) / totalSegmentPct) * 360;
+    const sliceAngle = ((Number(item.percentage) || 0) / totalSegmentPct) * 360;
     const startA = anglePointer;
     const endA = anglePointer + sliceAngle;
     anglePointer = endA;
@@ -119,6 +144,18 @@ export const MswDashboard = () => {
       endAngle: endA
     };
   });
+
+  const handleOtherClick = (item) => {
+    if (item.isOther) {
+      if (item.targetPage && item.targetPage <= totalPages) {
+        setPiePage(item.targetPage);
+        setActivePieHover(null);
+      } else {
+        setPieViewMode('all');
+        setActivePieHover(null);
+      }
+    }
+  };
 
   const getDonutSlicePath = (cx, cy, rOuter, rInner, startAngle, endAngle) => {
     const rad = Math.PI / 180;
@@ -416,6 +453,60 @@ export const MswDashboard = () => {
             </p>
           </div>
 
+          {/* PAGINATION & VIEW TABS */}
+          {districts.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between gap-1.5 my-2 px-1">
+              <div className="inline-flex items-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/90 shadow-xs gap-1">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const pageNum = i + 1;
+                  const start = (i * PAGE_SIZE) + 1;
+                  const end = Math.min((i + 1) * PAGE_SIZE, districts.length);
+                  const isSelected = pieViewMode === 'page' && piePage === pageNum;
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => {
+                        setPieViewMode('page');
+                        setPiePage(pageNum);
+                        setActivePieHover(null);
+                      }}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                      }`}
+                      title={`Show districts ${start} to ${end}`}
+                    >
+                      {start}–{end}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPieViewMode('all');
+                    setActivePieHover(null);
+                  }}
+                  className={`px-3.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    pieViewMode === 'all'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                  }`}
+                  title="Show all districts in pie chart"
+                >
+                  All ({districts.length})
+                </button>
+              </div>
+
+              {pieViewMode === 'page' && totalPages > 1 && (
+                <span className="text-[11px] font-semibold text-slate-500">
+                  Page {piePage} of {totalPages}
+                </span>
+              )}
+            </div>
+          )}
+
           {districts.length === 0 ? (
             <div className="py-16 text-center flex flex-col items-center justify-center my-3">
               <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
@@ -449,11 +540,16 @@ export const MswDashboard = () => {
                             filter: isHovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' : 'none',
                             opacity: activePieHover && !isHovered ? 0.75 : 1
                           }}
+                          onClick={() => {
+                            if (slice.isOther) handleOtherClick(slice);
+                          }}
                           onMouseEnter={() =>
                             setActivePieHover({
                               title: slice.district,
                               mw: `${Number(slice.capacity_mw).toFixed(2)} MW`,
-                              sub: `${slice.percentage}% (${slice.count} projects)`
+                              sub: slice.isOther 
+                                ? `${slice.percentage}% • Click to view next 10`
+                                : `${slice.percentage}% (${slice.count} projects)`
                             })
                           }
                           onMouseLeave={() => setActivePieHover(null)}
@@ -478,20 +574,29 @@ export const MswDashboard = () => {
 
               {/* CLEAR COLOR BADGE GRID */}
               <div className="border-t border-slate-100 pt-3">
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs max-h-[220px] overflow-y-auto pr-1">
                   {simplifiedPieItems.map((item, idx) => {
                     const isHovered = activePieHover?.title === item.district;
                     return (
                       <div
                         key={idx}
                         className={`flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer ${
-                          isHovered ? 'bg-blue-50/80 border-blue-300 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
+                          isHovered 
+                            ? 'bg-blue-50/80 border-blue-300 shadow-xs' 
+                            : item.isOther 
+                              ? 'bg-amber-50/80 border-amber-300 hover:bg-amber-100 font-semibold' 
+                              : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
                         }`}
+                        onClick={() => {
+                          if (item.isOther) handleOtherClick(item);
+                        }}
                         onMouseEnter={() =>
                           setActivePieHover({
                             title: item.district,
                             mw: `${Number(item.capacity_mw).toFixed(2)} MW`,
-                            sub: `${item.percentage}% (${item.count} projects)`
+                            sub: item.isOther 
+                              ? `${item.percentage}% • Click to view next 10`
+                              : `${item.percentage}% (${item.count} projects)`
                           })
                         }
                         onMouseLeave={() => setActivePieHover(null)}
@@ -501,8 +606,13 @@ export const MswDashboard = () => {
                             className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="font-semibold text-slate-800 text-[11px] truncate">
+                          <span className="font-semibold text-slate-800 text-[11px] truncate flex items-center gap-1">
                             {item.district}
+                            {item.isOther && (
+                              <span className="text-[9px] font-bold text-amber-700 bg-amber-200/80 px-1.5 py-0.2 rounded shrink-0">
+                                Next ➔
+                              </span>
+                            )}
                           </span>
                         </div>
                         <span className="text-[11px] font-bold text-slate-900 shrink-0 ml-1">
