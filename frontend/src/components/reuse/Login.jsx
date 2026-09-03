@@ -50,14 +50,8 @@ const LoginStyles = () => (
     @keyframes spinFast { to{transform:rotate(360deg)} }
     .spin-fast { animation:spinFast .8s linear infinite; }
 
-    /* Delayed appearance smooth transition (4-5s entrance) */
+    /* Fast smooth entrance animation */
     .fade-delay-enter {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: none;
-    }
-    .fade-delay-enter.active {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
@@ -476,19 +470,10 @@ function LoginCard({ active, onLoginSuccess }) {
 ----------------------------------------------------------------*/
 export default function Login({ onLoginSuccess }) {
   const [idx, setIdx] = useState(4);
-  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     const id = window.setInterval(() => setIdx((i) => (i + 1) % ENERGY_TYPES.length), 5200);
     return () => window.clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    // 4.5 seconds delay to populate login form and telemetry screen data over background video
-    const timer = setTimeout(() => {
-      setShowContent(true);
-    }, 4500);
-    return () => clearTimeout(timer);
   }, []);
 
   const active = ENERGY_TYPES[idx];
@@ -502,15 +487,15 @@ export default function Login({ onLoginSuccess }) {
       <BackgroundImage />
 
       <div className="relative z-10 flex min-h-screen w-full flex-col justify-between">
-        <div className={`fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "0ms" }}>
+        <div>
           <BrandBar />
         </div>
 
         <main className="relative z-20 mx-auto flex w-full max-w-[1540px] flex-1 flex-col items-center justify-center gap-8 px-4 py-6 xl:flex-row xl:items-end xl:justify-between xl:gap-12 xl:px-8 xl:pb-10">
-          <div className={`w-full max-w-[880px] xl:w-auto flex-1 fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "200ms" }}>
+          <div className="w-full max-w-[880px] xl:w-auto flex-1">
             <LiveHud active={active} />
           </div>
-          <div className={`flex w-full justify-center xl:w-auto xl:justify-end shrink-0 fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "400ms" }}>
+          <div className="flex w-full justify-center xl:w-auto xl:justify-end shrink-0">
             <LoginCard active={active} onLoginSuccess={onLoginSuccess} />
           </div>
         </main>
