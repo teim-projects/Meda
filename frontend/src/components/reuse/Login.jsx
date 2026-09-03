@@ -8,6 +8,15 @@ import amritLogo from "../../assets/75.jpg";
 import sealLogo from "../../assets/MH.png";
 import ashokaLogo from "../../assets/emb.png";
 import bgImage from "../../assets/bg_meda3.png";
+import {
+  Sun,
+  Wind,
+  Sprout,
+  Droplets,
+  Waves,
+  Flame,
+  Recycle
+} from "lucide-react";
 
 /* =====================================================================
    meda · Superadmin Login
@@ -200,32 +209,110 @@ function Ticker({ active }) {
 const MINT_CARD_GRADIENT = "linear-gradient(135deg, #eef7f0 0%, #d5ebd9 50%, #bfe2c5 100%)";
 
 const ENERGY_CAPACITY_BLOCKS = [
-  { id: "solar", val: "20,477.42", unit: "MW", title: "Solar Power Projects" },
-  { id: "wind", val: "6,371.81", unit: "MW", title: "Wind Power Projects" },
-  { id: "bagasse", val: "2,732.80", unit: "MW", title: "Bagasse Based Co-gen Power" },
-  { id: "small-hydro", val: "374.08", unit: "MW", title: "Small Hydro Power Projects" },
-  { id: "large-hydro", val: "3061", unit: "MW", title: "Large Hydro Power Projects" },
-  { id: "biomass", val: "215.00", unit: "MW", title: "Biomass Based Power Projects" },
-  { id: "solid-waste", val: "59.79", unit: "MW", title: "Municipal Solid Waste Projects" },
+  { 
+    id: "solar", 
+    val: "20,477.42", 
+    unit: "MW", 
+    title: "Solar Power Projects", 
+    icon: Sun, 
+    iconColor: "#d97706", 
+    iconBg: "rgba(245, 158, 11, 0.18)",
+    iconBorder: "rgba(245, 158, 11, 0.35)"
+  },
+  { 
+    id: "wind", 
+    val: "6,371.81", 
+    unit: "MW", 
+    title: "Wind Power Projects", 
+    icon: Wind, 
+    iconColor: "#0284c7", 
+    iconBg: "rgba(2, 132, 199, 0.18)",
+    iconBorder: "rgba(2, 132, 199, 0.35)"
+  },
+  { 
+    id: "bagasse", 
+    val: "2,732.80", 
+    unit: "MW", 
+    title: "Bagasse Based Co-gen Power", 
+    icon: Sprout, 
+    iconColor: "#16a34a", 
+    iconBg: "rgba(22, 163, 74, 0.18)",
+    iconBorder: "rgba(22, 163, 74, 0.35)"
+  },
+  { 
+    id: "small-hydro", 
+    val: "374.08", 
+    unit: "MW", 
+    title: "Small Hydro Power Projects", 
+    icon: Droplets, 
+    iconColor: "#0ea5e9", 
+    iconBg: "rgba(14, 165, 233, 0.18)",
+    iconBorder: "rgba(14, 165, 233, 0.35)"
+  },
+  { 
+    id: "large-hydro", 
+    val: "3061", 
+    unit: "MW", 
+    title: "Large Hydro Power Projects", 
+    icon: Waves, 
+    iconColor: "#2563eb", 
+    iconBg: "rgba(37, 99, 235, 0.18)",
+    iconBorder: "rgba(37, 99, 235, 0.35)"
+  },
+  { 
+    id: "biomass", 
+    val: "215.00", 
+    unit: "MW", 
+    title: "Biomass Based Power Projects", 
+    icon: Flame, 
+    iconColor: "#ea580c", 
+    iconBg: "rgba(234, 88, 12, 0.18)",
+    iconBorder: "rgba(234, 88, 12, 0.35)"
+  },
+  { 
+    id: "solid-waste", 
+    val: "59.79", 
+    unit: "MW", 
+    title: "Municipal Solid Waste Projects", 
+    icon: Recycle, 
+    iconColor: "#059669", 
+    iconBg: "rgba(5, 150, 105, 0.18)",
+    iconBorder: "rgba(5, 150, 105, 0.35)"
+  },
 ];
 
 function EnergyCard({ block, index }) {
+  const Icon = block.icon;
   return (
     <div
       className="pop-in group relative flex h-[96px] w-full flex-col justify-between overflow-hidden rounded-xl border-2 border-white/90 bg-white p-0.5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
       style={{ animationDelay: `${0.1 + index * 0.04}s` }}
     >
       <div
-        className="flex h-full w-full flex-col justify-between rounded-lg p-3 transition-all duration-300"
+        className="flex h-full w-full flex-col justify-between rounded-lg p-3 transition-all duration-300 relative"
         style={{ background: MINT_CARD_GRADIENT }}
       >
-        <div className="flex items-baseline gap-1.5">
-          <span className="mono text-[19px] font-extrabold tracking-tight text-slate-900 tabular-nums sm:text-[21px]">
-            {block.val}
-          </span>
-          <span className="text-[13px] font-bold text-slate-900 sm:text-[14px]">
-            {block.unit}
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-1.5">
+            <span className="mono text-[19px] font-extrabold tracking-tight text-slate-900 tabular-nums sm:text-[21px]">
+              {block.val}
+            </span>
+            <span className="text-[13px] font-bold text-slate-900 sm:text-[14px]">
+              {block.unit}
+            </span>
+          </div>
+          {Icon && (
+            <div 
+              className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg shadow-2xs border transition-transform duration-200 group-hover:scale-110 shrink-0"
+              style={{ 
+                background: block.iconBg || 'rgba(255, 255, 255, 0.75)',
+                borderColor: block.iconBorder || 'rgba(255, 255, 255, 0.9)',
+                color: block.iconColor || '#059669'
+              }}
+            >
+              <Icon size={14} className="sm:size-[15px]" strokeWidth={2.4} />
+            </div>
+          )}
         </div>
 
         <h3 className="text-[12px] font-normal leading-snug text-slate-800 line-clamp-2 sm:text-[12.5px]">
