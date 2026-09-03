@@ -184,11 +184,11 @@ export const WindDashboard = () => {
   // SVG Timeline points calculation dynamically scaled to actual data
   const minYear = timeline[0]?.year || 1998;
   const maxYear = timeline[timeline.length - 1]?.year || 2026;
-  const maxMw = Math.max(...timeline.map((t) => Number(t.cumulative_mw) || 0), 10) * 1.05;
+  const maxTimelineMw = Math.max(...timeline.map((t) => Number(t.cumulative_mw) || 0), 10) * 1.05;
 
   const getTimelineCoords = (pt) => {
     const x = 40 + ((pt.year - minYear) / Math.max(maxYear - minYear, 1)) * 430;
-    const y = 110 - (pt.cumulative_mw / maxMw) * 85;
+    const y = 110 - (pt.cumulative_mw / maxTimelineMw) * 85;
     return { x, y };
   };
 

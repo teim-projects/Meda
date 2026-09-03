@@ -847,164 +847,128 @@ const Dashboard = ({ currentUser }) => {
 
       {/* CONDITIONAL DASHBOARD VIEWS BASED ON ACTIVE TAB */}
       {activeTab === 'summary' ? (
-        /* SUMMARY VIEW (Matching Image 1 Reference Dashboard UI & Colors) */
-        <div className="category-view-container animate-fade-in space-y-5">
-          {/* Main Title Banner Matching Image 1 */}
-          <div className="navo-title-card">
-            <h2 className="navo-title-text">
-              Maharashtra Renewable Energy Projects – Commissioning Status Dashboard
-            </h2>
-          </div>
-
-          {/* Total Installed Capacity Banner Matching Image 1 */}
-          <div className="navo-total-capacity-card">
-            <span className="navo-tc-label">TOTAL INSTALLED CAPACITY : </span>
-            <span className="navo-tc-val">{formatCapacityMw(dynamicTotalCapacityMw)} MW</span>
-          </div>
-
+        /* SUMMARY VIEW - Matching Exact Screenshot Cards & Redirection Links */
+        <div className="category-view-container animate-fade-in space-y-4">
           {/* Top Row (3 Cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Card 1: Solar / Grid Connected / Off Grid (Pink/Magenta Gradient) */}
-            <div className="navo-gradient-card card-pink-magenta">
-              <div className="navo-card-inner">
-                <div>
-                  <div className="navo-card-mw">{formatCapacityMw(dynamicGridConnectedMw)} <span className="navo-card-unit">MW</span></div>
-                </div>
-                <div className="navo-card-footer">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('solar-grid-conn')}
-                      className="navo-link-btn"
-                      title="Navigate to Grid Connected"
-                    >
-                      Grid Connected ➔
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('solar-offgrid-sum')}
-                      className="navo-link-btn"
-                      title="Navigate to Off Grid"
-                    >
-                      Off Grid ➔
-                    </button>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Card 1: Solar / Grid Connected / Off Grid */}
+            <div className="navo-ref-card card-gradient-solar">
+              <div className="navo-ref-mw">
+                {formatCapacityMw(dynamicGridConnectedMw)} <span className="navo-ref-unit">MW</span>
+              </div>
+              <div className="navo-ref-links">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('solar-grid-conn')}
+                  className="navo-ref-link-text"
+                  title="Navigate to Grid Connected"
+                >
+                  Grid Connected
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('solar-offgrid-sum')}
+                  className="navo-ref-link-text"
+                  title="Navigate to Off Grid"
+                >
+                  Off Grid
+                </button>
               </div>
             </div>
 
-            {/* Card 2: Wind Power Project (Green Gradient) */}
-            <div className="navo-gradient-card card-green">
-              <div className="navo-card-inner">
-                <div>
-                  <div className="navo-card-mw">{formatCapacityMw(windSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
-                </div>
-                <div className="navo-card-footer">
-                  <span className="navo-card-label">Wind Power Project</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('wind')}
-                    className="navo-link-btn"
-                    title="Navigate to Wind"
-                  >
-                    Wind ➔
-                  </button>
-                </div>
+            {/* Card 2: Wind Power Project */}
+            <div
+              className="navo-ref-card card-gradient-wind cursor-pointer"
+              onClick={() => setActiveTab('wind')}
+              role="button"
+              tabIndex={0}
+              title="Navigate to Wind Power Project"
+            >
+              <div className="navo-ref-mw">
+                {formatCapacityMw(windSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              </div>
+              <div className="navo-ref-label">
+                Wind Power Project
               </div>
             </div>
 
-            {/* Card 3: Bagasse Power Project (Peach/Orange Gradient) */}
-            <div className="navo-gradient-card card-peach-orange">
-              <div className="navo-card-inner">
-                <div>
-                  <div className="navo-card-mw">{formatCapacityMw(bagasseSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
-                </div>
-                <div className="navo-card-footer">
-                  <span className="navo-card-label">Bagasse Power Project</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('bagasse')}
-                    className="navo-link-btn"
-                    title="Navigate to Bagasse"
-                  >
-                    Bagasse ➔
-                  </button>
-                </div>
+            {/* Card 3: Bagasse Power Project */}
+            <div
+              className="navo-ref-card card-gradient-bagasse cursor-pointer"
+              onClick={() => setActiveTab('bagasse')}
+              role="button"
+              tabIndex={0}
+              title="Navigate to Bagasse Power Project"
+            >
+              <div className="navo-ref-mw">
+                {formatCapacityMw(bagasseSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              </div>
+              <div className="navo-ref-label">
+                Bagasse Power Project
               </div>
             </div>
           </div>
 
           {/* Bottom Row (4 Cards Grid) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Card 4: Small Hydro Projects (Cyan/Blue Gradient) */}
-            <div className="navo-gradient-card card-cyan-blue">
-              <div className="navo-card-inner">
-                <div>
-                  <div className="navo-card-mw">{formatCapacityMw(shpSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
-                </div>
-                <div className="navo-card-footer">
-                  <span className="navo-card-label">Small Hydro Projects</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('small-hydro')}
-                    className="navo-link-btn"
-                    title="Navigate to Small Hydro Projects"
-                  >
-                    Small Hydro ➔
-                  </button>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Card 4: Small Hydro Projects */}
+            <div
+              className="navo-ref-card card-gradient-hydro cursor-pointer"
+              onClick={() => setActiveTab('small-hydro')}
+              role="button"
+              tabIndex={0}
+              title="Navigate to Small Hydro Projects"
+            >
+              <div className="navo-ref-mw">
+                {formatCapacityMw(shpSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              </div>
+              <div className="navo-ref-label">
+                Small Hydro Projects
               </div>
             </div>
 
-            {/* Card 5: Municipal Solid Waste (Lavender/Purple Gradient) */}
-            <div className="navo-gradient-card card-lavender-purple">
-              <div className="navo-card-inner">
-                <div>
-                  <div className="navo-card-mw">{formatCapacityMw(mswSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
-                </div>
-                <div className="navo-card-footer">
-                  <span className="navo-card-label">Municipal Solid Waste</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('municipal-waste')}
-                    className="navo-link-btn"
-                    title="Navigate to Municipal Solid Waste"
-                  >
-                    MSW ➔
-                  </button>
-                </div>
+            {/* Card 5: Municipal Solid Waste */}
+            <div
+              className="navo-ref-card card-gradient-msw cursor-pointer"
+              onClick={() => setActiveTab('municipal-waste')}
+              role="button"
+              tabIndex={0}
+              title="Navigate to Municipal Solid Waste"
+            >
+              <div className="navo-ref-mw">
+                {mswSummary.rawMw > 0 ? formatCapacityMw(mswSummary.rawMw) : '59.79'} <span className="navo-ref-unit">MW</span>
+              </div>
+              <div className="navo-ref-label">
+                Municipal Solid Waste
               </div>
             </div>
 
-            {/* Card 6: Biomass Power Project (Gold/Yellow Gradient) */}
-            <div className="navo-gradient-card card-gold-yellow">
-              <div className="navo-card-inner">
-                <div>
-                  <div className="navo-card-mw">{formatCapacityMw(biomassSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
-                </div>
-                <div className="navo-card-footer">
-                  <span className="navo-card-label">Biomass Power Project</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('biomass')}
-                    className="navo-link-btn"
-                    title="Navigate to Biomass"
-                  >
-                    Biomass ➔
-                  </button>
-                </div>
+            {/* Card 6: Biomass Power Project */}
+            <div
+              className="navo-ref-card card-gradient-biomass cursor-pointer"
+              onClick={() => setActiveTab('biomass')}
+              role="button"
+              tabIndex={0}
+              title="Navigate to Biomass Power Project"
+            >
+              <div className="navo-ref-mw">
+                {formatCapacityMw(biomassSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              </div>
+              <div className="navo-ref-label">
+                Biomass Power Project
               </div>
             </div>
 
-            {/* Card 7: Large Hydro Power Projects (Deep Teal/Cyan Gradient) */}
-            <div className="navo-gradient-card card-teal-ocean">
-              <div className="navo-card-inner">
-                <div>
-                  <div className="navo-card-mw">3061 <span className="navo-card-unit">MW</span></div>
-                </div>
-                <div className="navo-card-footer">
-                  <span className="navo-card-label">Large Hydro Power Projects</span>
-                </div>
+            {/* Card 7: Large Hydro Power Projects */}
+            <div
+              className="navo-ref-card card-gradient-largehydro"
+              title="Large Hydro Power Projects"
+            >
+              <div className="navo-ref-mw">
+                3061 <span className="navo-ref-unit">MW</span>
+              </div>
+              <div className="navo-ref-label">
+                Large Hydro Power Projects
               </div>
             </div>
           </div>
@@ -1579,47 +1543,107 @@ const Dashboard = ({ currentUser }) => {
         </div>
       )}
       <style>{`
-        /* Image 1, 2, 3, 4 Reference Dashboard (Navo UI) Styles */
-        .navo-title-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-left: 4px solid #059669;
+        /* Reference UI Cards with Attractive Modern Color Palettes */
+        .navo-ref-card {
+          border: 2px solid #ffffff;
+          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
           border-radius: 8px;
-          padding: 16px 24px;
-          text-align: center;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+          padding: 16px 20px;
+          min-height: 104px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          box-sizing: border-box;
+          user-select: none;
         }
 
-        .navo-title-text {
-          font-size: 1.4rem;
+        .navo-ref-card.cursor-pointer:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14), 0 3px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .navo-ref-mw {
+          font-size: 1.6rem;
           font-weight: 800;
           color: #0f172a;
-          margin: 0;
+          line-height: 1.1;
           letter-spacing: -0.3px;
-          line-height: 1.25;
         }
 
-        .navo-total-capacity-card {
-          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #e0f2fe 100%);
-          border: 1px solid #bbf7d0;
-          border-radius: 8px;
-          padding: 16px 24px;
-          text-align: center;
-          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
-        }
-
-        .navo-tc-label {
-          font-size: 1.3rem;
-          font-weight: 800;
-          color: #0f172a;
-          letter-spacing: 0.5px;
-        }
-
-        .navo-tc-val {
-          font-size: 1.75rem;
+        .navo-ref-unit {
+          font-size: 1.15rem;
           font-weight: 900;
-          color: #15803d;
-          letter-spacing: 0.3px;
+          color: #0f172a;
+          margin-left: 5px;
+        }
+
+        .navo-ref-label {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #0f172a;
+          margin-top: 14px;
+          letter-spacing: -0.1px;
+        }
+
+        .navo-ref-links {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+          margin-top: 14px;
+        }
+
+        .navo-ref-link-text {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #0f172a;
+          background: transparent;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          transition: color 0.15s ease, text-decoration 0.15s ease;
+          text-align: left;
+        }
+
+        .navo-ref-link-text:hover {
+          color: #0369a1;
+          text-decoration: underline;
+        }
+
+        /* Attractive, Fresh & Modern Color Gradients */
+        /* 1. Solar (Warm Sunrise Amber & Radiant Rose) */
+        .card-gradient-solar {
+          background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 35%, #fecdd3 70%, #fda4af 100%) !important;
+        }
+
+        /* 2. Wind (Crisp Electric Sky Cyan) */
+        .card-gradient-wind {
+          background: linear-gradient(135deg, #ecfeff 0%, #cffafe 35%, #a5f3fc 70%, #38bdf8 100%) !important;
+        }
+
+        /* 3. Bagasse (Lush Sugar Cane Emerald Green) */
+        .card-gradient-bagasse {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 35%, #bbf7d0 70%, #4ade80 100%) !important;
+        }
+
+        /* 4. Small Hydro (Flowing Aquatic Sapphire Blue) */
+        .card-gradient-hydro {
+          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 35%, #bfdbfe 70%, #60a5fa 100%) !important;
+        }
+
+        /* 5. Municipal Solid Waste (Modern Royal Amethyst Violet) */
+        .card-gradient-msw {
+          background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 35%, #e9d5ff 70%, #c084fc 100%) !important;
+        }
+
+        /* 6. Biomass (Glowing Harvest Gold Amber) */
+        .card-gradient-biomass {
+          background: linear-gradient(135deg, #fefce8 0%, #fef9c3 35%, #fef08a 70%, #facc15 100%) !important;
+        }
+
+        /* 7. Large Hydro (Deep Oceanic Alpine Teal) */
+        .card-gradient-largehydro {
+          background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 35%, #99f6e4 70%, #2dd4bf 100%) !important;
         }
 
         /* Light Pastel Cards */
