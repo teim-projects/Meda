@@ -705,9 +705,7 @@ const Dashboard = ({ currentUser }) => {
 
   const handleExportReport = () => {
     const originalTitle = document.title;
-    const categoryName = currentCategory?.label || 'Overview';
-    const dateStr = new Date().toISOString().split('T')[0];
-    document.title = `MEDA_Executive_Report_${categoryName.replace(/\s+/g, '_')}_${dateStr}`;
+    document.title = `Maharashtra_RENEWABLE_ENERGY_COMMISSIONING_Status`;
     window.print();
     setTimeout(() => {
       document.title = originalTitle;
@@ -716,47 +714,99 @@ const Dashboard = ({ currentUser }) => {
 
   return (
     <div className="meda-dashboard-wrap animate-fade-in">
-      {/* PRINT-ONLY OFFICIAL REPORT HEADER */}
-      <div className="print-report-header">
-        <div className="prh-top">
-          <div className="prh-brand">
-            <img src={logoImg} alt="MEDA Logo" className="prh-logo" />
-            <div>
-              <h1 className="prh-org-title">MAHARASHTRA ENERGY DEVELOPMENT AGENCY</h1>
-              <p className="prh-org-sub">A Government of Maharashtra Undertaking • Energy Department</p>
-            </div>
+      {/* ========================================================================= */}
+      {/* PRINT-ONLY OFFICIAL RENEWABLE ENERGY COMMISSIONING REPORT                 */}
+      {/* Hidden on screen (display: none), Visible only when printing / saving PDF */}
+      {/* ========================================================================= */}
+      <div id="official-commissioning-report" className="official-print-report font-sans">
+        {/* 1. Centered Header: Maharashtra RENEWABLE ENERGY COMMISSIONING Status */}
+        <div className="report-header-section">
+          <h1 className="report-main-header">
+            Maharashtra RENEWABLE ENERGY COMMISSIONING Status
+          </h1>
+          <div className="report-date">
+            <span>Report Date:</span>{' '}
+            <strong>
+              {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+            </strong>
           </div>
-          <div className="prh-meta">
-            <div className="prh-meta-badge">OFFICIAL EXECUTIVE REPORT</div>
-            <p className="prh-meta-item"><strong>Generated On:</strong> {new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
-            <p className="prh-meta-item"><strong>Exported By:</strong> {username}</p>
+          <div className="report-navy-divider"></div>
+        </div>
+
+        {/* 2. Highlight Green KPI Box */}
+        <div className="report-kpi-card">
+          <div className="rkc-accent-bar"></div>
+          <div className="rkc-body">
+            <div className="rkc-info">
+              <div className="rkc-title">
+                TOTAL RE COMMISSIONED CAPACITY
+              </div>
+              <div className="rkc-sub">
+                Total Commissioned Clean Energy Generating Capacity Synchronized with State Grid
+              </div>
+            </div>
+            <div className="rkc-metric">
+              <span className="rkc-number">33,283.925</span>{' '}
+              <span className="rkc-unit">MW</span>
+            </div>
           </div>
         </div>
 
-        <div className="prh-divider"></div>
-
-        <div className="prh-report-info">
-          <div className="prh-info-box">
-            <span className="prh-info-label">REPORT MODULE</span>
-            <span className="prh-info-value">{currentCategory.label} Dashboard</span>
-          </div>
-          <div className="prh-info-box">
-            <span className="prh-info-label">TOTAL CAPACITY</span>
-            <span className="prh-info-value">{currentCategory.capacity}</span>
-          </div>
-          <div className="prh-info-box">
-            <span className="prh-info-label">TOTAL PROJECTS</span>
-            <span className="prh-info-value">{currentCategory.count}</span>
-          </div>
-          <div className="prh-info-box">
-            <span className="prh-info-label">APPLIED FILTERS</span>
-            <span className="prh-info-value">
-              {energySourceFilter !== 'All' ? `Source: ${energySourceFilter} ` : ''}
-              {zoneFilter !== 'All' ? `Zone: ${zoneFilter} ` : ''}
-              {agreementTypeFilter !== 'All' ? `Agreement: ${agreementTypeFilter} ` : ''}
-              {energySourceFilter === 'All' && zoneFilter === 'All' && agreementTypeFilter === 'All' ? 'All Sources & Regions' : ''}
-            </span>
-          </div>
+        {/* 3. Commissioning Data Table (3 Columns: Sr. No., Energy Source, Installed Capacity) */}
+        <div className="report-table-wrapper">
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th className="th-sr">SR. NO.</th>
+                <th className="th-tech">ENERGY SOURCE / TECHNOLOGY</th>
+                <th className="th-cap">INSTALLED CAPACITY (MW)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="td-sr">1</td>
+                <td className="td-tech">Solar Power Projects</td>
+                <td className="td-cap">20,477.420 MW</td>
+              </tr>
+              <tr>
+                <td className="td-sr">2</td>
+                <td className="td-tech">Wind Power Projects</td>
+                <td className="td-cap">6,371.810 MW</td>
+              </tr>
+              <tr>
+                <td className="td-sr">3</td>
+                <td className="td-tech">Large Hydro Power Projects</td>
+                <td className="td-cap">3,061.000 MW</td>
+              </tr>
+              <tr>
+                <td className="td-sr">4</td>
+                <td className="td-tech">Co-generation (Bagasse) Power</td>
+                <td className="td-cap">2,732.800 MW</td>
+              </tr>
+              <tr>
+                <td className="td-sr">5</td>
+                <td className="td-tech">Small Hydro Projects</td>
+                <td className="td-cap">374.080 MW</td>
+              </tr>
+              <tr>
+                <td className="td-sr">6</td>
+                <td className="td-tech">Biomass Power Projects</td>
+                <td className="td-cap">215.000 MW</td>
+              </tr>
+              <tr>
+                <td className="td-sr">7</td>
+                <td className="td-tech">Municipal Solid Waste (MSW)</td>
+                <td className="td-cap">59.790 MW</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr className="tfoot-total-row">
+                <td className="td-sr total-check">✓</td>
+                <td className="td-tech total-title">TOTAL STATE RE CAPACITY</td>
+                <td className="td-cap total-cap">33,283.925 MW</td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
 
@@ -768,10 +818,12 @@ const Dashboard = ({ currentUser }) => {
         </div>
 
         <div className="dth-right-actions">
-          <button className="btn-export-outlined" onClick={handleExportReport} title="Export printable report">
-            <Download size={14} />
-            <span>Export</span>
-          </button>
+          {activeTab === 'summary' && (
+            <button className="btn-export-outlined" onClick={handleExportReport} title="Export PDF Commissioning Report">
+              <Download size={14} />
+              <span>Export PDF</span>
+            </button>
+          )}
 
           <button className="btn-refresh-filled" onClick={checkBackendStatus} disabled={loadingDb}>
             <RefreshCw size={14} className={loadingDb ? 'spin' : ''} />
@@ -847,128 +899,358 @@ const Dashboard = ({ currentUser }) => {
 
       {/* CONDITIONAL DASHBOARD VIEWS BASED ON ACTIVE TAB */}
       {activeTab === 'summary' ? (
-        /* SUMMARY VIEW - Matching Exact Screenshot Cards & Redirection Links */
-        <div className="category-view-container animate-fade-in space-y-4">
-          {/* Top Row (3 Cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Card 1: Solar / Grid Connected / Off Grid */}
-            <div className="navo-ref-card card-gradient-solar">
-              <div className="navo-ref-mw">
-                {formatCapacityMw(dynamicGridConnectedMw)} <span className="navo-ref-unit">MW</span>
+        /* SUMMARY VIEW - Executive Grid Connected Theme & Full Page Balanced Layout */
+        <div className="category-view-container summary-view-wrapper animate-fade-in">
+          <div className="summary-full-grid">
+            {/* Card 1: Solar Energy Projects (Grid Connected & Off Grid) - Spans 2 cols */}
+            <div
+              className="summary-card card-gridconn-solar col-span-1 md:col-span-2"
+              style={{
+                background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #fecdd3 100%)',
+                borderColor: '#fda4af',
+                boxShadow: '0 3px 10px -2px rgba(253, 164, 175, 0.35)'
+              }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              
+              {/* Top Row: Big Bold Capacity + Tag Badge */}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="text-xl sm:text-2xl font-black text-rose-950 tracking-tight leading-none font-mono">
+                    {formatCapacityMw(dynamicGridConnectedMw)}{' '}
+                    <span className="text-xs sm:text-sm font-bold text-rose-800">MW</span>
+                  </div>
+                  <div className="text-[11px] font-bold text-rose-800/90 mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span>Solar Energy Projects</span>
+                    <span>•</span>
+                    <span className="bg-rose-200/70 text-rose-900 px-1.5 py-0.2 rounded text-[9px] font-black">49.4% RE SHARE</span>
+                  </div>
+                </div>
+
+                <span className="font-black text-[9px] sm:text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 bg-rose-100 text-rose-900 border-rose-300 flex items-center gap-1 shadow-2xs">
+                  <Sun size={11} className="text-rose-600" />
+                  <span>SOLAR</span>
+                </span>
               </div>
-              <div className="navo-ref-links">
+
+              {/* Middle Mini Progress Bar */}
+              <div className="my-1.5">
+                <div className="w-full bg-rose-200/70 rounded-full h-1 overflow-hidden">
+                  <div className="bg-rose-600 h-full rounded-full transition-all duration-500" style={{ width: '49.4%' }}></div>
+                </div>
+              </div>
+
+              {/* Bottom Row: 2 Interactive Sub-Scheme Pills for Grid Connected & Off Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
                 <button
                   type="button"
                   onClick={() => setActiveTab('solar-grid-conn')}
-                  className="navo-ref-link-text"
-                  title="Navigate to Grid Connected"
+                  className="bg-white/85 hover:bg-white border border-rose-200/90 rounded-lg px-2.5 py-1.5 text-left transition-all hover:shadow-xs group cursor-pointer flex items-center justify-between"
+                  title="Navigate to Grid Connected Dashboard"
                 >
-                  Grid Connected
+                  <div>
+                    <div className="text-[11px] font-black text-rose-950 group-hover:text-rose-700 leading-tight">
+                      Grid Connected
+                    </div>
+                    <div className="text-[10px] font-semibold text-rose-800/80 leading-tight">
+                      8 Schemes • {formatCapacityMw(dynamicGridConnectedMw)} MW
+                    </div>
+                  </div>
+                  <ChevronRight size={13} className="text-rose-400 group-hover:text-rose-700 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setActiveTab('solar-offgrid-sum')}
-                  className="navo-ref-link-text"
-                  title="Navigate to Off Grid"
+                  className="bg-white/85 hover:bg-white border border-rose-200/90 rounded-lg px-2.5 py-1.5 text-left transition-all hover:shadow-xs group cursor-pointer flex items-center justify-between"
+                  title="Navigate to Off Grid Dashboard"
                 >
-                  Off Grid
+                  <div>
+                    <div className="text-[11px] font-black text-rose-950 group-hover:text-rose-700 leading-tight">
+                      Off Grid Solar
+                    </div>
+                    <div className="text-[10px] font-semibold text-rose-800/80 leading-tight">
+                      10,03,077 Pumps • 43.42 L HP
+                    </div>
+                  </div>
+                  <ChevronRight size={13} className="text-rose-400 group-hover:text-rose-700 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
                 </button>
               </div>
             </div>
 
-            {/* Card 2: Wind Power Project */}
+            {/* Card 2: Wind Power Project - Pastel Sky Blue */}
             <div
-              className="navo-ref-card card-gradient-wind cursor-pointer"
+              className="summary-card card-gridconn-wind cursor-pointer group"
               onClick={() => setActiveTab('wind')}
               role="button"
               tabIndex={0}
               title="Navigate to Wind Power Project"
+              style={{
+                background: 'linear-gradient(135deg, #f8fafc 0%, #f0f9ff 50%, #e0f2fe 100%)',
+                borderColor: '#bae6fd',
+                boxShadow: '0 3px 10px -2px rgba(186, 230, 253, 0.35)'
+              }}
             >
-              <div className="navo-ref-mw">
-                {formatCapacityMw(windSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              
+              <div className="flex items-start justify-between gap-1.5">
+                <div>
+                  <div className="text-lg sm:text-xl font-black text-sky-950 tracking-tight leading-none font-mono">
+                    {formatCapacityMw(windSummary.rawMw)}{' '}
+                    <span className="text-xs font-bold text-sky-700">MW</span>
+                  </div>
+                  <div className="text-[10px] font-semibold text-sky-800 mt-0.5">
+                    15.4% RE Share
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-sky-100 text-sky-900 border-sky-300 flex items-center gap-1">
+                    <Wind size={10} className="text-sky-600" />
+                    <span>WIND</span>
+                  </span>
+                  <ChevronRight size={12} className="text-slate-400 group-hover:text-sky-700 group-hover:translate-x-0.5 transition-all" />
+                </div>
               </div>
-              <div className="navo-ref-label">
-                Wind Power Project
+
+              <div className="my-1.5">
+                <div className="w-full bg-sky-200/70 rounded-full h-1 overflow-hidden">
+                  <div className="bg-sky-500 h-full rounded-full transition-all duration-500" style={{ width: '15.4%' }}></div>
+                </div>
+              </div>
+
+              <div className="text-xs font-extrabold tracking-tight text-sky-950 flex items-center justify-between">
+                <span>Wind Power Project</span>
+                <span className="text-[9px] font-bold text-sky-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
               </div>
             </div>
 
-            {/* Card 3: Bagasse Power Project */}
+            {/* Card 3: Bagasse Power Project - Pastel Mint Emerald */}
             <div
-              className="navo-ref-card card-gradient-bagasse cursor-pointer"
+              className="summary-card card-gridconn-bagasse cursor-pointer group"
               onClick={() => setActiveTab('bagasse')}
               role="button"
               tabIndex={0}
               title="Navigate to Bagasse Power Project"
+              style={{
+                background: 'linear-gradient(135deg, #fbfdfc 0%, #f0fdf4 50%, #dcfce7 100%)',
+                borderColor: '#bbf7d0',
+                boxShadow: '0 3px 10px -2px rgba(187, 247, 208, 0.35)'
+              }}
             >
-              <div className="navo-ref-mw">
-                {formatCapacityMw(bagasseSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              
+              <div className="flex items-start justify-between gap-1.5">
+                <div>
+                  <div className="text-lg sm:text-xl font-black text-emerald-950 tracking-tight leading-none font-mono">
+                    {formatCapacityMw(bagasseSummary.rawMw)}{' '}
+                    <span className="text-xs font-bold text-emerald-700">MW</span>
+                  </div>
+                  <div className="text-[10px] font-semibold text-emerald-800 mt-0.5">
+                    26.3% RE Share
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-emerald-100 text-emerald-900 border-emerald-300 flex items-center gap-1">
+                    <Leaf size={10} className="text-emerald-600" />
+                    <span>BAGASSE</span>
+                  </span>
+                  <ChevronRight size={12} className="text-slate-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-all" />
+                </div>
               </div>
-              <div className="navo-ref-label">
-                Bagasse Power Project
+
+              <div className="my-1.5">
+                <div className="w-full bg-emerald-200/70 rounded-full h-1 overflow-hidden">
+                  <div className="bg-emerald-600 h-full rounded-full transition-all duration-500" style={{ width: '26.3%' }}></div>
+                </div>
+              </div>
+
+              <div className="text-xs font-extrabold tracking-tight text-emerald-950 flex items-center justify-between">
+                <span>Bagasse Power Project</span>
+                <span className="text-[9px] font-bold text-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
               </div>
             </div>
-          </div>
 
-          {/* Bottom Row (4 Cards Grid) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 4: Small Hydro Projects */}
+            {/* Card 4: Small Hydro Projects - Pastel Fresh Aqua Teal */}
             <div
-              className="navo-ref-card card-gradient-hydro cursor-pointer"
+              className="summary-card card-gridconn-hydro cursor-pointer group"
               onClick={() => setActiveTab('small-hydro')}
               role="button"
               tabIndex={0}
               title="Navigate to Small Hydro Projects"
+              style={{
+                background: 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%, #99f6e4 100%)',
+                borderColor: '#99f6e4',
+                boxShadow: '0 3px 10px -2px rgba(153, 246, 228, 0.35)'
+              }}
             >
-              <div className="navo-ref-mw">
-                {formatCapacityMw(shpSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              
+              <div className="flex items-start justify-between gap-1.5">
+                <div>
+                  <div className="text-lg sm:text-xl font-black text-teal-950 tracking-tight leading-none font-mono">
+                    {formatCapacityMw(shpSummary.rawMw)}{' '}
+                    <span className="text-xs font-bold text-teal-700">MW</span>
+                  </div>
+                  <div className="text-[10px] font-semibold text-teal-800 mt-0.5">
+                    0.9% RE Share
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-teal-100 text-teal-900 border-teal-300 flex items-center gap-1">
+                    <Droplets size={10} className="text-teal-600" />
+                    <span>HYDRO</span>
+                  </span>
+                  <ChevronRight size={12} className="text-slate-400 group-hover:text-teal-700 group-hover:translate-x-0.5 transition-all" />
+                </div>
               </div>
-              <div className="navo-ref-label">
-                Small Hydro Projects
+
+              <div className="my-1.5">
+                <div className="w-full bg-teal-200/70 rounded-full h-1 overflow-hidden">
+                  <div className="bg-teal-600 h-full rounded-full transition-all duration-500" style={{ width: '4%' }}></div>
+                </div>
+              </div>
+
+              <div className="text-xs font-extrabold tracking-tight text-teal-950 flex items-center justify-between">
+                <span>Small Hydro Projects</span>
+                <span className="text-[9px] font-bold text-teal-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
               </div>
             </div>
 
-            {/* Card 5: Municipal Solid Waste */}
+            {/* Card 5: Municipal Solid Waste - Pastel Lavender Purple */}
             <div
-              className="navo-ref-card card-gradient-msw cursor-pointer"
+              className="summary-card card-gridconn-msw cursor-pointer group"
               onClick={() => setActiveTab('municipal-waste')}
               role="button"
               tabIndex={0}
               title="Navigate to Municipal Solid Waste"
+              style={{
+                background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)',
+                borderColor: '#d8b4fe',
+                boxShadow: '0 3px 10px -2px rgba(216, 180, 254, 0.35)'
+              }}
             >
-              <div className="navo-ref-mw">
-                {mswSummary.rawMw > 0 ? formatCapacityMw(mswSummary.rawMw) : '59.79'} <span className="navo-ref-unit">MW</span>
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              
+              <div className="flex items-start justify-between gap-1.5">
+                <div>
+                  <div className="text-lg sm:text-xl font-black text-purple-950 tracking-tight leading-none font-mono">
+                    {mswSummary.rawMw > 0 ? formatCapacityMw(mswSummary.rawMw) : '59.79'}{' '}
+                    <span className="text-xs font-bold text-purple-700">MW</span>
+                  </div>
+                  <div className="text-[10px] font-semibold text-purple-800 mt-0.5">
+                    Waste to Energy
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-purple-100 text-purple-900 border-purple-300 flex items-center gap-1">
+                    <Trash2 size={10} className="text-purple-600" />
+                    <span>MSW</span>
+                  </span>
+                  <ChevronRight size={12} className="text-slate-400 group-hover:text-purple-700 group-hover:translate-x-0.5 transition-all" />
+                </div>
               </div>
-              <div className="navo-ref-label">
-                Municipal Solid Waste
+
+              <div className="my-1.5">
+                <div className="w-full bg-purple-200/70 rounded-full h-1 overflow-hidden">
+                  <div className="bg-purple-600 h-full rounded-full transition-all duration-500" style={{ width: '2%' }}></div>
+                </div>
+              </div>
+
+              <div className="text-xs font-extrabold tracking-tight text-purple-950 flex items-center justify-between">
+                <span>Municipal Solid Waste</span>
+                <span className="text-[9px] font-bold text-purple-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
               </div>
             </div>
 
-            {/* Card 6: Biomass Power Project */}
+            {/* Card 6: Biomass Power Project - Pastel Warm Vanilla Amber */}
             <div
-              className="navo-ref-card card-gradient-biomass cursor-pointer"
+              className="summary-card card-gridconn-biomass cursor-pointer group"
               onClick={() => setActiveTab('biomass')}
               role="button"
               tabIndex={0}
               title="Navigate to Biomass Power Project"
+              style={{
+                background: 'linear-gradient(135deg, #fffdf0 0%, #fef9c3 50%, #fef08a 100%)',
+                borderColor: '#fde047',
+                boxShadow: '0 3px 10px -2px rgba(254, 240, 138, 0.35)'
+              }}
             >
-              <div className="navo-ref-mw">
-                {formatCapacityMw(biomassSummary.rawMw)} <span className="navo-ref-unit">MW</span>
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              
+              <div className="flex items-start justify-between gap-1.5">
+                <div>
+                  <div className="text-lg sm:text-xl font-black text-amber-950 tracking-tight leading-none font-mono">
+                    {formatCapacityMw(biomassSummary.rawMw)}{' '}
+                    <span className="text-xs font-bold text-amber-700">MW</span>
+                  </div>
+                  <div className="text-[10px] font-semibold text-amber-800 mt-0.5">
+                    Agro & Biomass
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-amber-100 text-amber-900 border-amber-300 flex items-center gap-1">
+                    <Flame size={10} className="text-amber-600" />
+                    <span>BIOMASS</span>
+                  </span>
+                  <ChevronRight size={12} className="text-slate-400 group-hover:text-amber-700 group-hover:translate-x-0.5 transition-all" />
+                </div>
               </div>
-              <div className="navo-ref-label">
-                Biomass Power Project
+
+              <div className="my-1.5">
+                <div className="w-full bg-amber-200/70 rounded-full h-1 overflow-hidden">
+                  <div className="bg-amber-600 h-full rounded-full transition-all duration-500" style={{ width: '2.5%' }}></div>
+                </div>
+              </div>
+
+              <div className="text-xs font-extrabold tracking-tight text-amber-950 flex items-center justify-between">
+                <span>Biomass Power Project</span>
+                <span className="text-[9px] font-bold text-amber-700 opacity-0 group-hover:opacity-100 transition-opacity">Explore ➔</span>
               </div>
             </div>
 
-            {/* Card 7: Large Hydro Power Projects */}
+            {/* Card 7: Large Hydro Power Projects - Pastel Warm Peach */}
             <div
-              className="navo-ref-card card-gradient-largehydro"
+              className="summary-card card-gridconn-largehydro"
               title="Large Hydro Power Projects"
+              style={{
+                background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fed7aa 100%)',
+                borderColor: '#fed7aa',
+                boxShadow: '0 3px 10px -2px rgba(254, 215, 170, 0.35)'
+              }}
             >
-              <div className="navo-ref-mw">
-                3061 <span className="navo-ref-unit">MW</span>
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
+              
+              <div className="flex items-start justify-between gap-1.5">
+                <div>
+                  <div className="text-lg sm:text-xl font-black text-orange-950 tracking-tight leading-none font-mono">
+                    3,061{' '}
+                    <span className="text-xs font-bold text-orange-700">MW</span>
+                  </div>
+                  <div className="text-[10px] font-semibold text-orange-800 mt-0.5">
+                    7.4% RE Share
+                  </div>
+                </div>
+
+                <span className="font-black text-[9px] tracking-wider uppercase px-1.5 py-0.5 rounded-md border shrink-0 bg-orange-100 text-orange-900 border-orange-300 flex items-center gap-1">
+                  <Layers size={10} className="text-orange-600" />
+                  <span>HYDRO</span>
+                </span>
               </div>
-              <div className="navo-ref-label">
-                Large Hydro Power Projects
+
+              <div className="my-1.5">
+                <div className="w-full bg-orange-200/70 rounded-full h-1 overflow-hidden">
+                  <div className="bg-orange-600 h-full rounded-full transition-all duration-500" style={{ width: '7.4%' }}></div>
+                </div>
+              </div>
+
+              <div className="text-xs font-extrabold tracking-tight text-orange-950 flex items-center justify-between">
+                <span>Large Hydro Power Projects</span>
+                <span className="text-[9px] font-bold text-orange-700">State Dams</span>
               </div>
             </div>
           </div>
@@ -1543,11 +1825,60 @@ const Dashboard = ({ currentUser }) => {
         </div>
       )}
       <style>{`
-        /* Reference UI Cards with Attractive Modern Color Palettes */
+        /* Modern Full-Screen Summary Dashboard Grid with Grid Connected Pastel Palette */
+        .summary-view-wrapper {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .summary-full-grid {
+          display: grid;
+          grid-template-columns: repeat(1, minmax(0, 1fr));
+          gap: 10px;
+          flex: 1;
+          width: 100%;
+        }
+
+        @media (min-width: 768px) {
+          .summary-full-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .summary-full-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-rows: 1fr 1fr;
+          }
+        }
+
+        .summary-card {
+          border-radius: 14px;
+          padding: 10px 14px;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          border-width: 1px;
+          border-style: solid;
+          transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          box-sizing: border-box;
+          user-select: none;
+          height: 100%;
+        }
+
+        .summary-card.cursor-pointer:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 18px -3px rgba(15, 23, 42, 0.12) !important;
+        }
+
+        /* Backwards-compatibility for reference cards if reused */
         .navo-ref-card {
-          border: 2px solid #ffffff;
+          border: 1px solid #e2e8f0;
           box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
-          border-radius: 8px;
+          border-radius: 12px;
           padding: 16px 20px;
           min-height: 104px;
           display: flex;
@@ -1608,42 +1939,6 @@ const Dashboard = ({ currentUser }) => {
         .navo-ref-link-text:hover {
           color: #0369a1;
           text-decoration: underline;
-        }
-
-        /* Attractive, Fresh & Modern Color Gradients */
-        /* 1. Solar (Warm Sunrise Amber & Radiant Rose) */
-        .card-gradient-solar {
-          background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 35%, #fecdd3 70%, #fda4af 100%) !important;
-        }
-
-        /* 2. Wind (Crisp Electric Sky Cyan) */
-        .card-gradient-wind {
-          background: linear-gradient(135deg, #ecfeff 0%, #cffafe 35%, #a5f3fc 70%, #38bdf8 100%) !important;
-        }
-
-        /* 3. Bagasse (Lush Sugar Cane Emerald Green) */
-        .card-gradient-bagasse {
-          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 35%, #bbf7d0 70%, #4ade80 100%) !important;
-        }
-
-        /* 4. Small Hydro (Flowing Aquatic Sapphire Blue) */
-        .card-gradient-hydro {
-          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 35%, #bfdbfe 70%, #60a5fa 100%) !important;
-        }
-
-        /* 5. Municipal Solid Waste (Modern Royal Amethyst Violet) */
-        .card-gradient-msw {
-          background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 35%, #e9d5ff 70%, #c084fc 100%) !important;
-        }
-
-        /* 6. Biomass (Glowing Harvest Gold Amber) */
-        .card-gradient-biomass {
-          background: linear-gradient(135deg, #fefce8 0%, #fef9c3 35%, #fef08a 70%, #facc15 100%) !important;
-        }
-
-        /* 7. Large Hydro (Deep Oceanic Alpine Teal) */
-        .card-gradient-largehydro {
-          background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 35%, #99f6e4 70%, #2dd4bf 100%) !important;
         }
 
         /* Light Pastel Cards */
@@ -1808,7 +2103,9 @@ const Dashboard = ({ currentUser }) => {
         .meda-dashboard-wrap {
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 8px;
+          flex: 1;
+          min-height: 100%;
         }
 
         /* 1. Header Overview Bar */
@@ -1988,27 +2285,27 @@ const Dashboard = ({ currentUser }) => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 14px 20px;
-          border-radius: 16px;
+          padding: 8px 16px;
+          border-radius: 12px;
           border: 1.5px solid #a7f3d0;
           background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
-          margin-bottom: 2px;
+          margin-bottom: 0px;
         }
 
         .can-left {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
 
         .can-icon-box {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+          box-shadow: 0 3px 8px rgba(0,0,0,0.06);
           flex-shrink: 0;
         }
 
@@ -2858,196 +3155,271 @@ const Dashboard = ({ currentUser }) => {
           cursor: pointer;
         }
 
-        /* ========================================================= */
-        /* PRINTABLE REPORT SPECIFIC STYLES (Light & Pastel Theme)   */
-        /* ========================================================= */
-        .print-report-header,
-        .print-report-footer {
+        /* Hidden on screen, visible only when printing/exporting PDF */
+        .official-print-report {
           display: none;
         }
 
+        /* ========================================================= */
+        /* PRINTABLE OFFICIAL COMMISSIONING REPORT STYLES             */
+        /* Matches user screenshot exactly (media_1788451250054.png)  */
+        /* ========================================================= */
         @media print {
-          .print-report-header {
-            display: block !important;
-            margin-bottom: 20px !important;
-            padding: 16px 20px !important;
-            background: #f4fbf7 !important;
-            border: 1px solid #bbf7d0 !important;
-            border-top: 3px solid #059669 !important;
-            border-radius: 10px !important;
+          @page {
+            size: A4 portrait;
+            margin: 6mm 8mm;
           }
 
-          .prh-top {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-          }
-
-          .prh-brand {
-            display: flex !important;
-            align-items: center !important;
-            gap: 14px !important;
-          }
-
-          .prh-logo {
-            width: 50px !important;
-            height: 50px !important;
-            object-fit: contain !important;
-          }
-
-          .prh-org-title {
-            font-size: 1.15rem !important;
-            font-weight: 800 !important;
-            color: #0f172a !important;
-            margin: 0 !important;
-            letter-spacing: -0.2px !important;
-          }
-
-          .prh-org-sub {
-            font-size: 0.75rem !important;
-            color: #047857 !important;
-            font-weight: 600 !important;
-            margin: 2px 0 0 0 !important;
-          }
-
-          .prh-meta {
-            text-align: right !important;
-          }
-
-          .prh-meta-badge {
-            display: inline-block !important;
-            background: #dcfce7 !important;
-            color: #14532d !important;
-            border: 1px solid #86efac !important;
-            font-size: 0.65rem !important;
-            font-weight: 800 !important;
-            padding: 4px 10px !important;
-            border-radius: 6px !important;
-            letter-spacing: 0.5px !important;
-            margin-bottom: 4px !important;
-          }
-
-          .prh-meta-item {
-            font-size: 0.75rem !important;
-            color: #475569 !important;
-            margin: 1px 0 !important;
-          }
-
-          .prh-divider {
-            height: 1px !important;
-            background: #cbd5e1 !important;
-            margin: 12px 0 !important;
-          }
-
-          .prh-report-info {
-            display: grid !important;
-            grid-template-columns: repeat(4, 1fr) !important;
-            gap: 12px !important;
+          html, body {
             background: #ffffff !important;
-            padding: 10px 14px !important;
-            border-radius: 8px !important;
-            border: 1px solid #e2e8f0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
 
-          .prh-info-box {
-            display: flex !important;
-            flex-direction: column !important;
-            background: #f8fafc !important;
-            padding: 8px 10px !important;
-            border-radius: 6px !important;
-            border: 1px solid #f1f5f9 !important;
-          }
-
-          .prh-info-label {
-            font-size: 0.62rem !important;
-            font-weight: 800 !important;
-            color: #64748b !important;
-            letter-spacing: 0.5px !important;
-          }
-
-          .prh-info-value {
-            font-size: 0.82rem !important;
-            font-weight: 700 !important;
-            color: #0f172a !important;
-            margin-top: 2px !important;
-          }
-
-          .dashboard-top-header {
-            margin-bottom: 12px !important;
-            padding-bottom: 8px !important;
-            border-bottom: 1px dashed #e2e8f0 !important;
-          }
-
-          .category-scroller-card {
-            border: 1px solid #e2e8f0 !important;
-            padding: 8px 12px !important;
-            background: #fafafa !important;
-            box-shadow: none !important;
-          }
-
-          .category-tabs-track {
-            overflow: visible !important;
-            flex-wrap: wrap !important;
-            gap: 6px !important;
-          }
-
-          .cat-tab-pill {
+          /* Hide sidebar, top navbar, dashboard header, tabs, and all on-screen dashboard views */
+          .meda-sidebar-root,
+          .top-navbar,
+          .dashboard-top-header,
+          .category-scroller-card,
+          .category-active-notice,
+          .category-view-container,
+          .print-hide,
+          .no-print {
             display: none !important;
           }
 
-          .cat-tab-pill.active {
-            display: inline-flex !important;
-            background: #e0f2fe !important;
-            color: #0369a1 !important;
-            border: 1px solid #bae6fd !important;
-            font-weight: 700 !important;
-            border-radius: 6px !important;
-            padding: 6px 12px !important;
-          }
-
-          .navo-gradient-card,
-          .light-card,
-          .kpi-card,
-          .chart-card,
-          .master-table-card {
+          .content-white-pane {
+            padding: 0 !important;
+            margin: 0 !important;
             background: #ffffff !important;
-            border: 1px solid #cbd5e1 !important;
-            box-shadow: none !important;
+            overflow: visible !important;
+            height: auto !important;
+            border: none !important;
           }
 
-          .print-report-footer {
+          .meda-dashboard-wrap {
+            padding: 0 !important;
+            margin: 0 !important;
+            gap: 0 !important;
             display: block !important;
-            margin-top: 30px !important;
-            padding-top: 12px !important;
-            border-top: 1px solid #cbd5e1 !important;
           }
 
-          .prf-line {
-            height: 1px !important;
-            background: #e2e8f0 !important;
-            margin-bottom: 8px !important;
+          /* Display only the official commissioning report */
+          .official-print-report {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            padding: 2mm 4mm !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
 
-          .prf-content {
+          /* 1. Header Section (Centered) */
+          .report-header-section {
+            text-align: center !important;
+            margin-bottom: 20px !important;
+            padding-top: 6px !important;
+          }
+
+          .report-main-header {
+            font-size: 24px !important;
+            font-weight: 900 !important;
+            color: #0b2545 !important;
+            letter-spacing: -0.3px !important;
+            line-height: 1.25 !important;
+            text-align: center !important;
+            margin: 0 0 8px 0 !important;
+          }
+
+          .report-date {
+            font-size: 13px !important;
+            color: #475569 !important;
+            text-align: center !important;
+            margin-bottom: 14px !important;
+          }
+
+          .report-date strong {
+            color: #0f172a !important;
+            font-weight: 800 !important;
+          }
+
+          /* Dark Navy Divider Line */
+          .report-navy-divider {
+            height: 3.5px !important;
+            background: #0b2545 !important;
+            width: 100% !important;
+            margin: 12px auto 0 auto !important;
+            border-radius: 2px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* 2. Highlight Green KPI Box */
+          .report-kpi-card {
+            border: 2px solid #86efac !important;
+            background: #f0fdf4 !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+            margin: 22px 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .rkc-accent-bar {
+            height: 5px !important;
+            background: #059669 !important;
+            width: 100% !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .rkc-body {
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
-            font-size: 0.75rem !important;
-            color: #64748b !important;
+            padding: 16px 24px !important;
+          }
+
+          .rkc-title {
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            color: #059669 !important;
+            letter-spacing: 0.6px !important;
+            text-transform: uppercase !important;
+          }
+
+          .rkc-sub {
+            font-size: 12.5px !important;
             font-weight: 600 !important;
+            color: #334155 !important;
+            margin-top: 4px !important;
+          }
+
+          .rkc-metric {
+            text-align: right !important;
+          }
+
+          .rkc-number {
+            font-size: 34px !important;
+            font-weight: 900 !important;
+            color: #064e3b !important;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+            line-height: 1 !important;
+          }
+
+          .rkc-unit {
+            font-size: 19px !important;
+            font-weight: 900 !important;
+            color: #059669 !important;
+            margin-left: 6px !important;
+          }
+
+          /* 3. Data Table (3 Columns, Spacious) */
+          .report-table-wrapper {
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+            margin-bottom: 24px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .report-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 14px !important;
+          }
+
+          .report-table thead tr {
+            background: #082338 !important;
+            color: #ffffff !important;
+            font-size: 13px !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .report-table th {
+            padding: 13px 18px !important;
+            border-right: 1px solid #1e3a5f !important;
+          }
+
+          .report-table th:last-child {
+            border-right: none !important;
+          }
+
+          .th-sr { text-align: center !important; width: 12% !important; }
+          .th-tech { text-align: left !important; width: 52% !important; padding-left: 20px !important; }
+          .th-cap { text-align: right !important; width: 36% !important; padding-right: 20px !important; }
+
+          .report-table tbody tr {
+            border-bottom: 1px solid #e2e8f0 !important;
+          }
+
+          .report-table td {
+            padding: 12px 18px !important;
+            border-right: 1px solid #e2e8f0 !important;
+          }
+
+          .report-table td:last-child {
+            border-right: none !important;
+          }
+
+          .td-sr { text-align: center !important; font-size: 14px !important; font-weight: 700 !important; color: #475569 !important; }
+          .td-tech { text-align: left !important; font-size: 14.5px !important; font-weight: 800 !important; color: #0f172a !important; padding-left: 20px !important; }
+          .td-cap { text-align: right !important; font-size: 15px !important; font-weight: 900 !important; color: #0f172a !important; font-family: ui-monospace, monospace !important; padding-right: 20px !important; }
+
+          .tfoot-total-row {
+            background: #f0fdf4 !important;
+            border-top: 2.5px solid #10b981 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .tfoot-total-row td {
+            padding: 14px 18px !important;
+            border-right: 1px solid #bbf7d0 !important;
+          }
+
+          .tfoot-total-row td:last-child {
+            border-right: none !important;
+          }
+
+          .total-check {
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            color: #059669 !important;
+          }
+
+          .total-title {
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            color: #065f46 !important;
+            letter-spacing: 0.5px !important;
+            text-transform: uppercase !important;
+            padding-left: 20px !important;
+          }
+
+          .total-cap {
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            color: #064e3b !important;
+            font-family: ui-monospace, monospace !important;
+            padding-right: 20px !important;
           }
         }
       `}</style>
-
-      {/* PRINT-ONLY OFFICIAL REPORT FOOTER */}
-      <div className="print-report-footer">
-        <div className="prf-line"></div>
-        <div className="prf-content">
-          <span>Maharashtra Energy Development Agency (MEDA) • Official Executive Report</span>
-          <span>Government of Maharashtra • Energy Department</span>
-          <span>Confidential & Proprietary</span>
-        </div>
-      </div>
     </div>
   );
 };

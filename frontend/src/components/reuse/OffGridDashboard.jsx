@@ -177,14 +177,6 @@ export const OffGridDashboard = ({ isEmbedded = false }) => {
             </button>
 
             <button
-              onClick={handleExport}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-2xs transition-all active:scale-95 cursor-pointer"
-            >
-              <Download size={12} />
-              <span>Export</span>
-            </button>
-
-            <button
               onClick={() => setShowFilterDrawer(!showFilterDrawer)}
               className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border shadow-2xs transition-all cursor-pointer ${
                 showFilterDrawer || selectedAgency !== 'All' || selectedHp !== 'All'

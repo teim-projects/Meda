@@ -247,14 +247,6 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
               <RefreshCw size={12} className={isRefreshing ? 'animate-spin text-amber-600' : ''} />
               <span>Refresh</span>
             </button>
-
-            <button
-              onClick={handleExport}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-2xs transition-all active:scale-95 cursor-pointer"
-            >
-              <Download size={12} />
-              <span>Export</span>
-            </button>
           </div>
         </div>
       )}
