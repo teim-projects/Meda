@@ -34,6 +34,7 @@ import {
   Zap,
   Wind,
   Home,
+  Building2,
   Sparkles,
   FileCheck,
   X,
@@ -46,12 +47,12 @@ import { energyApi } from '../../services/energyApi';
 const ENERGY_TYPES = [
   { val: 'biomass', label: 'Biomass', icon: Flame, color: '#10b981', bg: 'rgba(16, 185, 129, 0.08)', desc: 'Organic plant & bio-energy', active: true },
   { val: 'bagasse', label: 'Bagasse', icon: Sprout, color: '#84cc16', bg: 'rgba(132, 204, 22, 0.08)', desc: 'Sugar mill sugarcane residue', active: true },
+  { val: 'govt_solarization', label: 'Govt Solarization', icon: Building2, color: '#ec4899', bg: 'rgba(236, 72, 153, 0.08)', desc: 'Govt building rooftop solarization', active: true },
   { val: 'msw', label: 'MSW (Solid Waste)', icon: Recycle, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.08)', desc: 'Municipal solid waste records', active: true },
   { val: 'shp', label: 'Small Hydro Power', icon: Droplets, color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.08)', desc: 'Small run-of-river hydro energy', active: true },
   { val: 'solar_grid', label: 'Solar Grid', icon: Sun, color: '#eab308', bg: 'rgba(234, 179, 8, 0.08)', desc: 'Utility scale grid solar systems', active: true },
   { val: 'solar_kusum', label: 'Solar Kusum', icon: Zap, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.08)', desc: 'PM-KUSUM agricultural solar', active: true },
   { val: 'wind', label: 'Wind Power', icon: Wind, color: '#6366f1', bg: 'rgba(99, 102, 241, 0.08)', desc: 'Wind turbine energy data', active: true },
-  { val: 'rooftop_solar', label: 'Rooftop Solar', icon: Home, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.08)', desc: 'Distributed solar PV systems', active: false },
 ];
 
 const Templates = () => {
@@ -230,31 +231,59 @@ const Templates = () => {
 
     try {
       const data = await energyApi.uploadExcel(selectedType, file);
-      if (data.success) {
+      if (data) {
         setUploadResult(data);
         setFile(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-        setSnackbar({
-          open: true,
-          message: 'Excel file uploaded and parsed successfully!',
-          severity: 'success'
-        });
+        
+        if (data.imported_count === 0) {
+          setErrorMsg(data.message || '0 records were imported into the database.');
+          setSnackbar({
+            open: true,
+            message: 'Upload completed, but 0 records were imported into database.',
+            severity: 'warning'
+          });
+        } else {
+          setSnackbar({
+            open: true,
+            message: data.message || `Successfully imported ${data.imported_count} records!`,
+            severity: 'success'
+          });
+        }
       }
     } catch (err) {
       console.error(err);
-      const errorMsgText = err.response?.data?.error || err.message || 'Excel upload failed.';
-      
-      if (err.response?.data?.missing_columns) {
-        setErrorMsg(`Missing columns in uploaded sheet: ${err.response.data.missing_columns.join(', ')}`);
-      } else {
-        setErrorMsg(errorMsgText);
+      const resData = err.response?.data;
+      if (resData) {
+        setUploadResult(resData);
       }
+      
+      let errorMsgText = resData?.error || resData?.detail || err.message || 'Excel upload failed.';
+      
+      if (err.response?.status === 401) {
+        errorMsgText = 'Session expired or unauthorized. Please log in again.';
+      }
+
+      if (resData?.expected_columns && resData?.provided_columns) {
+        errorMsgText += ` Expected headers: [${resData.expected_columns.join(', ')}]. Provided headers in sheet: [${resData.provided_columns.join(', ')}]`;
+      } else if (resData?.missing_columns) {
+        errorMsgText = `Missing columns in uploaded sheet: ${resData.missing_columns.join(', ')}`;
+      }
+
+      if (resData?.failed_rows && resData.failed_rows.length > 0) {
+        const rowErrDetails = resData.failed_rows.map(fr => `Row ${fr.row_number}: ${fr.error}`).join('; ');
+        errorMsgText += ` Failed row details: ${rowErrDetails}`;
+      }
+
+      setErrorMsg(errorMsgText);
 
       setSnackbar({
         open: true,
-        message: 'Failed to process Excel upload.',
+        message: err.response?.status === 401 
+          ? 'Session expired. Please log in again.' 
+          : (resData?.error || resData?.detail || 'Failed to process Excel upload. Check error details below.'),
         severity: 'error'
       });
     } finally {
@@ -346,7 +375,7 @@ const Templates = () => {
                   ACTIVE MODULES
                 </Typography>
                 <Typography variant="subtitle2" noWrap sx={{ color: '#ffffff !important', fontWeight: 800, fontSize: { xs: '0.85rem', sm: '0.98rem' }, lineHeight: 1 }}>
-                  7 / 8 Modules
+                  8 / 8 Modules
                 </Typography>
               </Box>
             </Box>

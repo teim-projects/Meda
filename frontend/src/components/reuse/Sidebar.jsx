@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/logo.png';
 import {
   Sun,
+  Home,
   Wind,
   Search,
   Bell,

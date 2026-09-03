@@ -7,6 +7,9 @@ import Accounts from './components/accounts/Accounts';
 import Templates from './components/templates/Templates';
 import ShowData from './components/templates/ShowData';
 import Settings from './components/settings/Settings';
+import OffGridDashboard from './components/reuse/OffGridDashboard';
+import RooftopDashboard from './components/reuse/RooftopDashboard';
+import GridConnectedDashboard from './components/reuse/GridConnectedDashboard';
 
 // MEDA Integration Page Imports
 import MedaLogin from './components/meda/MedaLogin';
@@ -106,6 +109,20 @@ function App() {
               </Sidebar>
             </ProtectedRoute>
           } 
+        />
+
+        {/* Navigation Shortcuts keeping all dashboard headers & category tabs active */}
+        <Route 
+          path="/off-grid" 
+          element={<Navigate to="/dashboard?tab=solar-offgrid-sum" replace />} 
+        />
+        <Route 
+          path="/rooftop" 
+          element={<Navigate to="/dashboard?tab=solar-rooftop" replace />} 
+        />
+        <Route 
+          path="/grid-connected" 
+          element={<Navigate to="/dashboard?tab=solar-grid-conn" replace />} 
         />
 
         {/* Protected Accounts Route (Staff & Category Management) */}

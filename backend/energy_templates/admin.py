@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Biomass, Bagasse, MSW, SHP, SolarGrid, SolarKusum, Wind
+from .models import Biomass, Bagasse, MSW, SHP, GovtSolarization, SolarGrid, SolarKusum, Wind
 
 @admin.register(Biomass)
 class BiomassAdmin(admin.ModelAdmin):
-    list_display = ('id', 'source', 'name_of_developer', 'capacity_mw', 'district', 'commissioned_date')
-    search_fields = ('name_of_developer', 'investor_name_and_address', 'district', 'taluka', 'village')
+    list_display = ('id', 'name_of_developer', 'site_name', 'source', 'taluka', 'village', 'investor_name_and_address', 'district', 'capacity_mw', 'commissioned_date')
+    search_fields = ('name_of_developer', 'site_name', 'investor_name_and_address', 'district', 'taluka', 'village')
     list_filter = ('source', 'district')
 
 
@@ -17,34 +17,42 @@ class BagasseAdmin(admin.ModelAdmin):
 
 @admin.register(MSW)
 class MSWAdmin(admin.ModelAdmin):
-    list_display = ('id', 'source', 'name_of_developer', 'capacity_mw', 'district', 'commissioned_date', 'grid_connected_offgrid')
-    search_fields = ('name_of_developer', 'investor_name_and_address', 'district', 'taluka', 'village')
-    list_filter = ('source', 'district', 'grid_connected_offgrid')
+    list_display = ('id', 'source', 'name_of_developer', 'capacity_mw', 'district', 'commissioned_date', 'grid_type')
+    search_fields = ('name_of_developer', 'investor_name_and_address', 'district', 'taluka', 'village', 'grid_type')
+    list_filter = ('source', 'district', 'grid_type')
 
 
 @admin.register(SHP)
 class SHPAdmin(admin.ModelAdmin):
-    list_display = ('id', 'completed_hydro_electric_projects', 'installed_capacity_mw', 'comissioning_year', 'date_of_commissioning')
-    search_fields = ('completed_hydro_electric_projects', 'village_taluka')
-    list_filter = ('comissioning_year',)
+    list_display = ('id', 'completed_hydro_electric_projects', 'date_of_commissioning', 'region', 'village_taluka', 'district', 'installed_capacity_mw', 'comissioning_year')
+    search_fields = ('completed_hydro_electric_projects', 'village_taluka', 'district', 'region')
+    list_filter = ('region', 'district', 'comissioning_year')
+
+
+@admin.register(GovtSolarization)
+class GovtSolarizationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'department', 'division', 'district', 'taluka', 'building_name', 'capacity_kw', 'capacity_mw')
+    search_fields = ('department', 'division', 'district', 'taluka', 'building_name', 'consumer_no')
+    list_filter = ('department', 'district', 'ownership_type')
+
 
 
 @admin.register(SolarGrid)
 class SolarGridAdmin(admin.ModelAdmin):
-    list_display = ('id', 'source', 'developer_name', 'commissioned_capacity_mw', 'project_location', 'commission_date', 'district')
+    list_display = ('id', 'developer_name', 'project_location', 'district', 'commissioned_capacity_mw', 'commission_date')
     search_fields = ('developer_name', 'project_location', 'district')
-    list_filter = ('source', 'district', 'power_sale_mode')
+    list_filter = ('district',)
 
 
 @admin.register(SolarKusum)
 class SolarKusumAdmin(admin.ModelAdmin):
-    list_display = ('id', 'source', 'name_of_successful_bidder', 'solar_capacity_as_per_ppa_mw', 'solar_capacity_installed_mw', 'commissioning_date', 'district')
-    search_fields = ('name_of_successful_bidder', 'district', 'taluka', 'village', 'sub_station_code')
-    list_filter = ('source', 'region', 'zone', 'circle')
+    list_display = ('id', 'type', 'developer_name', 'project_location', 'commissioned_capacity_mw', 'commission_date', 'district')
+    search_fields = ('developer_name', 'project_location', 'district', 'type')
+    list_filter = ('type', 'district')
 
 
 @admin.register(Wind)
 class WindAdmin(admin.ModelAdmin):
-    list_display = ('id', 'source', 'gut_no', 'village', 'taluka', 'district', 'capacity_mw', 'date_of_commissioned')
-    search_fields = ('gut_no', 'village', 'taluka', 'district', 'site_name')
+    list_display = ('id', 'developer', 'investor', 'capacity_mw', 'standardized_date', 'date_of_commissioned', 'gut_no', 'taluka', 'village', 'district', 'site_name', 'source', 'year')
+    search_fields = ('developer', 'investor', 'gut_no', 'village', 'taluka', 'district', 'site_name')
     list_filter = ('source', 'district', 'year')

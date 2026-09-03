@@ -37,8 +37,12 @@ medaAxios.interceptors.request.use(
   (config) => {
     const token = getToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log('Token attached to request:', token.substring(0, 20) + '...'); // Debug log
+      if (config.headers && typeof config.headers.set === 'function') {
+        config.headers.set('Authorization', `Bearer ${token}`);
+      } else {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     } else {
       console.warn('No token found in storage');
     }
@@ -47,15 +51,41 @@ medaAxios.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Catches errors and formats clear error messages
+// Response Interceptor: Catches 401 and attempts token refresh
 medaAxios.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      console.warn('Django Authentication Required or Token Expired:', error.response.data);
-      
-      // Optional: Redirect to login if token is invalid
-      // window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('refresh') || sessionStorage.getItem('refresh');
+
+      if (refreshToken) {
+        try {
+          const res = await axios.post(`${API_BASE_URL}/api/accounts/token/refresh/`, {
+            refresh: refreshToken,
+          });
+
+          if (res.data && res.data.access) {
+            const newAccess = res.data.access;
+            localStorage.setItem('token', newAccess);
+            if (res.data.refresh) {
+              localStorage.setItem('refresh', res.data.refresh);
+            }
+
+            if (originalRequest.headers && typeof originalRequest.headers.set === 'function') {
+              originalRequest.headers.set('Authorization', `Bearer ${newAccess}`);
+            } else {
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+            }
+
+            return medaAxios(originalRequest);
+          }
+        } catch (refreshErr) {
+          console.warn('Token refresh failed for medaAxios:', refreshErr);
+        }
+      }
     }
     return Promise.reject(error);
   }
