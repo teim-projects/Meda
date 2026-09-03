@@ -48,8 +48,8 @@ export const MswDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('msw');
       if (res && res.success) {
-        setTotalProjects(res.total_projects || 32);
-        setTotalCapacityMw(res.total_capacity_mw || 59.79);
+        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 32);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 59.79);
         if (res.districts && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
@@ -82,29 +82,30 @@ export const MswDashboard = () => {
 
   const activeBox = inspectedDistrict || districts[0] || DEFAULT_DISTRICTS[0];
 
-  // Height percentage mapping (0 to 18 MW scale matching Screenshot 1)
+  // Dynamic max capacity across districts for Bar Chart Y-axis scale
+  const maxDistrictMw = Math.max(...districts.map(d => Number(d.capacity_mw) || 0), 1);
   const getBarHeightPct = (mw) => {
-    const maxVal = 18;
-    return Math.min(Math.max((mw / maxVal) * 100, 6), 98);
+    if (!mw || mw <= 0) return 4;
+    return Math.min(Math.max((mw / maxDistrictMw) * 94, 6), 98);
   };
 
   // Simplified pie chart slices
   const topSegmentsCount = 6;
   const topDistricts = districts.slice(0, topSegmentsCount);
   const otherDistricts = districts.slice(topSegmentsCount);
-  const otherMw = otherDistricts.reduce((acc, d) => acc + (d.capacity_mw || 0), 0);
+  const otherMw = otherDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
   const otherCount = otherDistricts.reduce((acc, d) => acc + d.count, 0);
   const otherPct = otherDistricts.reduce((acc, d) => acc + (d.percentage || 0), 0);
 
   const simplifiedPieItems = [
     ...topDistricts,
-    {
+    ...(otherDistricts.length > 0 ? [{
       district: `Other ${otherDistricts.length} Districts`,
       count: otherCount,
       capacity_mw: Number(otherMw.toFixed(2)),
       percentage: Number(otherPct.toFixed(2)),
       color: '#64748b'
-    }
+    }] : [])
   ];
 
   const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (d.percentage || 0), 0) || 100;
@@ -137,14 +138,14 @@ export const MswDashboard = () => {
 
   const currentCenterDisplay = activePieHover || {
     title: 'Total Installed',
-    mw: `${Number(totalCapacityMw).toFixed(2).replace(/\.00$/, '')} MW`,
-    sub: `${totalProjects} Projects`
+    mw: `${Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW`,
+    sub: `${Number(totalProjects).toLocaleString('en-IN')} Projects`
   };
 
-  // Timeline SVG calculations (Years 2018 to 2026, Y: 0 to 65 MW)
-  const minYear = timeline[0]?.year || 2018;
-  const maxYear = timeline[timeline.length - 1]?.year || 2026;
-  const maxTimelineMw = 65;
+  // Timeline SVG calculations dynamically scaled to actual data
+  const minYear = timeline[0]?.year || 2000;
+  const maxYear = timeline[timeline.length - 1]?.year || 2024;
+  const maxTimelineMw = Math.max(...timeline.map((t) => Number(t.cumulative_mw) || 0), 10) * 1.05;
 
   const getTimelineCoords = (pt) => {
     const x = 40 + ((pt.year - minYear) / Math.max(maxYear - minYear, 1)) * 430;
@@ -240,10 +241,10 @@ export const MswDashboard = () => {
               </div>
 
               <div className="w-8 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
-                <span className="relative -top-2">20</span>
-                <span>15</span>
-                <span>10</span>
-                <span>5</span>
+                <span className="relative -top-2">{Math.round(maxDistrictMw)}</span>
+                <span>{Math.round(maxDistrictMw * 0.75)}</span>
+                <span>{Math.round(maxDistrictMw * 0.5)}</span>
+                <span>{Math.round(maxDistrictMw * 0.25)}</span>
                 <span className="relative top-1">0</span>
               </div>
 
@@ -505,7 +506,7 @@ export const MswDashboard = () => {
           <div className="flex items-center gap-2">
             <div className="bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
-              <span>59.79 MW Commissioned</span>
+              <span>{Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW Commissioned</span>
             </div>
           </div>
         </div>

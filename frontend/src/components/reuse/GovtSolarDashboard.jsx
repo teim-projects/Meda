@@ -87,8 +87,8 @@ export const GovtSolarDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('govt-solarization');
       if (res && res.success) {
-        setTotalProjects(res.total_projects || 6614);
-        setTotalCapacityMw(res.total_capacity_mw || 61.00);
+        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 6617);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 61.4);
         if (res.districts && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
@@ -128,10 +128,11 @@ export const GovtSolarDashboard = () => {
   }, [districts]);
 
   // Logarithmic height mapping for Bar Chart
+  const maxCount = Math.max(...districts.map(d => Number(d.count) || 0), 1);
+  const maxLog = Math.log10(maxCount) * 1.05;
   const getLogBarHeightPct = (count) => {
     if (!count || count <= 0) return 3;
     const logVal = Math.log10(count);
-    const maxLog = 3.16;
     const pct = (logVal / maxLog) * 100;
     return Math.min(Math.max(pct, 4), 98);
   };
@@ -141,19 +142,19 @@ export const GovtSolarDashboard = () => {
   const topDistricts = districts.slice(0, topSegmentsCount);
   const otherDistricts = districts.slice(topSegmentsCount);
   const otherCount = otherDistricts.reduce((acc, d) => acc + d.count, 0);
-  const otherMw = otherDistricts.reduce((acc, d) => acc + (d.capacity_mw || 0), 0);
+  const otherMw = otherDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
   const otherPct = otherDistricts.reduce((acc, d) => acc + (d.percentage || 0), 0);
 
   const simplifiedPieItems = [
     ...topDistricts,
-    {
-      district: 'Other 29 Districts',
+    ...(otherDistricts.length > 0 ? [{
+      district: `Other ${otherDistricts.length} Districts`,
       count: otherCount,
       capacity_mw: Number(otherMw.toFixed(2)),
       percentage: Number(otherPct.toFixed(2)),
       color: '#64748b',
       isOthers: true
-    }
+    }] : [])
   ];
 
   const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (d.percentage || 0), 0) || 100;
@@ -196,8 +197,8 @@ export const GovtSolarDashboard = () => {
   // Active display in pie chart center (either hovered slice or state total)
   const currentCenterDisplay = activePieHover || {
     title: 'Total Installed',
-    mw: `${Number(totalCapacityMw || 61.00).toFixed(2).replace(/\.00$/, '')} MW`,
-    sub: `${Number(totalProjects || 6614).toLocaleString()} Buildings`
+    mw: `${Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW`,
+    sub: `${Number(totalProjects).toLocaleString('en-IN')} Buildings`
   };
 
   // The active inspected district for the stationary box

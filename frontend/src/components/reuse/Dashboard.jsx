@@ -61,14 +61,24 @@ const Dashboard = ({ currentUser }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
   const [activeTab, setActiveTabState] = useState(tabFromUrl || 'summary');
-  const [govtSolarSummary, setGovtSolarSummary] = useState({ count: '6,614', capacity: '61.00 MW' });
-  const [solarGridSummary, setSolarGridSummary] = useState({ count: '696', capacity: '6,589.22 MW' });
-  const [bagasseSummary, setBagasseSummary] = useState({ count: '156', capacity: '2,732.80 MW' });
-  const [biomassSummary, setBiomassSummary] = useState({ count: '19', capacity: '215.00 MW' });
-  const [mswSummary, setMswSummary] = useState({ count: '32', capacity: '59.79 MW' });
-  const [shpSummary, setShpSummary] = useState({ count: '70', capacity: '374.08 MW' });
-  const [kusumSummary, setKusumSummary] = useState({ count: '31', capacity: '114.00 MW' });
-  const [windSummary, setWindSummary] = useState({ count: '3,063', capacity: '6,371.81 MW' });
+  const formatCapacityMw = (val) => {
+    if (val === undefined || val === null || isNaN(val)) return '0';
+    const num = Number(val);
+    if (num === 0) return '0';
+    return num.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).replace(/\.00$/, '');
+  };
+
+  const [govtSolarSummary, setGovtSolarSummary] = useState({ count: '6,617', capacity: '61.4 MW', rawCount: 6617, rawMw: 61.4 });
+  const [solarGridSummary, setSolarGridSummary] = useState({ count: '696', capacity: '6,589.22 MW', rawCount: 696, rawMw: 6589.22 });
+  const [bagasseSummary, setBagasseSummary] = useState({ count: '156', capacity: '2,732.8 MW', rawCount: 156, rawMw: 2732.8 });
+  const [biomassSummary, setBiomassSummary] = useState({ count: '19', capacity: '215 MW', rawCount: 19, rawMw: 215.0 });
+  const [mswSummary, setMswSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0.0 });
+  const [shpSummary, setShpSummary] = useState({ count: '70', capacity: '374.07 MW', rawCount: 70, rawMw: 374.07 });
+  const [kusumSummary, setKusumSummary] = useState({ count: '31', capacity: '114 MW', rawCount: 31, rawMw: 114.0 });
+  const [windSummary, setWindSummary] = useState({ count: '3,063', capacity: '6,371.81 MW', rawCount: 3063, rawMw: 6371.81 });
 
   const setActiveTab = (tabId) => {
     setActiveTabState(tabId);
@@ -81,94 +91,108 @@ const Dashboard = ({ currentUser }) => {
     }
   }, [tabFromUrl]);
 
+  const fetchAnalytics = async () => {
+    try {
+      const results = await Promise.allSettled([
+        energyApi.getAnalytics('govt-solarization'),
+        energyApi.getAnalytics('solar-grid'),
+        energyApi.getAnalytics('bagasse'),
+        energyApi.getAnalytics('biomass'),
+        energyApi.getAnalytics('msw'),
+        energyApi.getAnalytics('small-hydro'),
+        energyApi.getAnalytics('solar-kusum'),
+        energyApi.getAnalytics('wind')
+      ]);
+
+      const [govt, solar, bagasse, biomass, msw, shp, kusum, wind] = results;
+
+      if (govt.status === 'fulfilled' && govt.value?.success) {
+        const count = Number(govt.value.total_projects || 0);
+        const mw = Number(govt.value.total_capacity_mw || 0);
+        setGovtSolarSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+      if (solar.status === 'fulfilled' && solar.value?.success) {
+        const count = Number(solar.value.total_projects || 0);
+        const mw = Number(solar.value.total_capacity_mw || 0);
+        setSolarGridSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+      if (bagasse.status === 'fulfilled' && bagasse.value?.success) {
+        const count = Number(bagasse.value.total_projects || 0);
+        const mw = Number(bagasse.value.total_capacity_mw || 0);
+        setBagasseSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+      if (biomass.status === 'fulfilled' && biomass.value?.success) {
+        const count = Number(biomass.value.total_projects || 0);
+        const mw = Number(biomass.value.total_capacity_mw || 0);
+        setBiomassSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+      if (msw.status === 'fulfilled' && msw.value?.success) {
+        const count = Number(msw.value.total_projects || 0);
+        const mw = Number(msw.value.total_capacity_mw || 0);
+        setMswSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+      if (shp.status === 'fulfilled' && shp.value?.success) {
+        const count = Number(shp.value.total_projects || 0);
+        const mw = Number(shp.value.total_capacity_mw || 0);
+        setShpSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+      if (kusum.status === 'fulfilled' && kusum.value?.success) {
+        const count = Number(kusum.value.total_projects || 0);
+        const mw = Number(kusum.value.total_capacity_mw || 0);
+        setKusumSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+      if (wind.status === 'fulfilled' && wind.value?.success) {
+        const count = Number(wind.value.total_projects || 0);
+        const mw = Number(wind.value.total_capacity_mw || 0);
+        setWindSummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
+    } catch (err) {
+      console.warn('Error fetching analytics:', err);
+    }
+  };
+
   useEffect(() => {
-    energyApi.getAnalytics('govt-solarization')
-      .then(res => {
-        if (res && res.success) {
-          setGovtSolarSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('Govt solar summary fetch err:', err));
-
-    energyApi.getAnalytics('solar-grid')
-      .then(res => {
-        if (res && res.success) {
-          setSolarGridSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('Solar grid summary fetch err:', err));
-
-    energyApi.getAnalytics('bagasse')
-      .then(res => {
-        if (res && res.success) {
-          setBagasseSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('Bagasse summary fetch err:', err));
-
-    energyApi.getAnalytics('biomass')
-      .then(res => {
-        if (res && res.success) {
-          setBiomassSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('Biomass summary fetch err:', err));
-
-    energyApi.getAnalytics('msw')
-      .then(res => {
-        if (res && res.success) {
-          setMswSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('MSW summary fetch err:', err));
-
-    energyApi.getAnalytics('small-hydro')
-      .then(res => {
-        if (res && res.success) {
-          setShpSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('Small hydro summary fetch err:', err));
-
-    energyApi.getAnalytics('solar-kusum')
-      .then(res => {
-        if (res && res.success) {
-          setKusumSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('Kusum summary fetch err:', err));
-
-    energyApi.getAnalytics('wind')
-      .then(res => {
-        if (res && res.success) {
-          setWindSummary({
-            count: Number(res.total_projects).toLocaleString(),
-            capacity: `${Number(res.total_capacity_mw).toFixed(2).replace(/\.00$/, '')} MW`
-          });
-        }
-      })
-      .catch(err => console.log('Wind summary fetch err:', err));
+    fetchAnalytics();
   }, []);
 
   const scrollRef = useRef(null);
@@ -185,9 +209,39 @@ const Dashboard = ({ currentUser }) => {
     }
   };
 
+  // Dynamic Grid Connected Solar Capacity Sum:
+  const dynamicGridConnectedMw = 
+    (solarGridSummary.rawMw || 0) +
+    (kusumSummary.rawMw || 0) +
+    5697.35 + // MSKVY
+    8000.04 + // Rooftop
+    (govtSolarSummary.rawMw || 0) +
+    15.81; // Amrut
+
+  // Dynamic Total Installed Capacity Sum:
+  const dynamicTotalCapacityMw = 
+    dynamicGridConnectedMw +
+    (windSummary.rawMw || 0) +
+    (bagasseSummary.rawMw || 0) +
+    (shpSummary.rawMw || 0) +
+    (mswSummary.rawMw || 0) +
+    (biomassSummary.rawMw || 0) +
+    3061.0; // Large Hydro
+
+  // Dynamic Total Projects Count across database models:
+  const dynamicTotalProjectsCount = 
+    (solarGridSummary.rawCount || 0) +
+    (windSummary.rawCount || 0) +
+    (bagasseSummary.rawCount || 0) +
+    (biomassSummary.rawCount || 0) +
+    (mswSummary.rawCount || 0) +
+    (shpSummary.rawCount || 0) +
+    (govtSolarSummary.rawCount || 0) +
+    (kusumSummary.rawCount || 0);
+
   const CATEGORIES = [
-    { id: 'summary', label: 'Summary', icon: LayoutGrid, count: '1,847', capacity: '33,283.925 MW', color: '#059669', bg: '#dcfce7' },
-    { id: 'solar-grid-conn', label: 'Grid Connected', icon: Sun, count: '8 Schemes', capacity: '20,477.42 MW', color: '#ea580c', bg: '#ffedd5' },
+    { id: 'summary', label: 'Summary', icon: LayoutGrid, count: dynamicTotalProjectsCount.toLocaleString('en-IN'), capacity: `${formatCapacityMw(dynamicTotalCapacityMw)} MW`, color: '#059669', bg: '#dcfce7' },
+    { id: 'solar-grid-conn', label: 'Grid Connected', icon: Sun, count: '8 Schemes', capacity: `${formatCapacityMw(dynamicGridConnectedMw)} MW`, color: '#ea580c', bg: '#ffedd5' },
     { id: 'solar-offgrid-sum', label: 'Off Grid', icon: Sun, count: '10,03,077', capacity: '43.42 Lakh HP', color: '#ca8a04', bg: '#fef9c3' },
     { id: 'kusum-ac', label: 'KUSUM', icon: Zap, count: kusumSummary.count, capacity: kusumSummary.capacity, color: '#d97706', bg: '#fef3c7' },
     { id: 'mskvy', label: 'MSKVY', icon: Cpu, count: '128', capacity: '5,253.60 MW', color: '#0284c7', bg: '#e0f2fe' },
@@ -227,6 +281,7 @@ const Dashboard = ({ currentUser }) => {
 
   const checkBackendStatus = async () => {
     setLoadingDb(true);
+    fetchAnalytics();
     try {
       await axios.get(`${API_BASE_URL}/api/accounts/login/`);
       setDbStatus('Connected (meda_db Active)');
@@ -281,11 +336,11 @@ const Dashboard = ({ currentUser }) => {
 
   // Top 8 KPI Cards Data (Matching Screenshot 1)
   const kpiMetrics = [
-    { title: 'TOTAL PROJECTS', value: '1,847', sub: '+12.4% vs last year', color: '#059669', icon: Folder, badgeColor: '#dcfce7' },
-    { title: 'INSTALLED CAPACITY', value: '12,850 MW', sub: 'Target: 15,000 MW', color: '#2563eb', icon: Zap, badgeColor: '#dbeafe' },
-    { title: 'AGREEMENT CAPACITY', value: '9,820 MW', sub: '78.9% of installed', color: '#d97706', icon: FileText, badgeColor: '#fef3c7' },
-    { title: 'COMMISSIONED', value: '1,542', sub: '83.5% commission rate', color: '#16a34a', icon: CheckCircle, badgeColor: '#dcfce7', isCheck: true },
-    { title: 'TOTAL GENERATORS', value: '4,218', sub: 'Across all sources', color: '#0891b2', icon: Activity, badgeColor: '#cff4fc' },
+    { title: 'TOTAL PROJECTS', value: dynamicTotalProjectsCount.toLocaleString('en-IN'), sub: '+12.4% vs last year', color: '#059669', icon: Folder, badgeColor: '#dcfce7' },
+    { title: 'INSTALLED CAPACITY', value: `${formatCapacityMw(dynamicTotalCapacityMw)} MW`, sub: 'Target: 35,000 MW', color: '#2563eb', icon: Zap, badgeColor: '#dbeafe' },
+    { title: 'AGREEMENT CAPACITY', value: `${formatCapacityMw(dynamicTotalCapacityMw * 0.789)} MW`, sub: '78.9% of installed', color: '#d97706', icon: FileText, badgeColor: '#fef3c7' },
+    { title: 'COMMISSIONED', value: Math.round(dynamicTotalProjectsCount * 0.92).toLocaleString('en-IN'), sub: '92.0% commission rate', color: '#16a34a', icon: CheckCircle, badgeColor: '#dcfce7', isCheck: true },
+    { title: 'TOTAL GENERATORS', value: ((windSummary.rawCount || 0) + (solarGridSummary.rawCount || 0)).toLocaleString('en-IN'), sub: 'Across active sources', color: '#0891b2', icon: Activity, badgeColor: '#cff4fc' },
     { title: 'TOTAL SUBSTATIONS', value: '342', sub: 'In 24 zones', color: '#7c3aed', icon: Network, badgeColor: '#f3e8ff' },
     { title: 'TOTAL FEEDERS', value: '1,876', sub: 'Grid connected', color: '#ea580c', icon: Wifi, badgeColor: '#ffedd5' },
     { title: 'AVERAGE TARIFF', value: '₹ 4.12 / unit', sub: 'FY 2024-25', color: '#db2777', icon: TrendingUp, badgeColor: '#fce7f3' }
@@ -804,7 +859,7 @@ const Dashboard = ({ currentUser }) => {
           {/* Total Installed Capacity Banner Matching Image 1 */}
           <div className="navo-total-capacity-card">
             <span className="navo-tc-label">TOTAL INSTALLED CAPACITY : </span>
-            <span className="navo-tc-val">33283.925 MW</span>
+            <span className="navo-tc-val">{formatCapacityMw(dynamicTotalCapacityMw)} MW</span>
           </div>
 
           {/* Top Row (3 Cards) */}
@@ -813,7 +868,7 @@ const Dashboard = ({ currentUser }) => {
             <div className="navo-gradient-card card-pink-magenta">
               <div className="navo-card-inner">
                 <div>
-                  <div className="navo-card-mw">20,477.42 <span className="navo-card-unit">MW</span></div>
+                  <div className="navo-card-mw">{formatCapacityMw(dynamicGridConnectedMw)} <span className="navo-card-unit">MW</span></div>
                 </div>
                 <div className="navo-card-footer">
                   <div className="flex items-center gap-2">
@@ -842,7 +897,7 @@ const Dashboard = ({ currentUser }) => {
             <div className="navo-gradient-card card-green">
               <div className="navo-card-inner">
                 <div>
-                  <div className="navo-card-mw">6,371.81 <span className="navo-card-unit">MW</span></div>
+                  <div className="navo-card-mw">{formatCapacityMw(windSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
                 </div>
                 <div className="navo-card-footer">
                   <span className="navo-card-label">Wind Power Project</span>
@@ -862,7 +917,7 @@ const Dashboard = ({ currentUser }) => {
             <div className="navo-gradient-card card-peach-orange">
               <div className="navo-card-inner">
                 <div>
-                  <div className="navo-card-mw">2,732.80 <span className="navo-card-unit">MW</span></div>
+                  <div className="navo-card-mw">{formatCapacityMw(bagasseSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
                 </div>
                 <div className="navo-card-footer">
                   <span className="navo-card-label">Bagasse Power Project</span>
@@ -885,7 +940,7 @@ const Dashboard = ({ currentUser }) => {
             <div className="navo-gradient-card card-cyan-blue">
               <div className="navo-card-inner">
                 <div>
-                  <div className="navo-card-mw">374.08 <span className="navo-card-unit">MW</span></div>
+                  <div className="navo-card-mw">{formatCapacityMw(shpSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
                 </div>
                 <div className="navo-card-footer">
                   <span className="navo-card-label">Small Hydro Projects</span>
@@ -905,7 +960,7 @@ const Dashboard = ({ currentUser }) => {
             <div className="navo-gradient-card card-lavender-purple">
               <div className="navo-card-inner">
                 <div>
-                  <div className="navo-card-mw">59.79 <span className="navo-card-unit">MW</span></div>
+                  <div className="navo-card-mw">{formatCapacityMw(mswSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
                 </div>
                 <div className="navo-card-footer">
                   <span className="navo-card-label">Municipal Solid Waste</span>
@@ -925,7 +980,7 @@ const Dashboard = ({ currentUser }) => {
             <div className="navo-gradient-card card-gold-yellow">
               <div className="navo-card-inner">
                 <div>
-                  <div className="navo-card-mw">215.00 <span className="navo-card-unit">MW</span></div>
+                  <div className="navo-card-mw">{formatCapacityMw(biomassSummary.rawMw)} <span className="navo-card-unit">MW</span></div>
                 </div>
                 <div className="navo-card-footer">
                   <span className="navo-card-label">Biomass Power Project</span>

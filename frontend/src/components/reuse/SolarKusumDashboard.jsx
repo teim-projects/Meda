@@ -46,20 +46,22 @@ export const SolarKusumDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('solar-kusum');
       if (res && res.success) {
-        setTotalProjects(res.total_projects || 31);
-        setTotalCapacityMw(res.total_capacity_mw || 114.00);
+        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 31);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 114.00);
         
         if (res.types) {
-          if (res.types['KUSUM A']) {
+          const typeA = res.types['KUSUM A'] || Object.values(res.types).find(t => t.type && t.type.toUpperCase().includes('A'));
+          const typeC = res.types['KUSUM C'] || Object.values(res.types).find(t => t.type && t.type.toUpperCase().includes('C'));
+          if (typeA) {
             setKusumA({
-              mw: res.types['KUSUM A'].capacity_mw || 11.00,
-              count: res.types['KUSUM A'].count || 6
+              mw: typeA.capacity_mw !== undefined ? typeA.capacity_mw : 11.00,
+              count: typeA.count !== undefined ? typeA.count : 6
             });
           }
-          if (res.types['KUSUM C']) {
+          if (typeC) {
             setKusumC({
-              mw: res.types['KUSUM C'].capacity_mw || 103.00,
-              count: res.types['KUSUM C'].count || 25
+              mw: typeC.capacity_mw !== undefined ? typeC.capacity_mw : 103.00,
+              count: typeC.count !== undefined ? typeC.count : 25
             });
           }
         }
@@ -96,29 +98,30 @@ export const SolarKusumDashboard = () => {
 
   const activeBox = inspectedDistrict || districts[0] || DEFAULT_DISTRICTS[0];
 
-  // Bar chart height mapping (0 to 55 MW scale)
+  // Dynamic max capacity across districts for Bar Chart Y-axis scale
+  const maxDistrictMw = Math.max(...districts.map(d => Number(d.capacity_mw) || 0), 1);
   const getBarHeightPct = (mw) => {
-    const maxVal = 55;
-    return Math.min(Math.max((mw / maxVal) * 100, 5), 98);
+    if (!mw || mw <= 0) return 4;
+    return Math.min(Math.max((mw / maxDistrictMw) * 94, 5), 98);
   };
 
   // Simplified pie chart slices
   const topSegmentsCount = 6;
   const topDistricts = districts.slice(0, topSegmentsCount);
   const otherDistricts = districts.slice(topSegmentsCount);
-  const otherMw = otherDistricts.reduce((acc, d) => acc + (d.capacity_mw || 0), 0);
+  const otherMw = otherDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
   const otherCount = otherDistricts.reduce((acc, d) => acc + d.count, 0);
   const otherPct = otherDistricts.reduce((acc, d) => acc + (d.percentage || 0), 0);
 
   const simplifiedPieItems = [
     ...topDistricts,
-    {
+    ...(otherDistricts.length > 0 ? [{
       district: `Other ${otherDistricts.length} Districts`,
       count: otherCount,
       capacity_mw: Number(otherMw.toFixed(2)),
       percentage: Number(otherPct.toFixed(2)),
       color: '#64748b'
-    }
+    }] : [])
   ];
 
   const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (d.percentage || 0), 0) || 100;
@@ -151,14 +154,14 @@ export const SolarKusumDashboard = () => {
 
   const currentCenterDisplay = activePieHover || {
     title: 'Total KUSUM',
-    mw: `${Number(totalCapacityMw).toFixed(2).replace(/\.00$/, '')} MW`,
-    sub: `${totalProjects} Projects`
+    mw: `${Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW`,
+    sub: `${Number(totalProjects).toLocaleString('en-IN')} Projects`
   };
 
-  // Timeline SVG calculations (Years 2023 to 2026, Y: 0 to 125 MW)
-  const minYear = timeline[0]?.year || 2023;
+  // Timeline SVG calculations dynamically scaled to actual data
+  const minYear = timeline[0]?.year || 2021;
   const maxYear = timeline[timeline.length - 1]?.year || 2026;
-  const maxTimelineMw = 125;
+  const maxTimelineMw = Math.max(...timeline.map((t) => Number(t.cumulative_mw) || 0), 10) * 1.05;
 
   const getTimelineCoords = (pt) => {
     const x = 40 + ((pt.year - minYear) / Math.max(maxYear - minYear, 1)) * 430;
@@ -276,10 +279,10 @@ export const SolarKusumDashboard = () => {
               </div>
 
               <div className="w-8 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
-                <span className="relative -top-2">50</span>
-                <span>35</span>
-                <span>20</span>
-                <span>10</span>
+                <span className="relative -top-2">{Math.round(maxDistrictMw)}</span>
+                <span>{Math.round(maxDistrictMw * 0.75)}</span>
+                <span>{Math.round(maxDistrictMw * 0.5)}</span>
+                <span>{Math.round(maxDistrictMw * 0.25)}</span>
                 <span className="relative top-1">0</span>
               </div>
 
@@ -544,7 +547,7 @@ export const SolarKusumDashboard = () => {
           <div className="flex items-center gap-2">
             <div className="bg-amber-50 text-amber-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
-              <span>114 MW Combined</span>
+              <span>{Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW Combined</span>
             </div>
           </div>
         </div>

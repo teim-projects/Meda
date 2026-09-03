@@ -100,6 +100,7 @@ class GovtSolarization(models.Model):
 
 
 class SolarGrid(models.Model):
+    source = models.CharField(max_length=255, blank=True, default='Solar')
     developer_name = models.CharField(max_length=255, blank=True, default='')
     project_location = models.CharField(max_length=255, blank=True, default='')
     district = models.CharField(max_length=255, blank=True, default='')

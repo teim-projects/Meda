@@ -51,8 +51,8 @@ export const SmallHydroDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('small-hydro');
       if (res && res.success) {
-        setTotalProjects(res.total_projects || 70);
-        setTotalCapacityMw(res.total_capacity_mw || 374.08);
+        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 70);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 374.08);
         if (res.districts && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
@@ -86,10 +86,11 @@ export const SmallHydroDashboard = () => {
   const activeBox = inspectedDistrict || districts[0] || DEFAULT_DISTRICTS[0];
 
   // Logarithmic height mapping (ticks 1, 10, 100)
+  const maxDistrictMw = Math.max(...districts.map(d => Number(d.capacity_mw) || 0), 1);
+  const maxLog = Math.log10(maxDistrictMw) * 1.05;
   const getLogBarHeightPct = (mw) => {
     if (!mw || mw <= 0) return 4;
     const logVal = Math.log10(mw);
-    const maxLog = 2.05; // log10(80.7) = 1.90
     const pct = (logVal / maxLog) * 100;
     return Math.min(Math.max(pct, 6), 98);
   };
@@ -98,19 +99,19 @@ export const SmallHydroDashboard = () => {
   const topSegmentsCount = 7;
   const topDistricts = districts.slice(0, topSegmentsCount);
   const otherDistricts = districts.slice(topSegmentsCount);
-  const otherMw = otherDistricts.reduce((acc, d) => acc + (d.capacity_mw || 0), 0);
+  const otherMw = otherDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
   const otherCount = otherDistricts.reduce((acc, d) => acc + d.count, 0);
   const otherPct = otherDistricts.reduce((acc, d) => acc + (d.percentage || 0), 0);
 
   const simplifiedPieItems = [
     ...topDistricts,
-    {
+    ...(otherDistricts.length > 0 ? [{
       district: `Other ${otherDistricts.length} Districts`,
       count: otherCount,
       capacity_mw: Number(otherMw.toFixed(2)),
       percentage: Number(otherPct.toFixed(2)),
       color: '#64748b'
-    }
+    }] : [])
   ];
 
   const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (d.percentage || 0), 0) || 100;
@@ -143,14 +144,14 @@ export const SmallHydroDashboard = () => {
 
   const currentCenterDisplay = activePieHover || {
     title: 'Total Installed',
-    mw: `${Number(totalCapacityMw).toFixed(2).replace(/\.00$/, '')} MW`,
-    sub: `${totalProjects} Projects`
+    mw: `${Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW`,
+    sub: `${Number(totalProjects).toLocaleString('en-IN')} Projects`
   };
 
-  // Timeline SVG calculations (Years 2004 to 2016/2025, Y: 0 to 400 MW)
+  // Timeline SVG calculations dynamically scaled to actual data
   const minYear = timeline[0]?.year || 2004;
-  const maxYear = timeline[timeline.length - 1]?.year || 2016;
-  const maxTimelineMw = 420;
+  const maxYear = timeline[timeline.length - 1]?.year || 2025;
+  const maxTimelineMw = Math.max(...timeline.map((t) => Number(t.cumulative_mw) || 0), 10) * 1.05;
 
   const getTimelineCoords = (pt) => {
     const x = 40 + ((pt.year - minYear) / Math.max(maxYear - minYear, 1)) * 430;
@@ -505,7 +506,7 @@ export const SmallHydroDashboard = () => {
           <div className="flex items-center gap-2">
             <div className="bg-cyan-50 text-cyan-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
-              <span>374.08 MW Commissioned</span>
+              <span>{Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW Commissioned</span>
             </div>
           </div>
         </div>

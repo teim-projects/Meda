@@ -44,8 +44,8 @@ export const WindDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('wind');
       if (res && res.success) {
-        setTotalProjects(res.total_projects || 3063);
-        setTotalCapacityMw(res.total_capacity_mw || 6371.81);
+        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 3063);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 6371.81);
         if (res.districts && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
@@ -79,10 +79,11 @@ export const WindDashboard = () => {
   const activeBox = inspectedDistrict || districts[0] || DEFAULT_DISTRICTS[0];
 
   // Logarithmic height mapping (matching Bagasse log-scale with ticks 1, 10, 100, 2000)
+  const maxDistrictMw = Math.max(...districts.map(d => Number(d.capacity_mw) || 0), 1);
+  const maxLog = Math.log10(maxDistrictMw) * 1.05;
   const getLogBarHeightPct = (mw) => {
     if (!mw || mw <= 0) return 4;
     const logVal = Math.log10(mw);
-    const maxLog = 3.30; // slightly above log10(1637.5) = 3.214
     const pct = (logVal / maxLog) * 100;
     return Math.min(Math.max(pct, 6), 98);
   };
@@ -91,19 +92,19 @@ export const WindDashboard = () => {
   const topSegmentsCount = 6;
   const topDistricts = districts.slice(0, topSegmentsCount);
   const otherDistricts = districts.slice(topSegmentsCount);
-  const otherMw = otherDistricts.reduce((acc, d) => acc + (d.capacity_mw || 0), 0);
+  const otherMw = otherDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
   const otherCount = otherDistricts.reduce((acc, d) => acc + d.count, 0);
   const otherPct = otherDistricts.reduce((acc, d) => acc + (d.percentage || 0), 0);
 
   const simplifiedPieItems = [
     ...topDistricts,
-    {
+    ...(otherDistricts.length > 0 ? [{
       district: `Other ${otherDistricts.length} Districts`,
       count: otherCount,
       capacity_mw: Number(otherMw.toFixed(2)),
       percentage: Number(otherPct.toFixed(2)),
       color: '#64748b'
-    }
+    }] : [])
   ];
 
   const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (d.percentage || 0), 0) || 100;
@@ -136,14 +137,14 @@ export const WindDashboard = () => {
 
   const currentCenterDisplay = activePieHover || {
     title: 'Total Installed',
-    mw: `${Number(totalCapacityMw).toLocaleString('en-IN', { maximumFractionDigits: 1 })} MW`,
-    sub: `${totalProjects.toLocaleString()} Projects`
+    mw: `${Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW`,
+    sub: `${Number(totalProjects).toLocaleString('en-IN')} Projects`
   };
 
-  // SVG Timeline points calculation (exact match to Bagasse: 500x130, margin 40/110)
+  // SVG Timeline points calculation dynamically scaled to actual data
   const minYear = timeline[0]?.year || 1998;
   const maxYear = timeline[timeline.length - 1]?.year || 2026;
-  const maxMw = 7000;
+  const maxMw = Math.max(...timeline.map((t) => Number(t.cumulative_mw) || 0), 10) * 1.05;
 
   const getTimelineCoords = (pt) => {
     const x = 40 + ((pt.year - minYear) / Math.max(maxYear - minYear, 1)) * 430;
@@ -508,7 +509,7 @@ export const WindDashboard = () => {
           <div className="flex items-center gap-2">
             <div className="bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
-              <span>6,371.81 MW Commissioned</span>
+              <span>{Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW Commissioned</span>
             </div>
           </div>
         </div>

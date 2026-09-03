@@ -54,8 +54,8 @@ export const BiomassDashboard = () => {
     try {
       const res = await energyApi.getAnalytics('biomass');
       if (res && res.success) {
-        setTotalProjects(res.total_projects || 19);
-        setTotalCapacityMw(res.total_capacity_mw || 215.00);
+        setTotalProjects(res.total_projects !== undefined ? res.total_projects : 19);
+        setTotalCapacityMw(res.total_capacity_mw !== undefined ? Number(res.total_capacity_mw) : 215.00);
         if (res.districts && res.districts.length > 0) {
           const formatted = res.districts.map((d, idx) => ({
             ...d,
@@ -88,29 +88,30 @@ export const BiomassDashboard = () => {
 
   const activeBox = inspectedDistrict || districts[0] || DEFAULT_DISTRICTS[0];
 
-  // Linear height mapping (0 to 35 MW) matching Screenshot 2
+  // Dynamic max capacity across districts for Bar Chart Y-axis scale
+  const maxDistrictMw = Math.max(...districts.map(d => Number(d.capacity_mw) || 0), 1);
   const getBarHeightPct = (mw) => {
-    const maxMwVal = 35;
-    return Math.min(Math.max((mw / maxMwVal) * 100, 5), 98);
+    if (!mw || mw <= 0) return 4;
+    return Math.min(Math.max((mw / maxDistrictMw) * 94, 5), 98);
   };
 
   // Simplified pie chart segments (Top 6 + Others)
   const topSegmentsCount = 6;
   const topDistricts = districts.slice(0, topSegmentsCount);
   const otherDistricts = districts.slice(topSegmentsCount);
-  const otherMw = otherDistricts.reduce((acc, d) => acc + (d.capacity_mw || 0), 0);
+  const otherMw = otherDistricts.reduce((acc, d) => acc + (Number(d.capacity_mw) || 0), 0);
   const otherCount = otherDistricts.reduce((acc, d) => acc + d.count, 0);
   const otherPct = otherDistricts.reduce((acc, d) => acc + (d.percentage || 0), 0);
 
   const simplifiedPieItems = [
     ...topDistricts,
-    {
+    ...(otherDistricts.length > 0 ? [{
       district: `Other ${otherDistricts.length} Districts`,
       count: otherCount,
       capacity_mw: Number(otherMw.toFixed(2)),
       percentage: Number(otherPct.toFixed(2)),
       color: '#64748b'
-    }
+    }] : [])
   ];
 
   const totalSegmentPct = simplifiedPieItems.reduce((acc, d) => acc + (d.percentage || 0), 0) || 100;
@@ -143,14 +144,14 @@ export const BiomassDashboard = () => {
 
   const currentCenterDisplay = activePieHover || {
     title: 'Total Installed',
-    mw: `${Number(totalCapacityMw).toFixed(2)} MW`,
-    sub: `${totalProjects} Projects`
+    mw: `${Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW`,
+    sub: `${Number(totalProjects).toLocaleString('en-IN')} Projects`
   };
 
-  // SVG Timeline calculations (0 to 220 MW, Years 2005 to 2016)
+  // SVG Timeline calculations dynamically scaled to actual data
   const minYear = timeline[0]?.year || 2005;
-  const maxYear = timeline[timeline.length - 1]?.year || 2016;
-  const maxTimelineMw = 230;
+  const maxYear = timeline[timeline.length - 1]?.year || 2024;
+  const maxTimelineMw = Math.max(...timeline.map((t) => Number(t.cumulative_mw) || 0), 10) * 1.05;
 
   const getTimelineCoords = (pt) => {
     const x = 40 + ((pt.year - minYear) / Math.max(maxYear - minYear, 1)) * 430;
@@ -246,9 +247,9 @@ export const BiomassDashboard = () => {
               </div>
 
               <div className="w-8 shrink-0 flex flex-col justify-between py-1 text-right pr-2 text-[10px] font-medium text-slate-500 select-none">
-                <span className="relative -top-2">30</span>
-                <span>20</span>
-                <span>10</span>
+                <span className="relative -top-2">{Math.round(maxDistrictMw)}</span>
+                <span>{Math.round(maxDistrictMw * 0.67)}</span>
+                <span>{Math.round(maxDistrictMw * 0.33)}</span>
                 <span className="relative top-1">0</span>
               </div>
 
@@ -509,7 +510,7 @@ export const BiomassDashboard = () => {
           <div className="flex items-center gap-2">
             <div className="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Zap size={14} />
-              <span>215.00 MW Commissioned</span>
+              <span>{Number(totalCapacityMw).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, '')} MW Commissioned</span>
             </div>
           </div>
         </div>
