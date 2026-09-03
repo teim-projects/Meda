@@ -151,3 +151,19 @@ class Wind(models.Model):
 
     def __str__(self):
         return f"Wind - {self.developer or self.gut_no} ({self.capacity_mw} MW)"
+
+
+class MSKVY(models.Model):
+    source = models.CharField(max_length=255, blank=True, default='MSKVY')
+    project_location = models.CharField(max_length=255, blank=True, default='')
+    commissioned_capacity_mw = models.DecimalField(max_digits=15, decimal_places=3, null=True, blank=True)
+    commission_date = models.DateField(null=True, blank=True)
+    district = models.CharField(max_length=255, blank=True, default='')
+
+    class Meta:
+        verbose_name = 'MSKVY'
+        verbose_name_plural = 'MSKVY'
+
+    def __str__(self):
+        return f"MSKVY - {self.project_location or self.district} ({self.commissioned_capacity_mw} MW)"
+

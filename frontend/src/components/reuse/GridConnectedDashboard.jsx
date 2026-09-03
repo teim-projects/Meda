@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Sun, 
-  Download, 
-  RefreshCw, 
+import {
+  Sun,
+  Download,
+  RefreshCw,
   ExternalLink,
   ChevronRight,
   Zap,
@@ -28,7 +28,7 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
   // Dynamic state loaded from respective pages/APIs
   const [rePolicyMw, setRePolicyMw] = useState(6589.22);
   const [kusumMw, setKusumMw] = useState(114.00);
-  const [mskvyMw, setMskvyMw] = useState(5697.35);
+  const [mskvyMw, setMskvyMw] = useState(0);
   const [rooftopMw, setRooftopMw] = useState(8000.04);
   const [govtBuildingMw, setGovtBuildingMw] = useState(61.00);
 
@@ -43,8 +43,9 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
     Promise.allSettled([
       energyApi.getAnalytics('solar-grid'),
       energyApi.getAnalytics('solar-kusum'),
-      energyApi.getAnalytics('govt-solarization')
-    ]).then(([solarRes, kusumRes, govtRes]) => {
+      energyApi.getAnalytics('govt-solarization'),
+      energyApi.getAnalytics('mskvy')
+    ]).then(([solarRes, kusumRes, govtRes, mskvyRes]) => {
       if (solarRes.status === 'fulfilled' && solarRes.value?.success && solarRes.value.total_capacity_mw) {
         setRePolicyMw(Number(solarRes.value.total_capacity_mw));
       }
@@ -53,6 +54,9 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
       }
       if (govtRes.status === 'fulfilled' && govtRes.value?.success && govtRes.value.total_capacity_mw) {
         setGovtBuildingMw(Number(govtRes.value.total_capacity_mw));
+      }
+      if (mskvyRes.status === 'fulfilled' && mskvyRes.value?.success) {
+        setMskvyMw(Number(mskvyRes.value.total_capacity_mw || 0));
       }
     }).finally(() => {
       setIsRefreshing(false);
@@ -64,14 +68,14 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
   }, []);
 
   // Total Grid Connected Solar Projects sum (exact sum of all 8 schemes)
-  const totalGridCapacityMw = 
-    rePolicyMw + 
-    kusumMw + 
-    mskvyMw + 
-    rooftopMw + 
-    govtBuildingMw + 
-    amrutMw + 
-    liftIrrigationMw + 
+  const totalGridCapacityMw =
+    rePolicyMw +
+    kusumMw +
+    mskvyMw +
+    rooftopMw +
+    govtBuildingMw +
+    amrutMw +
+    liftIrrigationMw +
     textileSchemeMw;
 
   // Navigation handler to redirect to respective page/tab
@@ -256,7 +260,7 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
 
         {/* TOP HERO CARD (Total Grid Connected Solar Projects) - SOOTHING PASTEL BLUSH */}
         <div className="max-w-[360px] mx-auto">
-          <div 
+          <div
             className="rounded-2xl py-3.5 px-5 border text-center transition-all duration-200 transform hover:-translate-y-0.5 relative overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #fecdd3 100%)',
@@ -266,7 +270,7 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
           >
             {/* Soft gloss highlight line */}
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent"></div>
-            
+
             <div className="text-3xl sm:text-4xl font-black text-rose-950 tracking-tight leading-none font-mono">
               {formatCapacityMw(totalGridCapacityMw)}{' '}
               <span className="text-base sm:text-lg font-bold text-rose-800">MW</span>
@@ -285,9 +289,8 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
               <div
                 key={scheme.id}
                 onClick={() => hasLink && handleRedirect(scheme)}
-                className={`rounded-2xl p-4 border relative transition-all duration-200 transform ${
-                  hasLink ? 'hover:-translate-y-1 hover:shadow-md cursor-pointer group' : ''
-                }`}
+                className={`rounded-2xl p-4 border relative transition-all duration-200 transform ${hasLink ? 'hover:-translate-y-1 hover:shadow-md cursor-pointer group' : ''
+                  }`}
                 style={{
                   background: scheme.bg,
                   borderColor: scheme.borderColor,
@@ -305,10 +308,9 @@ export const GridConnectedDashboard = ({ isEmbedded = false, onNavigateTab = nul
 
                   {/* Clean Agency / Scheme Tag Badge */}
                   <div className="flex items-center gap-1">
-                    <span 
-                      className={`font-black text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 transition-all ${
-                        scheme.badgeBg
-                      } ${hasLink ? 'group-hover:scale-105 group-hover:shadow-2xs' : ''}`}
+                    <span
+                      className={`font-black text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md border shrink-0 transition-all ${scheme.badgeBg
+                        } ${hasLink ? 'group-hover:scale-105 group-hover:shadow-2xs' : ''}`}
                     >
                       {scheme.tag}
                     </span>

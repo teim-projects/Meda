@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Box,
   Card,
@@ -11,6 +11,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
+  LinearProgress,
   CircularProgress,
   Alert,
   Stack,
@@ -40,7 +42,8 @@ import {
   Check,
   FileSpreadsheet,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Cpu
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { energyApi } from '../../services/energyApi';
@@ -54,6 +57,7 @@ const ENERGY_TYPES = [
   { val: 'solar_grid', label: 'Solar Grid', icon: Sun, color: '#eab308', bg: 'rgba(234, 179, 8, 0.08)', desc: 'Utility scale grid solar systems', active: true },
   { val: 'solar_kusum', label: 'Solar Kusum', icon: Zap, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.08)', desc: 'PM-KUSUM agricultural solar', active: true },
   { val: 'wind', label: 'Wind Power', icon: Wind, color: '#6366f1', bg: 'rgba(99, 102, 241, 0.08)', desc: 'Wind turbine energy data', active: true },
+  { val: 'mskvy', label: 'MSKVY', icon: Cpu, color: '#0284c7', bg: 'rgba(2, 132, 199, 0.08)', desc: 'Mukhyamantri Saur Krushi Vahini Yojana', active: true },
 ];
 
 const ShowData = () => {
@@ -69,44 +73,66 @@ const ShowData = () => {
   const [rows, setRows] = useState([]);
   const [displayName, setDisplayName] = useState('');
 
+  // Pagination states for high-performance rendering of large datasets
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const abortControllerRef = useRef(null);
+
   const currentTypeObj = ENERGY_TYPES.find(e => e.val === selectedType) || ENERGY_TYPES[0];
 
-  const isTypeActive = () => {
-    const matched = ENERGY_TYPES.find(e => e.val === selectedType);
+  const isTypeActive = (typeVal = selectedType) => {
+    const matched = ENERGY_TYPES.find(e => e.val === typeVal);
     return matched ? matched.active : false;
   };
 
-  const loadData = async () => {
-    if (!isTypeActive()) {
+  const loadData = async (typeToLoad = selectedType) => {
+    if (!isTypeActive(typeToLoad)) {
       setHeaders([]);
       setFieldMap({});
       setRows([]);
       setDisplayName('');
       setError('This energy type module is not active yet.');
+      setLoading(false);
       return;
     }
 
+    // Cancel any previous in-flight request so network & UI never freeze
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
+
     try {
-      const res = await energyApi.getData(selectedType);
+      const res = await energyApi.getData(typeToLoad, { signal: controller.signal });
       if (res.success) {
         setHeaders(res.headers || []);
         setFieldMap(res.fields || {});
         setRows(res.data || []);
         setDisplayName(res.display_name || '');
+        setPage(0);
       }
     } catch (err) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED' || err.message === 'canceled') {
+        // Request was aborted by user clicking another category, do nothing
+        return;
+      }
       console.error(err);
       setError(err.response?.data?.error || err.message || 'Failed to fetch stored records.');
     } finally {
-      setLoading(false);
+      if (abortControllerRef.current === controller) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadData(selectedType);
     setSearchQuery('');
+    setPage(0);
   }, [selectedType]);
 
   const handleExportData = async () => {
@@ -128,15 +154,32 @@ const ShowData = () => {
     }
   };
 
-  // Live client-side search filtering
-  const filteredRows = rows.filter((row) => {
-    if (!searchQuery.trim()) return true;
+  // Live client-side search filtering memoized to prevent UI thread lag
+  const filteredRows = useMemo(() => {
+    if (!searchQuery.trim()) return rows;
     const query = searchQuery.toLowerCase();
-    return Object.values(row).some((val) => {
-      if (val === null || val === undefined) return false;
-      return String(val).toLowerCase().includes(query);
+    return rows.filter((row) => {
+      return Object.values(row).some((val) => {
+        if (val === null || val === undefined) return false;
+        return String(val).toLowerCase().includes(query);
+      });
     });
-  });
+  }, [rows, searchQuery]);
+
+  // Paginated rows: Only slices 25-50 items to DOM, preventing browser lockup
+  const paginatedRows = useMemo(() => {
+    const start = page * rowsPerPage;
+    return filteredRows.slice(start, start + rowsPerPage);
+  }, [filteredRows, page, rowsPerPage]);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   return (
     <Box sx={{ width: '100%', p: { xs: 1, md: 1.5 }, pb: 8 }}>
@@ -282,7 +325,11 @@ const ShowData = () => {
               <Paper
                 key={type.val}
                 elevation={0}
-                onClick={() => setSelectedType(type.val)}
+                onClick={() => {
+                  if (type.active && selectedType !== type.val) {
+                    setSelectedType(type.val);
+                  }
+                }}
                 sx={{
                   p: 2.2,
                   px: 2.5,
@@ -300,6 +347,7 @@ const ShowData = () => {
                   minHeight: 84,
                   display: 'flex',
                   alignItems: 'center',
+                  pointerEvents: 'auto',
                   boxShadow: isSelected 
                     ? `0 10px 25px ${type.color}25` 
                     : '0 3px 10px rgba(0,0,0,0.03)',
@@ -362,8 +410,8 @@ const ShowData = () => {
 
                       {isSelected && (
                         <Chip
-                          icon={<Check size={11} color="#ffffff" />}
-                          label="ACTIVE"
+                          icon={loading ? <RefreshCw size={11} className="spin" color="#ffffff" /> : <Check size={11} color="#ffffff" />}
+                          label={loading ? "LOADING..." : "ACTIVE"}
                           size="small"
                           sx={{
                             bgcolor: type.color,
@@ -503,12 +551,25 @@ const ShowData = () => {
           </Stack>
         </Box>
 
-        {/* Loading Spinner */}
+        {/* Non-blocking top progress bar while fetching */}
         {loading && (
+          <LinearProgress 
+            sx={{ 
+              height: 3, 
+              bgcolor: 'rgba(16, 185, 129, 0.15)',
+              '& .MuiLinearProgress-bar': {
+                bgcolor: currentTypeObj.color || '#10b981'
+              }
+            }} 
+          />
+        )}
+
+        {/* Initial Loading Spinner when table has no data yet */}
+        {loading && rows.length === 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
             <CircularProgress color="success" size={36} />
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2, fontWeight: 700 }}>
-              Fetching stored database records...
+              Fetching stored database records for {currentTypeObj.label}...
             </Typography>
           </Box>
         )}
@@ -523,8 +584,8 @@ const ShowData = () => {
         )}
 
         {/* DATA TABLE */}
-        {!loading && !error && (
-          <TableContainer sx={{ maxHeight: 620 }}>
+        {(!loading || rows.length > 0) && !error && (
+          <TableContainer sx={{ maxHeight: 620, opacity: loading ? 0.65 : 1, transition: 'opacity 0.2s ease' }}>
             <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
@@ -607,7 +668,7 @@ const ShowData = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredRows.map((row, index) => (
+                  paginatedRows.map((row, index) => (
                     <TableRow 
                       key={row.id || index} 
                       hover
@@ -620,7 +681,7 @@ const ShowData = () => {
                       }}
                     >
                       <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.78rem' }}>
-                        {index + 1}
+                        {page * rowsPerPage + index + 1}
                       </TableCell>
                       {headers.map((header) => {
                         const fieldName = fieldMap[header];
@@ -653,6 +714,28 @@ const ShowData = () => {
               </TableBody>
             </Table>
           </TableContainer>
+        )}
+
+        {/* High Performance Table Pagination */}
+        {filteredRows.length > 0 && (
+          <TablePagination
+            rowsPerPageOptions={[25, 50, 100, 250]}
+            component="div"
+            count={filteredRows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              borderTop: '1px solid #e2e8f0',
+              bgcolor: '#f8fafc',
+              '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: '#475569'
+              }
+            }}
+          />
         )}
       </Paper>
 

@@ -11,6 +11,7 @@ import WindDashboard from './WindDashboard';
 import OffGridDashboard from './OffGridDashboard';
 import RooftopDashboard from './RooftopDashboard';
 import GridConnectedDashboard from './GridConnectedDashboard';
+import MskvyDashboard from './MskvyDashboard';
 import { energyApi } from '../../services/energyApi';
 import {
   Folder,
@@ -79,6 +80,7 @@ const Dashboard = ({ currentUser }) => {
   const [shpSummary, setShpSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
   const [kusumSummary, setKusumSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
   const [windSummary, setWindSummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
+  const [mskvySummary, setMskvySummary] = useState({ count: '0', capacity: '0 MW', rawCount: 0, rawMw: 0 });
 
   const setActiveTab = (tabId) => {
     setActiveTabState(tabId);
@@ -101,10 +103,11 @@ const Dashboard = ({ currentUser }) => {
         energyApi.getAnalytics('msw'),
         energyApi.getAnalytics('small-hydro'),
         energyApi.getAnalytics('solar-kusum'),
-        energyApi.getAnalytics('wind')
+        energyApi.getAnalytics('wind'),
+        energyApi.getAnalytics('mskvy')
       ]);
 
-      const [govt, solar, bagasse, biomass, msw, shp, kusum, wind] = results;
+      const [govt, solar, bagasse, biomass, msw, shp, kusum, wind, mskvy] = results;
 
       if (govt.status === 'fulfilled' && govt.value?.success) {
         const count = Number(govt.value.total_projects || 0);
@@ -186,6 +189,16 @@ const Dashboard = ({ currentUser }) => {
           rawMw: mw
         });
       }
+      if (mskvy && mskvy.status === 'fulfilled' && mskvy.value?.success) {
+        const count = Number(mskvy.value.total_projects || 0);
+        const mw = Number(mskvy.value.total_capacity_mw || 0);
+        setMskvySummary({
+          count: count.toLocaleString('en-IN'),
+          capacity: `${formatCapacityMw(mw)} MW`,
+          rawCount: count,
+          rawMw: mw
+        });
+      }
     } catch (err) {
       console.warn('Error fetching analytics:', err);
     }
@@ -213,7 +226,7 @@ const Dashboard = ({ currentUser }) => {
   const dynamicGridConnectedMw = 
     (solarGridSummary.rawMw || 0) +
     (kusumSummary.rawMw || 0) +
-    5697.35 + // MSKVY
+    (mskvySummary.rawMw || 0) + // MSKVY
     8000.04 + // Rooftop
     (govtSolarSummary.rawMw || 0) +
     15.81; // Amrut
@@ -237,17 +250,17 @@ const Dashboard = ({ currentUser }) => {
     (mswSummary.rawCount || 0) +
     (shpSummary.rawCount || 0) +
     (govtSolarSummary.rawCount || 0) +
-    (kusumSummary.rawCount || 0);
+    (kusumSummary.rawCount || 0) +
+    (mskvySummary.rawCount || 0);
 
   const CATEGORIES = [
     { id: 'summary', label: 'Summary', icon: LayoutGrid, count: dynamicTotalProjectsCount.toLocaleString('en-IN'), capacity: `${formatCapacityMw(dynamicTotalCapacityMw)} MW`, color: '#059669', bg: '#dcfce7' },
-    { id: 'solar-grid-conn', label: 'Grid Connected', icon: Sun, count: '8 Schemes', capacity: `${formatCapacityMw(dynamicGridConnectedMw)} MW`, color: '#ea580c', bg: '#ffedd5' },
+    { id: 'solar-grid-conn', label: 'Grid Connected', icon: Sun, count: '', capacity: `${formatCapacityMw(dynamicGridConnectedMw)} MW`, color: '#ea580c', bg: '#ffedd5' },
     { id: 'solar-offgrid-sum', label: 'Off Grid', icon: Sun, count: '10,03,077', capacity: '43.42 Lakh HP', color: '#ca8a04', bg: '#fef9c3' },
     { id: 'kusum-ac', label: 'KUSUM', icon: Zap, count: kusumSummary.count, capacity: kusumSummary.capacity, color: '#d97706', bg: '#fef3c7' },
-    { id: 'mskvy', label: 'MSKVY', icon: Cpu, count: '128', capacity: '5,253.60 MW', color: '#0284c7', bg: '#e0f2fe' },
+    { id: 'mskvy', label: 'MSKVY', icon: Cpu, count: mskvySummary.count, capacity: mskvySummary.capacity, color: '#0284c7', bg: '#e0f2fe' },
     { id: 'solar-rooftop', label: 'Rooftop', icon: Home, count: '2,410', capacity: '8,000.04 MW', color: '#059669', bg: '#ecfdf5' },
     { id: 'solar-grid', label: 'Solar Grid', icon: Sun, count: solarGridSummary.count, capacity: solarGridSummary.capacity, color: '#eab308', bg: '#fef08a' },
-    { id: 'mskvy-2', label: 'MSKVY 2.0', icon: Cpu, count: '156', capacity: '7,420 MW', color: '#0369a1', bg: '#e0f2fe' },
     { id: 'govt-building-solar', label: 'Government Building Solar', icon: Building2, count: govtSolarSummary.count, capacity: govtSolarSummary.capacity, color: '#4f46e5', bg: '#e0e7ff' },
     { id: 'wind', label: 'Wind', icon: Wind, count: windSummary.count, capacity: windSummary.capacity, color: '#0891b2', bg: '#cff4fc' },
     { id: 'bagasse', label: 'Bagasse', icon: Leaf, count: bagasseSummary.count, capacity: bagasseSummary.capacity, color: '#16a34a', bg: '#dcfce7' },
@@ -856,7 +869,9 @@ const Dashboard = ({ currentUser }) => {
               >
                 <Icon size={14} className="cat-icon" />
                 <span className="cat-label">{cat.label}</span>
-                <span className={`cat-count-badge ${isActive ? 'active-badge' : ''}`}>{cat.count}</span>
+                {cat.count ? (
+                  <span className={`cat-count-badge ${isActive ? 'active-badge' : ''}`}>{cat.count}</span>
+                ) : null}
               </button>
             );
           })}
@@ -889,11 +904,15 @@ const Dashboard = ({ currentUser }) => {
             <span className="csp-lbl">CATEGORY CAPACITY</span>
             <span className="csp-val" style={{ color: currentCategory.color }}>{currentCategory.capacity}</span>
           </div>
-          <div className="can-divider" />
-          <div className="can-stat-pill">
-            <span className="csp-lbl">TOTAL PROJECTS</span>
-            <span className="csp-val">{currentCategory.count}</span>
-          </div>
+          {currentCategory.count ? (
+            <>
+              <div className="can-divider" />
+              <div className="can-stat-pill">
+                <span className="csp-lbl">TOTAL PROJECTS</span>
+                <span className="csp-val">{currentCategory.count}</span>
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -953,7 +972,7 @@ const Dashboard = ({ currentUser }) => {
                       Grid Connected
                     </div>
                     <div className="text-[10px] font-semibold text-rose-800/80 leading-tight">
-                      8 Schemes • {formatCapacityMw(dynamicGridConnectedMw)} MW
+                      {formatCapacityMw(dynamicGridConnectedMw)} MW
                     </div>
                   </div>
                   <ChevronRight size={13} className="text-rose-400 group-hover:text-rose-700 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
@@ -1272,290 +1291,7 @@ const Dashboard = ({ currentUser }) => {
           <SolarGridDashboard />
         </div>
       ) : (activeTab === 'mskvy-2' || activeTab === 'mskvy' || activeTab === 'solar-mskvy-sum') ? (
-        /* MSKVY 2.0 SOLAR POWER PROJECTS VIEW (Matching Image 14 100% Exactly) */
-        <div className="category-view-container animate-fade-in space-y-5">
-          {/* Main Title Banner Matching Image 14 */}
-          <div className="navo-title-card flex items-center justify-center gap-3 py-3 rounded-2xl bg-white border border-slate-300 shadow-sm">
-            <svg className="w-8 h-8 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <rect x="3" y="4" width="18" height="12" rx="1.5" fill="#0f172a" stroke="#0f172a" strokeWidth="1" />
-              <line x1="9" y1="4" x2="9" y2="16" stroke="#ffffff" strokeWidth="1.2" />
-              <line x1="15" y1="4" x2="15" y2="16" stroke="#ffffff" strokeWidth="1.2" />
-              <line x1="3" y1="10" x2="21" y2="10" stroke="#ffffff" strokeWidth="1.2" />
-              <path d="M12 16L12 21M8 21L16 21" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            <h2 className="navo-title-text text-xl font-extrabold tracking-tight text-slate-900">
-              MSKVY - 2.0 Solar Power Projects
-            </h2>
-          </div>
-
-          {/* Main 2-Column Split: 7 Cols Left Stack, 5 Cols Right Tall Pie Card */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            {/* Left 7 Columns: Stack of Top 2 KPI Cards + Bar Chart + Line Chart */}
-            <div className="lg:col-span-7 flex flex-col justify-between space-y-5">
-              {/* Top 2 Dark Navy KPI Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
-                  <div className="text-3xl font-extrabold tracking-tight text-white">5,253.60</div>
-                  <div className="text-sm font-bold text-slate-200 mt-1">Total Capacity Installed (MW)</div>
-                </div>
-
-                <div className="bg-[#091a36] border border-slate-700/60 rounded-xl p-5 text-white shadow-lg">
-                  <div className="text-3xl font-extrabold tracking-tight text-white">1091</div>
-                  <div className="text-sm font-bold text-slate-200 mt-1">No. Of Projects</div>
-                </div>
-              </div>
-
-              {/* Bar Chart Card: District wise Installed by MW */}
-              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-800 tracking-tight">District wise Installed by MW</h3>
-                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
-                    <span>0</span>
-                    <span>=</span>
-                    <span>...</span>
-                  </div>
-                </div>
-
-                {/* Bar Chart Flex Layout with Left Log Scale Indicator */}
-                <div className="flex items-start gap-4 pt-2">
-                  {/* Left Log Scale Indicator */}
-                  <div className="flex flex-col items-center justify-between h-[210px] py-1 text-[10px] font-semibold text-slate-500 min-w-[45px]">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-white shadow-sm flex items-center justify-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-                      </span>
-                      <span>100</span>
-                    </div>
-                    <div className="flex-1 w-[3px] bg-slate-400 my-1 rounded-full relative">
-                      <span className="absolute top-1/2 -left-1 font-bold text-[9px] text-slate-400">10</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-600 bg-white shadow-sm flex items-center justify-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-                      </span>
-                      <span>1</span>
-                    </div>
-                    <span className="text-[8.5px] font-extrabold text-slate-600 transform -rotate-90 origin-center mt-3 whitespace-nowrap">MW Capacity</span>
-                  </div>
-
-                  {/* SVG Bar Chart with Heights Matching Image 14 */}
-                  <div className="flex-1 overflow-x-auto pb-2">
-                    <svg viewBox="0 0 680 220" className="w-full min-w-[650px] h-[220px]">
-                      <line x1="0" y1="20" x2="680" y2="20" stroke="#f1f5f9" strokeDasharray="3 3" />
-                      <line x1="0" y1="80" x2="680" y2="80" stroke="#f1f5f9" strokeDasharray="3 3" />
-                      <line x1="0" y1="160" x2="680" y2="160" stroke="#e2e8f0" />
-
-                      {[
-                        { d: 'Nashik', mw: 527, logH: 142 },
-                        { d: 'Latur', mw: 483.5, logH: 138 },
-                        { d: 'Ahilyanagar', mw: 431.8, logH: 133 },
-                        { d: 'Jalgaon', mw: 366.8, logH: 128 },
-                        { d: 'Ch. Sambhaji N...', mw: 324, logH: 122 },
-                        { d: 'Yavatmal', mw: 268, logH: 114 },
-                        { d: 'Sangli', mw: 248, logH: 110 },
-                        { d: 'Solapur', mw: 215, logH: 106 },
-                        { d: 'Dharashiv', mw: 207.5, logH: 104 },
-                        { d: 'Beed', mw: 205, logH: 103 },
-                        { d: 'Nanded', mw: 203, logH: 102 },
-                        { d: 'Jalna', mw: 195, logH: 100 },
-                        { d: 'Akola', mw: 179, logH: 98 },
-                        { d: 'Pune', mw: 175, logH: 97 },
-                        { d: 'Satara', mw: 147, logH: 92 },
-                        { d: 'Amaravati', mw: 145, logH: 91 },
-                        { d: 'Buldhana', mw: 129, logH: 87 },
-                        { d: 'Washim', mw: 100, logH: 82 },
-                        { d: 'Nandurbar', mw: 95, logH: 80 },
-                        { d: 'Kolhapur', mw: 88, logH: 78 },
-                        { d: 'Hingoli', mw: 72, logH: 72 },
-                        { d: 'Parbhani', mw: 68, logH: 70 },
-                        { d: 'Dhule', mw: 55, logH: 64 },
-                        { d: 'Wardha', mw: 25, logH: 42 },
-                        { d: 'Chandrapur', mw: 12, logH: 26 },
-                        { d: 'Nagpur', mw: 8, logH: 18 },
-                      ].map((item, idx) => {
-                        const x = idx * 24 + 5;
-                        const barWidth = 17;
-                        const barHeight = item.logH;
-                        const y = 160 - barHeight;
-                        return (
-                          <g key={idx} className="group cursor-pointer">
-                            <rect
-                              x={x}
-                              y={y}
-                              width={barWidth}
-                              height={barHeight}
-                              fill="#0b3c74"
-                              rx="1.5"
-                              className="group-hover:fill-blue-600 transition-colors"
-                            />
-                            <text
-                              x={x + 11}
-                              y={172}
-                              fontSize="8"
-                              fontWeight="600"
-                              fill="#475569"
-                              transform={`rotate(45 ${x + 11} 172)`}
-                              textAnchor="start"
-                            >
-                              {item.d}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-
-                    {/* Bottom Scrollbar Indicator */}
-                    <div className="w-full h-2 bg-slate-200 rounded-full mt-1 overflow-hidden p-0.5">
-                      <div className="w-3/4 h-full bg-slate-400/80 rounded-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Line Chart Card: Capacity Installed (MW) over years */}
-              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-3 relative overflow-visible">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-800 tracking-tight">Capacity Installed (MW) over years</h3>
-                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
-                    <span>0</span>
-                    <span>=</span>
-                    <span>...</span>
-                  </div>
-                </div>
-
-                <div className="relative w-full h-[170px]">
-                  <svg viewBox="0 0 650 170" className="w-full h-full">
-                    {/* Dotted Grid lines */}
-                    <line x1="35" y1="30" x2="620" y2="30" stroke="#f1f5f9" strokeDasharray="3 3" strokeWidth="1" />
-                    <text x="28" y="34" fontSize="9" fontWeight="700" fill="#94a3b8" textAnchor="end">2K</text>
-
-                    <line x1="35" y1="135" x2="620" y2="135" stroke="#e2e8f0" strokeWidth="1" />
-                    <text x="28" y="139" fontSize="9" fontWeight="700" fill="#94a3b8" textAnchor="end">0K</text>
-
-                    {/* Peak Trend Line Path Matching Image 14 */}
-                    <path
-                      d="M 35 130 L 180 125 L 325 35 L 470 30 L 615 130"
-                      fill="none"
-                      stroke="#091a36"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* X-Axis Labels */}
-                    <text x="35" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2023</text>
-                    <text x="180" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2024</text>
-                    <text x="325" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2025</text>
-                    <text x="470" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2026</text>
-                    <text x="615" y="155" fontSize="9.5" fontWeight="600" fill="#64748b">2027</text>
-
-                    <text x="8" y="80" fontSize="8.5" fontWeight="700" fill="#475569" transform="rotate(-90 8 80)" textAnchor="middle">MW Capacity</text>
-                  </svg>
-                </div>
-
-                {/* Bottom Tag Tooltip */}
-                <div className="flex justify-center mt-1">
-                  <span className="px-3 py-1 bg-white border border-slate-300 rounded-lg text-xs font-extrabold text-slate-800 shadow-sm">
-                    MSKVY 2.0
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right 5 Columns: Single Tall Pie Chart Card matching Image 14 */}
-            <div className="lg:col-span-5 flex flex-col">
-              <div className="chart-box-card bg-white p-5 border border-slate-300 rounded-2xl shadow-sm space-y-4 h-full flex flex-col justify-between">
-                <h3 className="text-base font-bold text-slate-800 text-center">
-                  District wise MW capacity percentage distribution
-                </h3>
-
-                {/* SVG Full Pie Chart - Large & Centered Matching Image 14 */}
-                <div className="relative w-full flex-1 flex items-center justify-center min-h-[400px] py-2">
-                  <svg viewBox="0 0 460 460" className="w-full h-full max-h-[460px]">
-                    {/* Full Pie Slices */}
-                    <g transform="rotate(-90 230 230)">
-                      {/* Nashik 527 MW (10.03%) */}
-                      <path d="M 230 230 L 380 230 A 150 150 0 0 1 318 351 Z" fill="#0072ff" />
-                      {/* Latur 483.5 MW (9.2%) */}
-                      <path d="M 230 230 L 318 351 A 150 150 0 0 1 206 378 Z" fill="#0b1b7a" />
-                      {/* Ahilyanagar 431.8 MW (8.22%) */}
-                      <path d="M 230 230 L 206 378 A 150 150 0 0 1 97 304 Z" fill="#e65100" />
-                      {/* Jalgaon 366.8 MW (6.98%) */}
-                      <path d="M 230 230 L 97 304 A 150 150 0 0 1 80 230 Z" fill="#6a1b9a" />
-                      {/* Ch. Sambhaji Nagar 324 MW (6.17%) */}
-                      <path d="M 230 230 L 80 230 A 150 150 0 0 1 91 174 Z" fill="#d81b60" />
-                      {/* Yavatmal 268 MW (5.1%) */}
-                      <path d="M 230 230 L 91 174 A 150 150 0 0 1 113 134 Z" fill="#7e57c2" />
-                      {/* Sangli 248 MW (4.72%) */}
-                      <path d="M 230 230 L 113 134 A 150 150 0 0 1 138 103 Z" fill="#d4a017" />
-                      {/* Solapur 215 MW (4.09%) */}
-                      <path d="M 230 230 L 138 103 A 150 150 0 0 1 166 84 Z" fill="#c62828" />
-                      {/* Dharashiv 207.5 MW (3.95%) */}
-                      <path d="M 230 230 L 166 84 A 150 150 0 0 1 196 76 Z" fill="#00897b" />
-                      {/* Beed 205 MW (3.9%) */}
-                      <path d="M 230 230 L 196 76 A 150 150 0 0 1 226 73 Z" fill="#2e7d32" />
-                      {/* Nanded 203 MW (3.86%) */}
-                      <path d="M 230 230 L 226 73 A 150 150 0 0 1 256 75 Z" fill="#00b4d8" />
-                      {/* Jalna 195 MW (3.71%) */}
-                      <path d="M 230 230 L 256 75 A 150 150 0 0 1 283 82 Z" fill="#f72585" />
-                      {/* Akola 179 MW (3.41%) */}
-                      <path d="M 230 230 L 283 82 A 150 150 0 0 1 306 93 Z" fill="#7209b7" />
-                      {/* Pune 175 MW (3.3%) */}
-                      <path d="M 230 230 L 306 93 A 150 150 0 0 1 328 107 Z" fill="#4895ef" />
-                      {/* Satara 147 MW (2.8%) */}
-                      <path d="M 230 230 L 328 107 A 150 150 0 0 1 346 122 Z" fill="#4cc9f0" />
-                      {/* Amaravati 145 MW (2.76%) */}
-                      <path d="M 230 230 L 346 122 A 150 150 0 0 1 362 139 Z" fill="#a855f7" />
-                      {/* Buldhana 129 MW (2.46%) */}
-                      <path d="M 230 230 L 362 139 A 150 150 0 0 1 374 158 Z" fill="#22c55e" />
-                      {/* Washim 100 MW (1.9%) */}
-                      <path d="M 230 230 L 374 158 A 150 150 0 0 1 380 230 Z" fill="#eab308" />
-                    </g>
-
-                    {/* Polyline Pointer Callouts Matching Image 14 */}
-                    <polyline points="350,150 380,130 410,130" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="413" y="133" fontSize="8.5" fontWeight="600" fill="#334155">527 (10.03%)</text>
-
-                    <polyline points="340,300 370,320 400,320" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="403" y="323" fontSize="8.5" fontWeight="600" fill="#334155">483.5 (9.2%)</text>
-
-                    <polyline points="230,378 245,405 275,405" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="278" y="408" fontSize="8.5" fontWeight="600" fill="#334155">431.8 (8.22%)</text>
-
-                    <polyline points="150,340 130,370 100,370" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="96" y="373" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">366.8 (6.98%)</text>
-
-                    <polyline points="105,290 80,310 50,310" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="46" y="313" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">324 (6.17%)</text>
-
-                    <polyline points="95,210 65,225 35,225" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="31" y="228" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">268 (5.1%)</text>
-
-                    <polyline points="100,160 70,175 40,175" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="36" y="178" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">248 (4.72%)</text>
-
-                    <polyline points="115,120 85,130 55,130" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="51" y="133" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">215 (4.09%)</text>
-
-                    <polyline points="135,90 105,95 75,95" fill="none" stroke="#64748b" strokeWidth="1" />
-                    <text x="71" y="98" fontSize="8.5" fontWeight="600" fill="#334155" textAnchor="end">207.5 (3.95%)</text>
-                  </svg>
-                </div>
-
-                {/* Bottom Legend Matching Image 14 */}
-                <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-600 overflow-x-auto">
-                  <span className="text-slate-400 font-extrabold uppercase">District</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0072ff]" /> Nashik</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0b1b7a]" /> Latur</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#e65100]" /> Ahilyanagar</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#6a1b9a]" /> Jalgaon</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#d81b60]" /> Ch. Samb...</span>
-                  <span className="text-slate-400">▶</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MskvyDashboard />
       ) : (activeTab === 'solar-rooftop' || activeTab === 'rooftop') ? (
         <div className="category-view-container animate-fade-in">
           <RooftopDashboard isEmbedded={true} />

@@ -7,7 +7,7 @@ import heroLogo from "../../assets/logo.png";
 import amritLogo from "../../assets/75.jpg";
 import sealLogo from "../../assets/MH.png";
 import ashokaLogo from "../../assets/emb.png";
-import bgVideo from "../../assets/bg_video.mp4";
+import bgImage from "../../assets/bg_meda3.png";
 
 /* =====================================================================
    meda · Superadmin Login
@@ -109,20 +109,17 @@ function useClock() {
 }
 
 /* ---------------------------------------------------------------
-   BACKGROUND VIDEO
+   BACKGROUND IMAGE
 ----------------------------------------------------------------*/
-function VideoBackground() {
+function BackgroundImage() {
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden bg-black">
-      <video
-        src={bgVideo}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="h-full w-full object-cover opacity-100 brightness-[1.12] contrast-[1.05] saturate-[1.08] transition-all duration-700"
+    <div className="fixed inset-0 z-0 overflow-hidden bg-slate-950">
+      <img
+        src={bgImage}
+        alt="MEDA Background"
+        className="h-full w-full object-cover object-center opacity-100 brightness-[1.02] contrast-[1.02] transition-all duration-700"
       />
-      {/* Subtle light vignette to keep video crisp and bright */}
+      {/* Subtle light vignette to keep image crisp and content readable */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
     </div>
   );
@@ -248,7 +245,7 @@ function EnergyCard({ block, index }) {
 function LiveHud({ active }) {
   return (
     <div className="relative z-20 w-full max-w-[860px]">
-      <div className="pop-in" style={{ animationDelay: "0.08s" }}>
+      <div className="pop-in pl-6 sm:pl-9 lg:pl-12" style={{ animationDelay: "0.08s" }}>
         <h1 className="text-[22px] font-bold tracking-tight text-white leading-snug drop-shadow-md sm:text-[26px] lg:text-[28px]">
           Maharashtra Renewable Energy Projects
           <span className="mt-1 block text-[15px] font-semibold text-emerald-400 drop-shadow-sm sm:text-[18px] lg:text-[20px]">
@@ -502,7 +499,7 @@ export default function Login({ onLoginSuccess }) {
       style={{ "--accent": active.accent, "--accent-2": active.accent2, "--accent-rgb": active.rgb }}
     >
       <LoginStyles />
-      <VideoBackground />
+      <BackgroundImage />
 
       <div className="relative z-10 flex min-h-screen w-full flex-col justify-between">
         <div className={`fade-delay-enter ${showContent ? "active" : ""}`} style={{ transitionDelay: "0ms" }}>

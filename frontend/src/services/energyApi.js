@@ -159,8 +159,8 @@ export const energyApi = {
   /**
    * Fetches stored database records for the selected energy type.
    */
-  getData: async (energyType) => {
-    const response = await energyAxios.get(`/data/${energyType}/`);
+  getData: async (energyType, options = {}) => {
+    const response = await energyAxios.get(`/data/${energyType}/`, options);
     return normalizeApiResponse(response.data);
   },
 

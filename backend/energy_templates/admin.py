@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Biomass, Bagasse, MSW, SHP, GovtSolarization, SolarGrid, SolarKusum, Wind
+from .models import Biomass, Bagasse, MSW, SHP, GovtSolarization, SolarGrid, SolarKusum, Wind, MSKVY
 
 @admin.register(Biomass)
 class BiomassAdmin(admin.ModelAdmin):
@@ -56,3 +56,11 @@ class WindAdmin(admin.ModelAdmin):
     list_display = ('id', 'developer', 'investor', 'capacity_mw', 'standardized_date', 'date_of_commissioned', 'gut_no', 'taluka', 'village', 'district', 'site_name', 'source', 'year')
     search_fields = ('developer', 'investor', 'gut_no', 'village', 'taluka', 'district', 'site_name')
     list_filter = ('source', 'district', 'year')
+
+
+@admin.register(MSKVY)
+class MSKVYAdmin(admin.ModelAdmin):
+    list_display = ('id', 'source', 'project_location', 'district', 'commissioned_capacity_mw', 'commission_date')
+    search_fields = ('source', 'project_location', 'district')
+    list_filter = ('source', 'district')
+

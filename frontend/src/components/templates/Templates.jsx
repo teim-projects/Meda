@@ -40,7 +40,8 @@ import {
   X,
   Check,
   DatabaseCheck,
-  Activity
+  Activity,
+  Cpu
 } from 'lucide-react';
 import { energyApi } from '../../services/energyApi';
 
@@ -53,6 +54,7 @@ const ENERGY_TYPES = [
   { val: 'solar_grid', label: 'Solar Grid', icon: Sun, color: '#eab308', bg: 'rgba(234, 179, 8, 0.08)', desc: 'Utility scale grid solar systems', active: true },
   { val: 'solar_kusum', label: 'Solar Kusum', icon: Zap, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.08)', desc: 'PM-KUSUM agricultural solar', active: true },
   { val: 'wind', label: 'Wind Power', icon: Wind, color: '#6366f1', bg: 'rgba(99, 102, 241, 0.08)', desc: 'Wind turbine energy data', active: true },
+  { val: 'mskvy', label: 'MSKVY', icon: Cpu, color: '#0284c7', bg: 'rgba(2, 132, 199, 0.08)', desc: 'Mukhyamantri Saur Krushi Vahini Yojana', active: true },
 ];
 
 const Templates = () => {

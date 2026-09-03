@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from .models import Biomass, Bagasse, MSW, SHP, GovtSolarization, SolarGrid, SolarKusum, Wind
+from .models import Biomass, Bagasse, MSW, SHP, GovtSolarization, SolarGrid, SolarKusum, Wind, MSKVY
 
 # Dynamic maps for energy types, including model references and exact header mapping
 CONFIG_MAP = {
@@ -208,6 +208,36 @@ CONFIG_MAP = {
             'source': 'source',
             'Year': 'year',
             'year': 'year'
+        }
+    },
+    'mskvy': {
+        'model': MSKVY,
+        'display_name': 'MSKVY',
+        'headers': [
+            'Source',
+            'Project Location',
+            'Commissioned Capacity (MW)',
+            'Commission Date',
+            'District'
+        ],
+        'fields': {
+            'Source': 'source',
+            'source': 'source',
+            'Project Location': 'project_location',
+            'project_location': 'project_location',
+            'location': 'project_location',
+            'Commissioned Capacity (MW)': 'commissioned_capacity_mw',
+            'Commissioned Capacity MW': 'commissioned_capacity_mw',
+            'commissioned_capacity_mw': 'commissioned_capacity_mw',
+            'Capacity (MW)': 'commissioned_capacity_mw',
+            'Capacity MW': 'commissioned_capacity_mw',
+            'capacity_mw': 'commissioned_capacity_mw',
+            'Commission Date': 'commission_date',
+            'Commissioned Date': 'commission_date',
+            'commission_date': 'commission_date',
+            'commissioned_date': 'commission_date',
+            'District': 'district',
+            'district': 'district'
         }
     }
 }
@@ -745,7 +775,10 @@ class EnergyDataListView(APIView):
 
         config = CONFIG_MAP[energy_type]
         model = config['model']
-        records = list(model.objects.all().order_by('id').values())
+        fields_to_fetch = list(set(['id'] + list(config['fields'].values())))
+        model_field_names = set(f.name for f in model._meta.fields)
+        valid_fields = [f for f in fields_to_fetch if f in model_field_names]
+        records = list(model.objects.all().order_by('id').values(*valid_fields))
 
         return Response({
             "success": True,
@@ -780,6 +813,9 @@ class EnergyAnalyticsView(APIView):
             'solar_grid': 'solar_grid',
             'government_building_solarization': 'govt_solarization',
             'govt_building_solar': 'govt_solarization',
+            'mskvy_2': 'mskvy',
+            'mskvy_2_0': 'mskvy',
+            'solar_mskvy': 'mskvy',
         }
         resolved_type = ALIASES.get(raw_key, raw_key)
         if resolved_type not in CONFIG_MAP:
@@ -820,6 +856,18 @@ class EnergyAnalyticsView(APIView):
                     'type': t_label,
                     'capacity_mw': round(float(t_item['mw'] or 0.0), 2),
                     'count': t_item['count']
+                }
+
+        # Source breakdown (e.g. for MSKVY: MSKVY 1.0 vs MSKVY 2.0)
+        source_breakdown = {}
+        has_source = any(f.name == 'source' for f in model._meta.fields)
+        if has_source and mw_field:
+            for s_item in model.objects.values('source').annotate(mw=models.Sum(mw_field), count=models.Count('id')):
+                s_label = str(s_item.get('source') or 'General').strip()
+                source_breakdown[s_label] = {
+                    'source': s_label,
+                    'capacity_mw': round(float(s_item['mw'] or 0.0), 2),
+                    'count': s_item['count']
                 }
 
         district_data = []
@@ -1002,6 +1050,7 @@ class EnergyAnalyticsView(APIView):
             'districts': district_data,
             'divisions': division_data,
             'timeline': timeline_data,
-            'types': type_breakdown
+            'types': type_breakdown,
+            'sources': source_breakdown
         }, status=status.HTTP_200_OK)
 
