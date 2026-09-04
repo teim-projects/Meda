@@ -4,8 +4,6 @@ import axios from "axios";
 import { API_BASE_URL } from "../../services/apiConfig";
 
 import heroLogo from "../../assets/logo.png";
-import amritLogo from "../../assets/75.jpg";
-import sealLogo from "../../assets/MH.png";
 import ashokaLogo from "../../assets/emb.png";
 import bgImage from "../../assets/bg_meda3.png";
 import {
@@ -15,7 +13,8 @@ import {
   Droplets,
   Waves,
   Flame,
-  Recycle
+  Recycle,
+  Zap
 } from "lucide-react";
 
 /* =====================================================================
@@ -138,18 +137,12 @@ function BrandBar() {
     <header className="relative z-30 w-full bg-white shadow-md border-t-4 border-[#362029]">
       <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between px-3 py-2 sm:px-6 md:px-8">
         
-        {/* Left Section: MEDA Emblem & Amrit Mahotsav Logo */}
+        {/* Left Section: Satyameva Jayate Emblem */}
         <div className="flex items-center gap-3 sm:gap-5">
           <img
-            src={heroLogo}
-            alt="MEDA Mahaurja Logo"
+            src={ashokaLogo}
+            alt="National Emblem of India Satyameva Jayate"
             className="h-10 w-auto sm:h-12 md:h-14 object-contain"
-          />
-          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
-          <img
-            src={amritLogo}
-            alt="75 Swatantryacha Amrit Mahotsav"
-            className="h-9 w-auto sm:h-11 md:h-13 object-contain"
           />
         </div>
 
@@ -163,17 +156,11 @@ function BrandBar() {
           </p>
         </div>
 
-        {/* Right Section: Maharashtra Rajyamudra & Satyameva Jayate Emblem */}
+        {/* Right Section: MEDA Emblem Logo */}
         <div className="flex items-center gap-3 sm:gap-5">
           <img
-            src={sealLogo}
-            alt="Maharashtra Rajyamudra Golden Seal"
-            className="h-10 w-auto sm:h-12 md:h-13 object-contain"
-          />
-          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
-          <img
-            src={ashokaLogo}
-            alt="National Emblem of India Satyameva Jayate"
+            src={heroLogo}
+            alt="MEDA Mahaurja Logo"
             className="h-10 w-auto sm:h-12 md:h-14 object-contain"
           />
         </div>
@@ -207,6 +194,18 @@ function Ticker({ active }) {
    LEFT HUD
 ----------------------------------------------------------------*/
 const MINT_CARD_GRADIENT = "linear-gradient(135deg, #eef7f0 0%, #d5ebd9 50%, #bfe2c5 100%)";
+
+const CATEGORY_CAPACITY_BLOCK = { 
+  id: "category-capacity", 
+  val: "33,292.29", 
+  unit: "MW", 
+  title: "Total Capacity", 
+  icon: Zap, 
+  iconColor: "#0284c7", 
+  iconBg: "rgba(2, 132, 199, 0.2)",
+  iconBorder: "rgba(2, 132, 199, 0.4)",
+  bgGradient: "linear-gradient(to right, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%)"
+};
 
 const ENERGY_CAPACITY_BLOCKS = [
   { 
@@ -290,7 +289,7 @@ function EnergyCard({ block, index }) {
     >
       <div
         className="flex h-full w-full flex-col justify-between rounded-lg p-3 transition-all duration-300 relative"
-        style={{ background: MINT_CARD_GRADIENT }}
+        style={{ background: block.bgGradient || MINT_CARD_GRADIENT }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-1.5">
@@ -326,19 +325,24 @@ function EnergyCard({ block, index }) {
 function LiveHud({ active }) {
   return (
     <div className="relative z-20 w-full max-w-[860px]">
-      <div className="pop-in pl-6 sm:pl-9 lg:pl-12" style={{ animationDelay: "0.08s" }}>
-        <h1 className="text-[22px] font-bold tracking-tight text-white leading-snug drop-shadow-md sm:text-[26px] lg:text-[28px]">
+      <div className="pop-in" style={{ animationDelay: "0.08s" }}>
+        <h1 className="text-[23px] font-bold tracking-tight text-white leading-snug drop-shadow-md sm:text-[27px] lg:text-[29px]">
           Maharashtra Renewable Energy Projects
-          <span className="mt-1 block text-[15px] font-semibold text-emerald-400 drop-shadow-sm sm:text-[18px] lg:text-[20px]">
+          <span className="mt-0.5 block text-[15px] font-semibold text-emerald-400 drop-shadow-sm sm:text-[18px] lg:text-[20px]">
             – Commissioning Status Dashboard
           </span>
         </h1>
+
+        {/* Total Capacity Card in exact grid alignment with Column 1 */}
+        <div className="mt-3.5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <EnergyCard block={CATEGORY_CAPACITY_BLOCK} index={0} />
+        </div>
       </div>
 
-      {/* Uniform grid of all 7 energy capacity blocks */}
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Grid of original 7 energy capacity blocks */}
+      <div className="mt-3.5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {ENERGY_CAPACITY_BLOCKS.map((block, i) => (
-          <EnergyCard key={block.id} block={block} index={i} />
+          <EnergyCard key={block.id} block={block} index={i + 1} />
         ))}
       </div>
     </div>
@@ -578,7 +582,7 @@ export default function Login({ onLoginSuccess }) {
           <BrandBar />
         </div>
 
-        <main className="relative z-20 mx-auto flex w-full max-w-[1540px] flex-1 flex-col items-center justify-center gap-8 px-4 py-6 xl:flex-row xl:items-end xl:justify-between xl:gap-12 xl:px-8 xl:pb-10">
+        <main className="relative z-20 mx-auto flex w-full max-w-[1540px] flex-1 flex-col items-center justify-center gap-8 px-4 py-4 xl:flex-row xl:items-end xl:justify-between xl:gap-12 xl:px-8 xl:pb-10">
           <div className="w-full max-w-[880px] xl:w-auto flex-1">
             <LiveHud active={active} />
           </div>
